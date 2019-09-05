@@ -331,6 +331,9 @@ MonoBehaviour:
   acceleration: {x: 0, y: 0}
   rotation: 0
   angularVelocity: 0
+  angularAcceleration: 0
+  positionType: 0
+  rotationType: 0
 --- !u!65 &1373288496
 BoxCollider:
   m_ObjectHideFlags: 0
