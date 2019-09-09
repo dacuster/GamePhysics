@@ -327,13 +327,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   position: {x: 0, y: 0}
-  velocity: {x: 1, y: 0}
+  velocity: {x: 0, y: 0}
   acceleration: {x: 0, y: 0}
   rotation: 0
   angularVelocity: 0
   angularAcceleration: 0
   positionType: 0
   rotationType: 0
+  startingMass: 1
+  mass: 0
 --- !u!65 &1373288496
 BoxCollider:
   m_ObjectHideFlags: 0

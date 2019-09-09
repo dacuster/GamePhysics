@@ -5,7 +5,7 @@ using UnityEngine;
 public class Particle2D : MonoBehaviour
 {
     /*
-     *  Step 1
+     *  Lab 1 Step 1
      *  Define particle variables.
      */
     [SerializeField]
@@ -29,14 +29,29 @@ public class Particle2D : MonoBehaviour
     [SerializeField]
     private RotationType rotationType = RotationType.Euler;
 
+    /*
+     *  Lab 2 Step 1
+     */
+    [SerializeField]
+    private float startingMass;
+    [SerializeField]
+    private float mass;
+    private float massInverse;
+
+    /*
+     *  Lab 2 Step 2
+     */
+    private Vector2 force;
+
 
     private void Awake()
     {
-        SetInitailVelocity();
+        //SetInitailVelocity();
     }
     // Start is called before the first frame update
     void Start()
     {
+        Mass = startingMass;
 
         return;
     }
@@ -45,23 +60,33 @@ public class Particle2D : MonoBehaviour
     void FixedUpdate()
     {
         // Check user selection from menu items.
-        GetInspectorItems();
+        //GetInspectorItems();
+
+        UpdatePositionEulerExplicit(Time.fixedDeltaTime);
+        UpdateAcceleration();
 
         //AngularVelocityScalar(-Mathf.Sin(50f) * 2f);
 
-        // Apply to transform.
+        // Lab 1 Apply to transform.
         transform.position = position;
 
         transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
 
         /*
-         *  Step 4
+         *  Lab 1 Step 4
          */
 
         // Test
         // Note: Set the initial velocity to integral value
-        acceleration.x = -Mathf.Sin(Time.fixedTime);
-        angularAcceleration = -Mathf.Sin(Time.fixedTime) * 360f;
+        //acceleration.x = -Mathf.Sin(Time.fixedTime);
+        //angularAcceleration = -Mathf.Sin(Time.fixedTime) * 360f;
+
+        // f_gravity = f = mg
+        //Vector2 f_gravity = mass * new Vector2(0.0f, -9.8f);
+        //AddForce(f_gravity);
+        AddForce(ForceGenerator.GenerateForce_Gravity(mass, -9.8f, Vector2.up));
+
+
 
         return;
     }
@@ -74,7 +99,7 @@ public class Particle2D : MonoBehaviour
      private void GetInspectorItems()
     {
         /*
-         *  Step 3
+         *  Lab 1 Step 3
          */
 
         // Integrate.
@@ -100,7 +125,7 @@ public class Particle2D : MonoBehaviour
     }
 
     /*
-     *  Step 2
+     *  Lab 1 Step 2
      *  Integration algorithms.
      */
     private void UpdatePositionEulerExplicit(float _deltaTime)
@@ -190,5 +215,39 @@ public class Particle2D : MonoBehaviour
         {
             //Debug.Log("Changed to Euler");
         }
+    }
+
+    // Mass accessors.
+    public float Mass
+    {
+        get
+        {
+            return mass;
+        }
+
+        set
+        {
+            mass = value > 0.0f ? value : 0.0f;
+            massInverse = mass > 0.0f ? 1.0f / mass : 0.0f;
+        }
+
+    }
+
+    public void AddForce(Vector2 _newForce)
+    {
+        // D'Alembert's law.
+        force += _newForce;
+
+        return;
+    }
+
+    private void UpdateAcceleration()
+    {
+        // Newton's second law.
+        acceleration = massInverse * force;
+
+        force = Vector2.zero;
+
+        return;
     }
 }
