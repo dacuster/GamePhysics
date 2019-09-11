@@ -5,7 +5,7 @@ using UnityEngine;
 public class Particle2D : MonoBehaviour
 {
     /*
-     *  Step 1
+     *  Lab 1 Step 1
      *  Define particle variables.
      */
     [SerializeField]
@@ -21,43 +21,29 @@ public class Particle2D : MonoBehaviour
     [SerializeField]
     private float angularAcceleration = 0.0f;
 
+    // Setup enums for menu options.
     private enum PositionType { Euler, Kinematic };
     private enum RotationType { Euler, Kinematic };
 
+    // Initialize default menu option types.
     [SerializeField]
     private PositionType positionType = PositionType.Euler;
     [SerializeField]
     private RotationType rotationType = RotationType.Euler;
 
-
-    private void Awake()
-    {
-        SetInitailVelocity();
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
-
-        return;
-    }
-
-    // Update is called once per frame
+    // Update is called once per frame.
     void FixedUpdate()
     {
         // Check user selection from menu items.
         GetInspectorItems();
 
-        //AngularVelocityScalar(-Mathf.Sin(50f) * 2f);
-
         // Apply to transform.
         transform.position = position;
-
         transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
 
         /*
-         *  Step 4
+         *  Lab 1 Step 4 Test
          */
-
         // Test
         // Note: Set the initial velocity to integral value
         acceleration.x = -Mathf.Sin(Time.fixedTime);
@@ -74,10 +60,9 @@ public class Particle2D : MonoBehaviour
      private void GetInspectorItems()
     {
         /*
-         *  Step 3
+         *  Lab 1 Step 3 Integrate.
          */
-
-        // Integrate.
+        // Oscillate the particle back and forth.
         if (positionType == PositionType.Euler)
         {
             UpdatePositionEulerExplicit(Time.fixedDeltaTime);
@@ -87,6 +72,7 @@ public class Particle2D : MonoBehaviour
             UpdatePositionKinematic(Time.fixedDeltaTime);
         }
 
+        // Rotate the particle back and forth.
         if (rotationType == RotationType.Euler)
         {
             UpdateRotationEulerExplicit(Time.fixedDeltaTime);
@@ -100,9 +86,10 @@ public class Particle2D : MonoBehaviour
     }
 
     /*
-     *  Step 2
+     *  Lab 1 Step 2
      *  Integration algorithms.
      */
+     // Update position using euler's method. (Better used for programming.)
     private void UpdatePositionEulerExplicit(float _deltaTime)
     {
         /*  
@@ -121,12 +108,12 @@ public class Particle2D : MonoBehaviour
         return;
     }
 
+    // Update position using the kinematic algorithm. (Actual movement algorithm.)
     private void UpdatePositionKinematic(float _deltaTime)
     {
         /*
          *  x(t + dt) = x(t) + v(t)dt + 1/2 a(t) dt^2
          */
-
         position += velocity * _deltaTime + 0.5f * acceleration * _deltaTime * _deltaTime;
 
         /*
@@ -137,6 +124,7 @@ public class Particle2D : MonoBehaviour
         return;
     }
 
+    // Update the rotation using Euler's method. (Best used for programming.)
     private void UpdateRotationEulerExplicit(float _deltaTime)
     {
         /*  
@@ -155,6 +143,7 @@ public class Particle2D : MonoBehaviour
         return;
     }
 
+    // Update rotation using the kinematic algorithm. (Actual rotation algorithm.)
     private void UpdateRotationKinematic(float _deltaTime)
     {
         /*
@@ -169,26 +158,5 @@ public class Particle2D : MonoBehaviour
         angularVelocity += angularAcceleration * _deltaTime;
 
         return;
-    }
-
-    private void SetInitailVelocity()
-    {
-        // Set the initial velocity to integral value of acceleration.
-        velocity.x = Mathf.Cos(Time.fixedTime);
-        angularVelocity = Mathf.Cos(Time.fixedTime) * 360f;
-
-        return;
-    }
-
-    private void OnValidate()
-    {
-        if (positionType == PositionType.Euler)
-        {
-            Debug.Log("Changed to Kinematic");
-        }
-        else if (positionType == PositionType.Kinematic)
-        {
-            //Debug.Log("Changed to Euler");
-        }
     }
 }
