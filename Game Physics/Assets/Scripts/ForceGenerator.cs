@@ -46,8 +46,14 @@ public class ForceGenerator
 
     public static Vector2 GenerateForce_spring(Vector2 particlePosition, Vector2 anchorPosition, float springRestingLength, float springStiffnessCoefficient)
     {
+        // Page 107
         // f_spring = -coeff*(spring length - spring resting length)
 
-        return Vector2.zero;
+        // Calculate relative position of the particle to the anchor.
+        Vector2 position = particlePosition - anchorPosition;
+
+        float force = -springStiffnessCoefficient * (position.magnitude - springRestingLength);
+
+        return position * force;
     }
 }

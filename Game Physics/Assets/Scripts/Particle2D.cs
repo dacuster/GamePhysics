@@ -43,6 +43,14 @@ public class Particle2D : MonoBehaviour
      */
     private Vector2 force;
 
+    /*
+     *  Lab 2
+     */
+    [SerializeField]
+    private Transform springAnchor;
+    [SerializeField]
+    private Transform springParticle;
+
 
     private void Awake()
     {
@@ -84,8 +92,8 @@ public class Particle2D : MonoBehaviour
         // f_gravity = f = mg
         //Vector2 f_gravity = mass * new Vector2(0.0f, -9.8f);
         //AddForce(f_gravity);
-        AddForce(ForceGenerator.GenerateForce_Gravity(mass, -9.8f, Vector2.up));
-
+        //AddForce(ForceGenerator.GenerateForce_Gravity(mass, -9.8f, Vector2.up));
+        AddForce(ForceGenerator.GenerateForce_spring(springParticle.position, transform.position, 10, 3));
 
 
         return;
