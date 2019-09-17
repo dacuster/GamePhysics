@@ -42,14 +42,26 @@ public class Particle2D : MonoBehaviour
      *  Lab 2 Step 2
      */
     private Vector2 force;
+    private const float GRAVITY = -9.8f;
+    private bool gravityActive = true;
 
     /*
      *  Lab 2
+     *  Spring variables.
      */
     [SerializeField]
     private Transform springAnchor;
     [SerializeField]
-    private Transform springParticle;
+    private float springRestLength = 0.0f;
+    [SerializeField]
+    private float springStiffness = 0.0f;
+
+    /*
+     *  Lab 2
+     *  Surface normal variables.
+     */
+    [SerializeField]
+    private Vector2 surfaceNormal;
 
 
     private void Awake()
@@ -93,8 +105,11 @@ public class Particle2D : MonoBehaviour
         //Vector2 f_gravity = mass * new Vector2(0.0f, -9.8f);
         //AddForce(f_gravity);
         //AddForce(ForceGenerator.GenerateForce_Gravity(mass, -9.8f, Vector2.up));
-        AddForce(ForceGenerator.GenerateForce_spring(springParticle.position, transform.position, 2, 3));
+        //AddForce(ForceGenerator.GenerateForce_Spring(springAnchor.position, transform.position, springRestLength, springStiffness));
+        AddForce(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up));
+        //AddForce(ForceGenerator.GenerateForce_Sliding(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up), Vector2.right));
 
+        AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up), surfaceNormal));
 
         return;
     }
@@ -255,6 +270,13 @@ public class Particle2D : MonoBehaviour
         acceleration = massInverse * force;
 
         force = Vector2.zero;
+
+        return;
+    }
+
+    private void ToggleGravity()
+    {
+        gravityActive = !gravityActive;
 
         return;
     }
