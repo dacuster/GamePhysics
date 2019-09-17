@@ -51,6 +51,7 @@ public class ForceGenerator
 
         // Calculate relative position of the particle to the anchor.
         Vector2 position = particlePosition - anchorPosition;
+        //position = position.normalized;
 
         float force = -springStiffnessCoefficient * (position.magnitude - springRestingLength);
 
