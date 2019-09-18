@@ -13,7 +13,6 @@ public class ForceGenerator
     public static Vector2 GenerateForce_Normal(Vector2 _forceGravity, Vector2 _surfaceNormal_unit)
     {
         // f_normal = proj(f_gravity, surfaceNormal_unit)
-        // TODO: figure out projection matrix
         // proj = (norm(x) * grav(x) + norm(y) * grav(y)) / grav(x)^2 + grav(y)^2
         // finalProj = proj * grav
 
@@ -34,26 +33,40 @@ public class ForceGenerator
 
     public static Vector2 GenerateForce_Friction_Static(Vector2 _forceNormal, Vector2 _forceOpposing, float _frictionCoefficient_Static)
     {
-        // Page 152?
         // f_friction_s = -f_opposing if less than max, else -coeff*f_normal (max amount is coeff*|f_normal|)
 
-        return Vector2.zero;
+        float max = _frictionCoefficient_Static * _forceNormal.magnitude;
+
+        Vector2 force = _frictionCoefficient_Static * _forceNormal;
+
+        if (_forceOpposing.magnitude > max)
+        {
+            force -= _forceOpposing;
+        }
+        else
+        {
+            force = -_frictionCoefficient_Static * _forceNormal;
+        }
+
+        return force;
     }
 
     public static Vector2 GenerateForce_Friction_Kinetic(Vector2 f_normal, Vector2 particleVelocity, float frictionCoefficient_kinetic)
     {
-        // Page 152?
         // f_friction_k = -coeff*|f_normal| * unit(vel)
 
-        return Vector2.zero;
+        Vector2 force = -frictionCoefficient_kinetic * f_normal.magnitude * particleVelocity;
+
+        return force;
     }
 
     public static Vector2 GenerateForce_Drag(Vector2 particleVelocity, Vector2 fluidVelocity, float fluidDensity, float objectArea_crossSection, float objectDragCoefficient)
     {
-        // Page 85
         // f_drag = (p * u^2 * area * coeff)/2
 
-        return Vector2.zero;
+        Vector2 force = (particleVelocity - fluidVelocity) * (fluidDensity * particleVelocity.magnitude * particleVelocity.magnitude * objectArea_crossSection * objectDragCoefficient * 0.5f);
+
+        return force;
     }
 
     public static Vector2 GenerateForce_Spring(Vector2 particlePosition, Vector2 anchorPosition, float springRestingLength, float springStiffnessCoefficient)
@@ -69,5 +82,33 @@ public class ForceGenerator
 
         // Return the force at the current position.
         return position * force;
+    }
+    public static Vector2 GenerateForce_Spring_Damping(Vector2 particlePosition, Vector2 anchorPosition, float springRestingLength, float springStiffnessCoefficient, float springDamping, float springConstant, Vector2 particleVelocity)
+    {
+        // Page 107
+        // f_spring = -coeff*(spring length - spring resting length)
+
+        // Calculate relative position of the particle to the anchor.
+        Vector2 position = particlePosition - anchorPosition;
+
+        // Calculate the damping
+        float gamma = 0.5f * Mathf.Sqrt(4 * springConstant - springDamping * springDamping);
+
+        if (gamma == 0.0f)
+        {
+            return Vector2.zero;
+        }
+
+        Vector2 c = position * (springDamping / (2.0f * gamma)) + particleVelocity * (1.0f / gamma);
+
+        Vector2 target = position * Mathf.Cos(gamma * Time.fixedDeltaTime) + c * Mathf.Sin(gamma * Time.fixedDeltaTime);
+
+        target *= Mathf.Exp(-0.5f * Time.fixedDeltaTime * springDamping);
+
+        // Generate the force.
+        Vector2 force = (target - position) * (1.0f / Time.fixedDeltaTime * Time.fixedDeltaTime) - particleVelocity * Time.fixedDeltaTime;
+
+        // Return the force at the current position.
+        return force;
     }
 }

@@ -8,6 +8,7 @@ public class Particle2D : MonoBehaviour
      *  Lab 1 Step 1
      *  Define particle variables.
      */
+    [Header("Particle")]
     [SerializeField]
     private Vector2 position = Vector2.zero;
     [SerializeField]
@@ -24,6 +25,7 @@ public class Particle2D : MonoBehaviour
     private enum PositionType { Euler, Kinematic };
     private enum RotationType { Euler, Kinematic };
 
+    [Header("Velocity Options")]
     [SerializeField]
     private PositionType positionType = PositionType.Euler;
     [SerializeField]
@@ -32,36 +34,112 @@ public class Particle2D : MonoBehaviour
     /*
      *  Lab 2 Step 1
      */
+    [Header("Mass")]
     [SerializeField]
-    private float startingMass;
+    private float startingMass = 0.0f;
     [SerializeField]
-    private float mass;
-    private float massInverse;
+    private float mass = 0.0f;
+    private float massInverse = 0.0f;
 
     /*
      *  Lab 2 Step 2
      */
     private Vector2 force;
+
+    /*
+     *  Lab 2
+     *  Gravity variables.
+     */
     private const float GRAVITY = -9.8f;
-    private bool gravityActive = true;
+    [Header("Gravity")]
+    [SerializeField]
+    private Vector2 worldUp = Vector2.up;
 
     /*
      *  Lab 2
      *  Spring variables.
      */
+    [Header("Spring")]
     [SerializeField]
-    private Transform springAnchor;
+    private Transform springAnchor = null;
     [SerializeField]
     private float springRestLength = 0.0f;
     [SerializeField]
     private float springStiffness = 0.0f;
+    [SerializeField]
+    private float springDamping = 0.0f;
+    [SerializeField]
+    private float springConstant = 0.0f;
 
     /*
      *  Lab 2
      *  Surface normal variables.
      */
+    [Header("Surface Normal")]
     [SerializeField]
-    private Vector2 surfaceNormal;
+    private Vector2 surfaceNormal = Vector2.zero;
+
+    /*
+     *  Lab 2
+     *  Drag variables.
+     */
+    [Header("Drag")]
+    [SerializeField]
+    private Vector2 fluidVelocity = Vector2.zero;
+    [SerializeField]
+    private float fluidDensity = 0.0f;
+    [SerializeField]
+    private float objectCrossSection = 0.0f;
+    [SerializeField]
+    private float dragCoefficient = 0.0f;
+
+    /*
+     *  Lab 2
+     *  Friction variables.
+     */
+    [Header("Friction")]
+    [SerializeField]
+    private float kinematicFrictionCoefficient = 0.0f;
+    [SerializeField]
+    private Vector2 kinematicNormalForce = Vector2.zero;
+    [SerializeField]
+    private float staticFrictionCoefficient = 0.0f;
+    [SerializeField]
+    private Vector2 staticFrictionNormal = Vector2.zero;
+    [SerializeField]
+    private Vector2 staticFrictionOpposingForce = Vector2.zero;
+
+
+    /*
+     *  Lab 2
+     *  Sliding variables.
+     */
+    [Header("Sliding")]
+    [SerializeField]
+    private Vector2 slidingNormalForce = Vector2.zero;
+
+
+    /*
+     *  Lab 2
+     *  Inspector selections.
+     */
+    [Header("Forces")]
+    [SerializeField]
+    private bool gravityActive = false;
+    [SerializeField]
+    private bool normalActive = false;
+    [SerializeField]
+    private bool slidingActive = false;
+    [SerializeField]
+    private bool staticFrictionActive = false;
+    [SerializeField]
+    private bool kinematicFrictionActive = false;
+    [SerializeField]
+    private bool dragActive = false;
+    [SerializeField]
+    private bool springActive = false;
+    [SerializeField]
+    private bool dampingSpringActive = false;
 
 
     private void Awake()
@@ -80,44 +158,21 @@ public class Particle2D : MonoBehaviour
     void FixedUpdate()
     {
         // Check user selection from menu items.
-        //GetInspectorItems();
+        GetInspectorItems();
 
-        UpdatePositionEulerExplicit(Time.fixedDeltaTime);
         UpdateAcceleration();
-
-        //AngularVelocityScalar(-Mathf.Sin(50f) * 2f);
 
         // Lab 1 Apply to transform.
         transform.position = position;
 
         transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
 
-        /*
-         *  Lab 1 Step 4
-         */
-
-        // Test
-        // Note: Set the initial velocity to integral value
-        //acceleration.x = -Mathf.Sin(Time.fixedTime);
-        //angularAcceleration = -Mathf.Sin(Time.fixedTime) * 360f;
-
-        // f_gravity = f = mg
-        //Vector2 f_gravity = mass * new Vector2(0.0f, -9.8f);
-        //AddForce(f_gravity);
-        //AddForce(ForceGenerator.GenerateForce_Gravity(mass, -9.8f, Vector2.up));
-        //AddForce(ForceGenerator.GenerateForce_Spring(springAnchor.position, transform.position, springRestLength, springStiffness));
-        AddForce(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up));
-        //AddForce(ForceGenerator.GenerateForce_Sliding(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up), Vector2.right));
-
-        AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up), surfaceNormal
-            ));
-
         return;
     }
 
     /*
-     * Integrate user friendly menu.
-     * 
+     *  Lab 1
+     *  Integrate user friendly menu.
      */
      // Get selectable items from the inspector menu.
      private void GetInspectorItems()
@@ -143,6 +198,54 @@ public class Particle2D : MonoBehaviour
         else if (rotationType == RotationType.Kinematic)
         {
             UpdateRotationKinematic(Time.fixedDeltaTime);
+        }
+
+        if (gravityActive)
+        {
+            // Gravity force.
+            AddForce(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up));
+        }
+
+        if (springActive)
+        {
+            // Spring force.
+            AddForce(ForceGenerator.GenerateForce_Spring(springAnchor.position, transform.position, springRestLength, springStiffness));
+        }
+
+        if (staticFrictionActive)
+        {
+            // Static friction force.
+            AddForce(ForceGenerator.GenerateForce_Friction_Static(staticFrictionNormal, staticFrictionOpposingForce, staticFrictionCoefficient));
+        }
+
+        if (kinematicFrictionActive)
+        {
+            // Kinematic friction force.
+            AddForce(ForceGenerator.GenerateForce_Friction_Kinetic(kinematicNormalForce, velocity, kinematicFrictionCoefficient));
+        }
+
+        if (slidingActive)
+        {
+            // Sliding force.
+            AddForce(ForceGenerator.GenerateForce_Sliding(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, worldUp), slidingNormalForce));
+        }
+
+        if (dragActive)
+        {
+            // Drag force.
+            AddForce(ForceGenerator.GenerateForce_Drag(velocity, fluidVelocity, fluidDensity, objectCrossSection, dragCoefficient));
+        }
+
+        if (normalActive)
+        {
+            // Normal force.
+            AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, worldUp), surfaceNormal));
+        }
+
+        if (dampingSpringActive)
+        {
+            // Damping spring force.
+            AddForce(ForceGenerator.GenerateForce_Spring_Damping(position, springAnchor.position, springRestLength, springStiffness, springDamping, springConstant, velocity));
         }
 
         return;
@@ -220,27 +323,6 @@ public class Particle2D : MonoBehaviour
         return;
     }
 
-    private void SetInitailVelocity()
-    {
-        // Set the initial velocity to integral value of acceleration.
-        velocity.x = Mathf.Cos(Time.fixedTime);
-        angularVelocity = Mathf.Cos(Time.fixedTime) * 360f;
-
-        return;
-    }
-
-    private void OnValidate()
-    {
-        if (positionType == PositionType.Euler)
-        {
-            Debug.Log("Changed to Kinematic");
-        }
-        else if (positionType == PositionType.Kinematic)
-        {
-            //Debug.Log("Changed to Euler");
-        }
-    }
-
     // Mass accessors.
     public float Mass
     {
@@ -271,13 +353,6 @@ public class Particle2D : MonoBehaviour
         acceleration = massInverse * force;
 
         force = Vector2.zero;
-
-        return;
-    }
-
-    private void ToggleGravity()
-    {
-        gravityActive = !gravityActive;
 
         return;
     }
