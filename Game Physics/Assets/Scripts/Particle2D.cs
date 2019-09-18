@@ -109,7 +109,8 @@ public class Particle2D : MonoBehaviour
         AddForce(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up));
         //AddForce(ForceGenerator.GenerateForce_Sliding(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up), Vector2.right));
 
-        AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up), surfaceNormal));
+        AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up), surfaceNormal
+            ));
 
         return;
     }
