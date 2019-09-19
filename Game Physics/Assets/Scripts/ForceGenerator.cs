@@ -38,14 +38,15 @@ public class ForceGenerator
         float max = _frictionCoefficient_Static * _forceNormal.magnitude;
 
         Vector2 force = _frictionCoefficient_Static * _forceNormal;
+        float mag = _forceOpposing.magnitude;
 
-        if (_forceOpposing.magnitude > max)
+        if (mag > max)
         {
-            force -= _forceOpposing;
+            force = -_forceOpposing;
         }
         else
         {
-            force = -_frictionCoefficient_Static * _forceNormal;
+            force = -_forceOpposing * max / mag;
         }
 
         return force;
@@ -55,7 +56,7 @@ public class ForceGenerator
     {
         // f_friction_k = -coeff*|f_normal| * unit(vel)
 
-        Vector2 force = -frictionCoefficient_kinetic * f_normal.magnitude * particleVelocity;
+        Vector2 force = -frictionCoefficient_kinetic * f_normal.magnitude * particleVelocity.normalized;
 
         return force;
     }
@@ -64,7 +65,9 @@ public class ForceGenerator
     {
         // f_drag = (p * u^2 * area * coeff)/2
 
-        Vector2 force = (particleVelocity - fluidVelocity) * (fluidDensity * particleVelocity.magnitude * particleVelocity.magnitude * objectArea_crossSection * objectDragCoefficient * 0.5f);
+        Vector2 diff = particleVelocity - fluidVelocity;
+
+        Vector2 force = diff * diff.magnitude * (fluidDensity * objectArea_crossSection * objectDragCoefficient * 0.5f);
 
         return force;
     }
@@ -77,11 +80,13 @@ public class ForceGenerator
         // Calculate relative position of the particle to the anchor.
         Vector2 position = particlePosition - anchorPosition;
 
+        float springLength = position.magnitude;
+
         // Generate the force.
-        float force = -springStiffnessCoefficient * (position.magnitude - springRestingLength);
+        float force = -springStiffnessCoefficient * (springLength - springRestingLength);
 
         // Return the force at the current position.
-        return position * force;
+        return position * force / springLength;
     }
     public static Vector2 GenerateForce_Spring_Damping(Vector2 particlePosition, Vector2 anchorPosition, float springRestingLength, float springStiffnessCoefficient, float springDamping, float springConstant, Vector2 particleVelocity)
     {

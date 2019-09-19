@@ -444,14 +444,14 @@ MonoBehaviour:
   staticFrictionCoefficient: 0.6
   staticFrictionNormal: {x: 1, y: 0}
   staticFrictionOpposingForce: {x: -1, y: 0}
-  slidingNormalForce: {x: 1, y: 0}
+  slidingNormalForce: {x: 1, y: -0.5}
   gravityActive: 1
   normalActive: 1
   slidingActive: 0
   staticFrictionActive: 0
   kinematicFrictionActive: 0
   dragActive: 0
-  springActive: 0
+  springActive: 1
   dampingSpringActive: 0
 --- !u!65 &1373288496
 BoxCollider:
