@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.4465782, g: 0.49641252, b: 0.5748167, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -415,7 +415,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1373288494}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c1c39022b83b00c47ae6198478bb6b82, type: 3}
+  m_Script: {fileID: 11500000, guid: 00560fdb33bd0774c9d0a20aa5ff72ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   position: {x: 0, y: 0}
@@ -430,23 +430,23 @@ MonoBehaviour:
   mass: 0
   worldUp: {x: 0, y: 1}
   springAnchor: {fileID: 195726222}
-  springRestLength: 1
-  springStiffness: 0.5
-  springDamping: 0.1
-  springConstant: 10
+  springRestLength: 3
+  springStiffness: 0.05
+  springDamping: 0.3
+  springConstant: 5
   surfaceNormal: {x: 0, y: 9.8}
-  fluidVelocity: {x: 0, y: -1}
-  fluidDensity: 3
-  objectCrossSection: 0.2
-  dragCoefficient: 0.1
+  fluidVelocity: {x: 0, y: 0.4}
+  fluidDensity: 1
+  objectCrossSection: 0.001
+  dragCoefficient: 1
   kinematicFrictionCoefficient: 0.55
-  kinematicNormalForce: {x: 0, y: -1}
+  kinematicNormalForce: {x: 1, y: 0}
   staticFrictionCoefficient: 0.6
-  staticFrictionNormal: {x: 0, y: -1}
-  staticFrictionOpposingForce: {x: 0, y: 1}
-  slidingNormalForce: {x: 1, y: -1}
-  gravityActive: 0
-  normalActive: 0
+  staticFrictionNormal: {x: 1, y: 0}
+  staticFrictionOpposingForce: {x: -1, y: 0}
+  slidingNormalForce: {x: 1, y: 0}
+  gravityActive: 1
+  normalActive: 1
   slidingActive: 0
   staticFrictionActive: 0
   kinematicFrictionActive: 0
