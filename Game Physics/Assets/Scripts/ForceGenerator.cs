@@ -111,4 +111,20 @@ public class ForceGenerator
         // Return the force at the current position.
         return force;
     }
+
+    public static float GenerateForce_Torque(Vector2 particleCenterOfMass, Vector2 particleForcePosition, Vector2 appliedForce)
+    {
+        // 1. Calculate arm force based on center of mass and force position.
+        // 2. Get arm force magnitude.
+        // 3. Get applied force magnitude.
+        // 3. Multiply arm force magnitude by applied force magnitude.
+
+        Vector2 armForce = particleForcePosition - particleCenterOfMass;
+
+        float armForceLength = armForce.magnitude;
+
+        float appliedForceMagnitude = appliedForce.magnitude;
+
+        return armForceLength * appliedForceMagnitude;
+    }
 }

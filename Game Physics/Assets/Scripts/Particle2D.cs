@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -142,6 +143,37 @@ public class Particle2D : MonoBehaviour
     private bool dampingSpringActive = false;
 
 
+    /*
+     *  Lab 3 Step 1
+     *  Moment of Inertia
+     */
+    [SerializeField]
+    private float inertia = 0.0f;
+    private float inertiaInverse = 0.0f;
+    /*
+     *  Lab 3 Step 2
+     *  Torque
+     */
+    [Header("Torque")]
+    [SerializeField]
+    private float torque = 0.0f;
+    [SerializeField]
+    private Vector2 localCenterOfMass = Vector2.zero;
+    private Vector2 worldCenterOfMass = Vector2.zero;
+    [SerializeField]
+    private float innerRingRadius = 0.0f;
+    [SerializeField]
+    private Vector2 torqueForce = Vector2.zero;
+    [SerializeField]
+    private Vector2 torqueArm = Vector2.zero;
+    [SerializeField]
+    private bool torqueActive = false;
+
+    [SerializeField]
+    private Inertia2D.Type inertiaType = Inertia2D.Type.Disk;
+
+
+
     private void Awake()
     {
         //SetInitailVelocity();
@@ -150,6 +182,8 @@ public class Particle2D : MonoBehaviour
     void Start()
     {
         Mass = startingMass;
+        // Set inertia algorithm based on selected object.
+        CheckObjectType();
 
         return;
     }
@@ -165,7 +199,13 @@ public class Particle2D : MonoBehaviour
         // Lab 1 Apply to transform.
         transform.position = position;
 
+        UpdateWorldCenterOfMass();
+
         transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
+
+        // Lab 3 Step 3
+        // Update angluar acceleration after applying rotation.
+        UpdateAngularAcceleration();
 
         return;
     }
@@ -246,6 +286,11 @@ public class Particle2D : MonoBehaviour
         {
             // Damping spring force.
             AddForce(ForceGenerator.GenerateForce_Spring_Damping(position, springAnchor.position, springRestLength, springStiffness, springDamping, springConstant, velocity));
+        }
+
+        if (torqueActive)
+        {
+            AddTorque(ForceGenerator.GenerateForce_Torque(worldCenterOfMass, torqueArm, torqueForce));
         }
 
         return;
@@ -353,6 +398,89 @@ public class Particle2D : MonoBehaviour
         acceleration = massInverse * force;
 
         force = Vector2.zero;
+
+        return;
+    }
+
+    /*
+     *  Lab 3 Step 2
+     *  Apply torque to angular acceleration.
+     */
+     private void UpdateAngularAcceleration()
+    {
+        // Newton's second law.
+        angularAcceleration = inertiaInverse * torque;
+
+        torque = 0.0f;
+
+        return;
+    }
+
+    /*
+     *  Lab 3
+     *  Add torque additional torque. 
+     */
+    private void AddTorque(float _newTorque)
+    {
+        torque += _newTorque;
+
+        return;
+    }
+
+    /*
+     *  Lab 3
+     *  Inertia accessors.
+     */
+    public float Inertia
+    {
+        get
+        {
+            return inertia;
+        }
+
+        set
+        {
+            inertia = value > 0.0f ? value : 0.0f;
+            inertiaInverse = inertia > 0.0f ? 1.0f / inertia : 0.0f;
+        }
+    }
+
+    // Check the inspector for selected object type.
+    private void CheckObjectType()
+    {
+        switch (inertiaType)
+        {
+            case Inertia2D.Type.Disk:
+                // Get disk inertia. (Any local scale dimension will be diameter)
+                Inertia = Inertia2D.Disk(mass, transform.localScale.x * 0.5f);
+                break;
+            case Inertia2D.Type.Ring:
+                // Get the ring inertia.
+                Inertia = Inertia2D.Ring(mass, innerRingRadius, transform.localScale.x * 0.5f);
+                break;
+            case Inertia2D.Type.Rectangle:
+                // Get the rectangle inertia.
+                Inertia = Inertia2D.Rectangle(mass, transform.localScale.x, transform.localScale.y);
+                break;
+            case Inertia2D.Type.Square:
+                // Get the square inertia.
+                Inertia = Inertia2D.Square(mass, transform.localScale.x);
+                break;
+            case Inertia2D.Type.Rod:
+                // Get the longer of the two dimensions.
+                float length = transform.localScale.x > transform.localScale.y ? transform.localScale.x : transform.localScale.y;
+                // Get the rod inertia.
+                Inertia = Inertia2D.Rod(mass, length);
+                break;
+            default:
+                break;
+        }
+    }
+
+    // Get world center of mass based on local center of mass and current position of particle.
+    private void UpdateWorldCenterOfMass()
+    {
+        worldCenterOfMass = localCenterOfMass + position;
 
         return;
     }
