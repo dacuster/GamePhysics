@@ -121,10 +121,8 @@ public class ForceGenerator
 
         Vector2 armForce = particleForcePosition - particleCenterOfMass;
 
-        float armForceLength = armForce.magnitude;
+        float torque = armForce.x * appliedForce.y - armForce.y * appliedForce.x;
 
-        float appliedForceMagnitude = appliedForce.magnitude;
-
-        return armForceLength * appliedForceMagnitude;
+        return torque;
     }
 }
