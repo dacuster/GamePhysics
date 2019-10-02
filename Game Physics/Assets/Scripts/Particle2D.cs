@@ -9,14 +9,13 @@ public class Particle2D : MonoBehaviour
      *  Define particle variables.
      */
     [Header("Particle")]
-    [SerializeField]
-    private Vector2 position = Vector2.zero;
+    public Vector2 position = Vector2.zero;
     [SerializeField]
     private Vector2 velocity = Vector2.right;
     [SerializeField]
     private Vector2 acceleration = Vector2.zero;
-    [SerializeField]
-    private float rotation = 0.0f;
+
+    public float rotation = 0.0f;
     [SerializeField]
     private float angularVelocity = 0.0f;
     [SerializeField]

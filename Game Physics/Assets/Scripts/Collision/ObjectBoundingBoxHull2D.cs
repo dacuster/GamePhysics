@@ -4,18 +4,34 @@ using UnityEngine;
 
 public class ObjectBoundingBoxHull2D : CollisionHull2D
 {
-    // Start is called before the first frame update
-    void Start()
+    public ObjectBoundingBoxHull2D() : base(CollisionHullType2D.hull_obb) { }
+    private void FixedUpdate()
     {
-        
+        foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
+        {
+            Collision collision = new Collision();
+
+            if (hull == this)
+            {
+                break;
+            }
+
+            if (hull.Type == CollisionHullType2D.hull_circle)
+            {
+                TestCollisionVsCircle(hull as CircleCollisionHull2D, ref collision);
+            }
+            else if (hull.Type == CollisionHullType2D.hull_aabb)
+            {
+                TestCollisionVsAABB(hull as AxisAlignedBoundingBoxHull2D, ref collision);
+            }
+            else if (hull.Type == CollisionHullType2D.hull_obb)
+            {
+                TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D, ref collision);
+            }
+        }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-    public override bool TestCollisionVsCircle(CircleCollisionHull2D other)
+    public override bool TestCollisionVsCircle(CircleCollisionHull2D other, ref Collision c)
     {
         // see circle
         // other.TestCollisionVsCircle(this);
@@ -23,7 +39,7 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         return false;
     }
 
-    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull2D other)
+    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull2D other, ref Collision c)
     {
         // see AABB
 
@@ -31,7 +47,7 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         return false;
     }
 
-    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull2D other)
+    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull2D other, ref Collision c)
     {
         // AABB-OBB part 2 twice
         // 1. .....
