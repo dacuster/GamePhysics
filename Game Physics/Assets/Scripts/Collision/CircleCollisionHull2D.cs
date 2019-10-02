@@ -10,33 +10,7 @@ public class CircleCollisionHull2D : CollisionHull2D
     [Range(0.0f, 100.0f)]
     public float radius;
 
-    private void FixedUpdate()
-    {
-        foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
-        {
-            Collision collision = new Collision();
-
-            if (hull == this)
-            {
-                break;
-            }
-
-            if (hull.Type == CollisionHullType2D.hull_circle)
-            {
-                TestCollisionVsCircle(hull as CircleCollisionHull2D, ref collision);
-            }
-            else if (hull.Type == CollisionHullType2D.hull_aabb)
-            {
-                TestCollisionVsAABB(hull as AxisAlignedBoundingBoxHull2D, ref collision);
-            }
-            else if (hull.Type == CollisionHullType2D.hull_obb)
-            {
-                TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D, ref collision);
-            }
-        }
-    }
-
-    public override bool TestCollisionVsCircle(CircleCollisionHull2D other, ref Collision c)
+    public override bool TestCollisionVsCircle(CircleCollisionHull2D other)
     {
         // collision passes if distance between centers <= sum of radii
         // optimized collision passes if (distance between centers) squared <= (sum of radii) squared
@@ -63,7 +37,7 @@ public class CircleCollisionHull2D : CollisionHull2D
         return distanceSquared <= radiiSumSquared;
     }
 
-    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull2D other, ref Collision c)
+    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull2D other)
     {
         // Calculate closest point by clamping circle centers on each dimension
         // passes if closest point vs circle passes
@@ -73,7 +47,7 @@ public class CircleCollisionHull2D : CollisionHull2D
         return false;
     }
 
-    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull2D other, ref Collision c)
+    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull2D other)
     {
         // same as above, but first...
         // transform circle position by multiplying by box world matrix inverse
