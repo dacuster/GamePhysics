@@ -20,13 +20,13 @@ public abstract class CollisionHull2D : MonoBehaviour
         Type = _type;
     }
 
-    protected Particle2D particle;
+    public Particle2D particle;
 
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        particle = GetComponent<Particle2D>();
+        particle = gameObject.GetComponent<Particle2D>();
     }
 
     // Update is called once per frame
