@@ -121,13 +121,13 @@ public class CircleCollisionHull2D : CollisionHull2D
         Matrix4x4 otherRotationInverseMatrix = otherRotationMatrix.inverse;
 
         // Works
-        Matrix4x4 matrix = otherTranslateMatrix * otherRotationInverseMatrix;
+        Matrix4x4 matrix = otherTranslateMatrix * otherRotationInverseMatrix * otherTranslateMatrix.inverse;
 
         // Works
         Vector3 difference = circlePosition - otherPosition;
 
         // Works
-        circlePosition = matrix.MultiplyPoint3x4(difference);
+        circlePosition = matrix.MultiplyPoint3x4(circlePosition);
 
         // Works
         float nearestX = Mathf.Clamp(circlePosition.x, other.leftBound, other.rightBound);
@@ -136,57 +136,17 @@ public class CircleCollisionHull2D : CollisionHull2D
         float deltaX = circlePosition.x - nearestX;
         float deltaY = circlePosition.y - nearestY;
 
-
-
-
         // Get the position and create a translation matrix.
-        Vector3 position = other.particle.position;
-        Matrix4x4 translateMatrix = Matrix4x4.Translate(position);
+        Vector3 nearestPosition = new Vector2(nearestX, nearestY);
 
-        // Get negative rotation. Create a rotation matrix and invert it.
-        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, -other.particle.rotation);
-        Matrix4x4 rotationMatrix = Matrix4x4.Rotate(rotation);
-        Matrix4x4 rotationInverseMatrix = rotationMatrix.inverse;
-
-        Vector3 nearestPoint = new Vector3(nearestX, nearestY, 0.0f);
-
-        // Create the model view matrix.
-        //Matrix4x4 matrixModel = translateMatrix.inverse * rotationMatrix.inverse;
-        //Matrix4x4 matrixModel = translateMatrix * rotationMatrix;
-        //Matrix4x4 matrixModel = translateMatrix.inverse * rotationMatrix;
-        Matrix4x4 matrixModel = translateMatrix * rotationMatrix.inverse;
-
-        nearestPoint = matrixModel.MultiplyPoint3x4(nearestPoint);
-
-
-
-
-
-
-        //Vector2 xRotation = new Vector2(Mathf.Cos(-other.particle.rotation), Mathf.Sin(-other.particle.rotation));
-        //Vector2 yRotation = new Vector2(-Mathf.Sin(-other.particle.rotation), Mathf.Cos(-other.particle.rotation));
-        //nearestPoint.x *= xRotation.x;
-        //nearestPoint.y *= yRotation.y;
-        ////deltaPoint = otherPosition - deltaPoint;
-        //Quaternion inverseRotation = Quaternion.Euler(0.0f, 0.0f, other.particle.rotation);
-        //Matrix4x4 inverseRotationMatrix = Matrix4x4.Rotate(inverseRotation);
-        //Matrix4x4 matrixDelta = inverseRotationMatrix.inverse;
-        //nearestPoint = matrixDelta.MultiplyVector(nearestPoint);
-
-
-
-
-
-
-
+        // Muliply position by inverse model view matrix to position and rotate properly.
+        nearestPosition = matrix.inverse.MultiplyPoint3x4(nearestPosition);
 
         // Debug drawing.
-        Vector2 startOriginal = new Vector2(nearestX, nearestY);
-        Vector2 startTransform = new Vector2(nearestPoint.x, nearestPoint.y);
+        Vector2 start = new Vector2(nearestPosition.x, nearestPosition.y);
         Vector2 end = new Vector2(circlePosition.x, circlePosition.y);
 
-        Debug.DrawLine(startOriginal, end, Color.white);
-        Debug.DrawLine(startTransform, end, Color.red);
+        Debug.DrawLine(start, end, Color.red);
 
         return (deltaX * deltaX + deltaY * deltaY) <= (radius * radius);
     }

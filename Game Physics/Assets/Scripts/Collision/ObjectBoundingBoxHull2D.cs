@@ -6,6 +6,8 @@ using UnityEditor;
 public class ObjectBoundingBoxHull2D : CollisionHull2D
 {
     public Vector2 boundingBox;
+    public Vector2 xAxisBound;
+    public Vector2 yAxisBound;
     public float leftBound = 0.0f;
     public float rightBound = 0.0f;
     public float bottomBound = 0.0f;
@@ -78,7 +80,9 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         bottomBound = particle.position.y - boundingBox.y * 0.5f;
         topBound = bottomBound + boundingBox.y;
 
-        // Used for drawing the edges in debug.
+
+
+        //// Used for drawing the edges in debug.
         //Vector3 bottomLineLeft = new Vector3(leftBound, bottomBound);
         //Vector3 bottomLineRight = new Vector3(rightBound, bottomBound);
         //Vector3 topLineLeft = new Vector3(leftBound, topBound);
@@ -114,12 +118,12 @@ public class ObjectBoxEditor : Editor
         Matrix4x4 translateMatrix = Matrix4x4.Translate(position);
 
         // Get negative rotation. Create a rotation matrix and invert it.
-        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, -boxHull.particle.rotation);
+        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, boxHull.particle.rotation);
         Matrix4x4 rotationMatrix = Matrix4x4.Rotate(rotation);
         Matrix4x4 rotationInverseMatrix = rotationMatrix.inverse;
 
         // Create the model view matrix.
-        Matrix4x4 matrix = translateMatrix * rotationInverseMatrix;
+        Matrix4x4 matrix = translateMatrix * rotationMatrix * translateMatrix.inverse;
 
         // Muliply position by inverse model view matrix to position and rotate properly.
         position = matrix.inverse.MultiplyPoint3x4(position);

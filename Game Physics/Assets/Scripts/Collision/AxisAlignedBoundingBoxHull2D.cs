@@ -82,6 +82,11 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // then, multiply by OBB inverse matrix, do test again
         // 1. .....
 
+        if (leftBound <= other.rightBound && rightBound >= other.leftBound && topBound >= other.bottomBound && bottomBound <= other.topBound)
+        {
+
+            return true;
+        }
 
         return false;
     }
