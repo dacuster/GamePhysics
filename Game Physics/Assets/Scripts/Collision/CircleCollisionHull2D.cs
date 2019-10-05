@@ -33,6 +33,7 @@ public class CircleCollisionHull2D : CollisionHull2D
                 {
                     GetComponent<MeshRenderer>().material.color = Color.red;
                     hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    Debug.Log("Collision");
                 }
             }
             else if (hull.Type == CollisionHullType2D.hull_aabb)
@@ -41,6 +42,7 @@ public class CircleCollisionHull2D : CollisionHull2D
                 {
                     GetComponent<MeshRenderer>().material.color = Color.red;
                     hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    Debug.Log("Collision");
                 }
             }
             else if (hull.Type == CollisionHullType2D.hull_obb)
@@ -49,6 +51,7 @@ public class CircleCollisionHull2D : CollisionHull2D
                 {
                     GetComponent<MeshRenderer>().material.color = Color.red;
                     hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    Debug.Log("Collision");
                 }
             }
         }
@@ -90,8 +93,8 @@ public class CircleCollisionHull2D : CollisionHull2D
         // 6. Test difference with radius. (Return true of less than radius)
 
 
-        float nearestX = Mathf.Clamp(particle.position.x, other.leftBound, other.rightBound);
-        float nearestY = Mathf.Clamp(particle.position.y, other.bottomBound, other.topBound);
+        float nearestX = Mathf.Clamp(particle.position.x, other.xAxisBound.x, other.xAxisBound.y);
+        float nearestY = Mathf.Clamp(particle.position.y, other.yAxisBound.x, other.yAxisBound.y);
 
         float deltaX = particle.position.x - nearestX;
         float deltaY = particle.position.y - nearestY;
@@ -124,14 +127,11 @@ public class CircleCollisionHull2D : CollisionHull2D
         Matrix4x4 matrix = otherTranslateMatrix * otherRotationInverseMatrix * otherTranslateMatrix.inverse;
 
         // Works
-        Vector3 difference = circlePosition - otherPosition;
-
-        // Works
         circlePosition = matrix.MultiplyPoint3x4(circlePosition);
 
         // Works
-        float nearestX = Mathf.Clamp(circlePosition.x, other.leftBound, other.rightBound);
-        float nearestY = Mathf.Clamp(circlePosition.y, other.bottomBound, other.topBound);
+        float nearestX = Mathf.Clamp(circlePosition.x, other.xAxisBound.x, other.xAxisBound.y);
+        float nearestY = Mathf.Clamp(circlePosition.y, other.yAxisBound.x, other.yAxisBound.y);
 
         float deltaX = circlePosition.x - nearestX;
         float deltaY = circlePosition.y - nearestY;

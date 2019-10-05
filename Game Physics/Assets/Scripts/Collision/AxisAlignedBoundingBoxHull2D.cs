@@ -6,10 +6,8 @@ using UnityEditor;
 public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
 {
     public Vector2 boundingBox;
-    public float leftBound = 0.0f;
-    public float rightBound = 0.0f;
-    public float bottomBound = 0.0f;
-    public float topBound = 0.0f;
+    public Vector2 xAxisBound;
+    public Vector2 yAxisBound;
 
 
     private void FixedUpdate()
@@ -32,6 +30,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
                 {
                     GetComponent<MeshRenderer>().material.color = Color.red;
                     hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    Debug.Log("Collision");
                 }
             }
             else if (hull.Type == CollisionHullType2D.hull_aabb)
@@ -40,6 +39,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
                 {
                     GetComponent<MeshRenderer>().material.color = Color.red;
                     hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    Debug.Log("Collision");
                 }
             }
             else if (hull.Type == CollisionHullType2D.hull_obb)
@@ -48,6 +48,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
                 {
                     GetComponent<MeshRenderer>().material.color = Color.red;
                     hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    Debug.Log("Collision");
                 }
             }
         }
@@ -66,8 +67,9 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // for each dimension, max extent of A >= min extent of B
         // 1. .....
 
-        if (leftBound <= other.rightBound && rightBound >= other.leftBound && topBound >= other.bottomBound && bottomBound <= other.topBound)
+        if (xAxisBound.x <= other.xAxisBound.y && xAxisBound.y >= other.xAxisBound.x && yAxisBound.y >= other.yAxisBound.x && yAxisBound.x <= other.yAxisBound.y)
         {
+
             return true;
         }
 
@@ -82,7 +84,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // then, multiply by OBB inverse matrix, do test again
         // 1. .....
 
-        if (leftBound <= other.rightBound && rightBound >= other.leftBound && topBound >= other.bottomBound && bottomBound <= other.topBound)
+        if (xAxisBound.x <= other.xAxisBound.y && xAxisBound.y >= other.xAxisBound.x && yAxisBound.y >= other.yAxisBound.x && yAxisBound.x <= other.yAxisBound.y)
         {
 
             return true;
@@ -93,10 +95,10 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
 
     private void CalculateBoundingBox()
     {
-        leftBound = particle.position.x - boundingBox.x * 0.5f;
-        rightBound = leftBound + boundingBox.x;
-        bottomBound = particle.position.y - boundingBox.y * 0.5f;
-        topBound = bottomBound + boundingBox.y;
+        xAxisBound.x = particle.position.x - boundingBox.x * 0.5f;
+        xAxisBound.y = xAxisBound.x + boundingBox.x;
+        yAxisBound.x = particle.position.y - boundingBox.y * 0.5f;
+        yAxisBound.y = yAxisBound.x + boundingBox.y;
 
         return;
     }

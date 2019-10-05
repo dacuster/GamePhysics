@@ -8,10 +8,6 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
     public Vector2 boundingBox;
     public Vector2 xAxisBound;
     public Vector2 yAxisBound;
-    public float leftBound = 0.0f;
-    public float rightBound = 0.0f;
-    public float bottomBound = 0.0f;
-    public float topBound = 0.0f;
     private void FixedUpdate()
     {
         CalculateBoundingBox();
@@ -26,11 +22,12 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
 
             if (hull.Type == CollisionHullType2D.hull_circle)
             {
-                //if (TestCollisionVsCircle(hull as CircleCollisionHull2D))
-                //{
-                //    GetComponent<MeshRenderer>().material.color = Color.red;
-                //    hull.GetComponent<MeshRenderer>().material.color = Color.red;
-                //}
+                if (TestCollisionVsCircle(hull as CircleCollisionHull2D))
+                {
+                    GetComponent<MeshRenderer>().material.color = Color.red;
+                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    Debug.Log("Collision");
+                }
             }
             else if (hull.Type == CollisionHullType2D.hull_aabb)
             {
@@ -38,6 +35,7 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
                 {
                     GetComponent<MeshRenderer>().material.color = Color.red;
                     hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    Debug.Log("Collision");
                 }
             }
             else if (hull.Type == CollisionHullType2D.hull_obb)
@@ -46,6 +44,7 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
                 {
                     GetComponent<MeshRenderer>().material.color = Color.red;
                     hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    Debug.Log("Collision");
                 }
             }
         }
@@ -74,32 +73,10 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
     }
     private void CalculateBoundingBox()
     {
-        // Create the edges based on the current position and the bounding box dimensions.
-        leftBound = particle.position.x - boundingBox.x * 0.5f;
-        rightBound = leftBound + boundingBox.x;
-        bottomBound = particle.position.y - boundingBox.y * 0.5f;
-        topBound = bottomBound + boundingBox.y;
-
-
-
-        //// Used for drawing the edges in debug.
-        //Vector3 bottomLineLeft = new Vector3(leftBound, bottomBound);
-        //Vector3 bottomLineRight = new Vector3(rightBound, bottomBound);
-        //Vector3 topLineLeft = new Vector3(leftBound, topBound);
-        //Vector3 topLineRight = new Vector3(rightBound, topBound);
-        //Vector3 leftLineTop = new Vector3(leftBound, topBound);
-        //Vector3 leftLineBottom = new Vector3(leftBound, bottomBound);
-        //Vector3 rightLineTop = new Vector3(rightBound, topBound);
-        //Vector3 rightLineBottom = new Vector3(rightBound, bottomBound);
-
-        //// Draw bottom line.
-        //Debug.DrawLine(bottomLineLeft, bottomLineRight, Color.green);
-        //// Draw top line
-        //Debug.DrawLine(topLineLeft, topLineRight, Color.green);
-        //// Draw left line.
-        //Debug.DrawLine(leftLineTop, leftLineBottom, Color.green);
-        //// Draw right line
-        //Debug.DrawLine(rightLineTop, rightLineBottom, Color.green);
+        xAxisBound.x = particle.position.x - boundingBox.x * 0.5f;
+        xAxisBound.y = xAxisBound.x + boundingBox.x;
+        yAxisBound.x = particle.position.y - boundingBox.y * 0.5f;
+        yAxisBound.y = yAxisBound.x + boundingBox.y;
 
         return;
     }
@@ -142,5 +119,13 @@ public class ObjectBoxEditor : Editor
     private Color CreateColor(float r, float g, float b)
     {
         return new Color(r / 255.0f, g / 255.0f, b / 255.0f);
+    }
+
+
+
+    public Vector2 LocalToWorldAxisX()
+    {
+
+        return Vector2.zero;
     }
 }
