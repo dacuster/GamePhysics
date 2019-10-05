@@ -110,108 +110,85 @@ public class CircleCollisionHull2D : CollisionHull2D
         // transform circle position by multiplying by box world matrix inverse
         // 1. .....
 
-        //Vector3 circlePosition = particle.position;
-        //Vector3 circleRotation = new Vector3(0.0f, 0.0f, particle.rotation);
-        //Matrix4x4 inverseOther = other.transform.worldToLocalMatrix;
-        //inverseOther = inverseOther.inverse;
-        //particle.rotation = inverseOther.rotation.eulerAngles.z;
-        //inverseOther.transpose.MultiplyPoint3x4(particle.position);
-        //inverseOther.MultiplyPoint(circlePosition);
-        //particle.position = circleRotation;
-
-
-
         Vector3 circlePosition = particle.position;
-        Vector3 circleScale = particle.transform.localScale;
-        Quaternion circleRotation = Quaternion.Euler(0.0f, 0.0f, particle.rotation);
 
         Vector3 otherPosition = other.particle.position;
-        Vector3 otherScale = other.particle.transform.localScale;
         Quaternion otherRotation = Quaternion.Euler(0.0f, 0.0f, other.particle.rotation);
 
-        Matrix4x4 otherMatrix = Matrix4x4.TRS(otherPosition, otherRotation, otherScale);
-        //otherMatrix = otherMatrix.inverse;
-        Matrix4x4 circleMatrix = Matrix4x4.TRS(circlePosition, circleRotation, circleScale);
-        //Matrix4x4 otherTranslateMatrix = Matrix4x4.Translate(otherPosition);
-        //Matrix4x4 otherRotationMatrix = Matrix4x4.Rotate(otherRotation);
-        //Matrix4x4 otherTranslateInverseMatrix = otherTranslateMatrix.inverse;
-        //Matrix4x4 otherRotationInverseMatrix = otherRotationMatrix.inverse;
 
-        //Matrix4x4 circleTranslateMatrix = Matrix4x4.Translate(circlePosition);
-        //Matrix4x4 circleRotationMatrix = Matrix4x4.Rotate(circleRotation);
-        //Matrix4x4 circleTranslateInverseMatrix = circleTranslateMatrix.inverse;
-        //Matrix4x4 circleRotationInverseMatrix = circleRotationMatrix.inverse;
+        Matrix4x4 otherTranslateMatrix = Matrix4x4.Translate(otherPosition);
+        Matrix4x4 otherRotationMatrix = Matrix4x4.Rotate(otherRotation);
+        Matrix4x4 otherRotationInverseMatrix = otherRotationMatrix.inverse;
 
+        // Works
+        Matrix4x4 matrix = otherTranslateMatrix * otherRotationInverseMatrix;
 
-        //circleMatrix *= circleTranslateInverseMatrix;
-        //circleMatrix *= otherTranslateInverseMatrix;
-        //circleMatrix *= otherRotationMatrix;
-        //circleMatrix *= otherTranslateMatrix;
-        //circleMatrix *= circleTranslateMatrix;
+        // Works
+        Vector3 difference = circlePosition - otherPosition;
 
+        // Works
+        circlePosition = matrix.MultiplyPoint3x4(difference);
 
-
-
-        //circleMatrix *= otherRotationMatrix;
-        //circleMatrix *= otherTranslateMatrix;
-        //circleMatrix *= otherRotationInverseMatrix;
-        //circleMatrix *= otherTranslateInverseMatrix;
-
-
-
-        //circleTranslateMatrix *= otherTranslateMatrix;
-        //circleRotationMatrix *= otherRotationMatrix;
-
-        //circleMatrix *= otherMatrix;
-
-        //circlePosition = circleMatrix.GetColumn(3);
-        //Vector4 column = otherMatrix.GetColumn(3);
-        //Vector3 columnToVector3 = new Vector3(column.x, column.y, column.z);
-        //circlePosition = circlePosition + columnToVector3;
-
-        //circlePosition = otherMatrix.MultiplyPoint3x4(circlePosition);
-        //otherMatrix = otherMatrix.inverse;
-
-
-        //Vector2 left = new Vector2(other.leftBound, 0.0f);
-        //Vector2 right = new Vector2(other.rightBound, 0.0f);
-        //Vector2 top = new Vector2(0.0f, other.topBound);
-        //Vector2 bottom = new Vector2(0.0f, other.bottomBound);
-
-
-
-
-        //left = otherMatrix.MultiplyPoint3x4(left);
-        //right = otherMatrix.MultiplyPoint3x4(right);
-        //top = otherMatrix.MultiplyPoint3x4(top);
-        //bottom = otherMatrix.MultiplyPoint3x4(bottom);
-
-
-
+        // Works
         float nearestX = Mathf.Clamp(circlePosition.x, other.leftBound, other.rightBound);
         float nearestY = Mathf.Clamp(circlePosition.y, other.bottomBound, other.topBound);
-        float nearestX = 0.0f;
-        float nearestY = 0.0f;
 
         float deltaX = circlePosition.x - nearestX;
         float deltaY = circlePosition.y - nearestY;
 
-        Vector2 start = new Vector2(nearestX, nearestY);
+
+
+
+        // Get the position and create a translation matrix.
+        Vector3 position = other.particle.position;
+        Matrix4x4 translateMatrix = Matrix4x4.Translate(position);
+
+        // Get negative rotation. Create a rotation matrix and invert it.
+        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, -other.particle.rotation);
+        Matrix4x4 rotationMatrix = Matrix4x4.Rotate(rotation);
+        Matrix4x4 rotationInverseMatrix = rotationMatrix.inverse;
+
+        Vector3 nearestPoint = new Vector3(nearestX, nearestY, 0.0f);
+
+        // Create the model view matrix.
+        //Matrix4x4 matrixModel = translateMatrix.inverse * rotationMatrix.inverse;
+        //Matrix4x4 matrixModel = translateMatrix * rotationMatrix;
+        //Matrix4x4 matrixModel = translateMatrix.inverse * rotationMatrix;
+        Matrix4x4 matrixModel = translateMatrix * rotationMatrix.inverse;
+
+        nearestPoint = matrixModel.MultiplyPoint3x4(nearestPoint);
+
+
+
+
+
+
+        //Vector2 xRotation = new Vector2(Mathf.Cos(-other.particle.rotation), Mathf.Sin(-other.particle.rotation));
+        //Vector2 yRotation = new Vector2(-Mathf.Sin(-other.particle.rotation), Mathf.Cos(-other.particle.rotation));
+        //nearestPoint.x *= xRotation.x;
+        //nearestPoint.y *= yRotation.y;
+        ////deltaPoint = otherPosition - deltaPoint;
+        //Quaternion inverseRotation = Quaternion.Euler(0.0f, 0.0f, other.particle.rotation);
+        //Matrix4x4 inverseRotationMatrix = Matrix4x4.Rotate(inverseRotation);
+        //Matrix4x4 matrixDelta = inverseRotationMatrix.inverse;
+        //nearestPoint = matrixDelta.MultiplyVector(nearestPoint);
+
+
+
+
+
+
+
+
+        // Debug drawing.
+        Vector2 startOriginal = new Vector2(nearestX, nearestY);
+        Vector2 startTransform = new Vector2(nearestPoint.x, nearestPoint.y);
         Vector2 end = new Vector2(circlePosition.x, circlePosition.y);
 
-        Debug.DrawLine(start, end, Color.red);
+        Debug.DrawLine(startOriginal, end, Color.white);
+        Debug.DrawLine(startTransform, end, Color.red);
 
         return (deltaX * deltaX + deltaY * deltaY) <= (radius * radius);
-        //= otherMatrix.rotation.eulerAngles.z;
-
-
-
-
-
-
-
-
-        return false;
     }
 
 }

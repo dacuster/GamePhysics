@@ -6,14 +6,10 @@ using UnityEditor;
 public class ObjectBoundingBoxHull2D : CollisionHull2D
 {
     public Vector2 boundingBox;
-    //public float leftBound = 0.0f;
-    //public float rightBound = 0.0f;
-    //public float bottomBound = 0.0f;
-    //public float topBound = 0.0f;
-    public Vector2 bottomLeftCorner = Vector2.zero;
-    public Vector2 topLeftCorner = Vector2.zero;
-    public Vector2 bottomRightCorner = Vector2.zero;
-    public Vector2 topRightCorner = Vector2.zero;
+    public float leftBound = 0.0f;
+    public float rightBound = 0.0f;
+    public float bottomBound = 0.0f;
+    public float topBound = 0.0f;
     private void FixedUpdate()
     {
         CalculateBoundingBox();
@@ -76,25 +72,13 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
     }
     private void CalculateBoundingBox()
     {
-        float rotation = particle.rotation;
-        Vector2 position = particle.position;
+        // Create the edges based on the current position and the bounding box dimensions.
+        leftBound = particle.position.x - boundingBox.x * 0.5f;
+        rightBound = leftBound + boundingBox.x;
+        bottomBound = particle.position.y - boundingBox.y * 0.5f;
+        topBound = bottomBound + boundingBox.y;
 
-        Vector2 xRotation = new Vector2(Mathf.Cos(rotation), Mathf.Sin(rotation));
-        Vector2 yRotation = new Vector2(-Mathf.Sin(rotation), Mathf.Cos(rotation));
-
-        xRotation *= boundingBox.x * 0.5f;
-        yRotation *= boundingBox.y * 0.5f;
-
-        bottomLeftCorner = position - xRotation - yRotation;
-        bottomRightCorner = position + xRotation - yRotation;
-        topRightCorner = position + xRotation + yRotation;
-        topLeftCorner = position - xRotation + yRotation;
-
-        //leftBound = particle.position.x - boundingBox.x / 2.0f;
-        //rightBound = leftBound + boundingBox.x;
-        //bottomBound = particle.position.y - boundingBox.y / 2.0f;
-        //topBound = bottomBound + boundingBox.y;
-
+        // Used for drawing the edges in debug.
         //Vector3 bottomLineLeft = new Vector3(leftBound, bottomBound);
         //Vector3 bottomLineRight = new Vector3(rightBound, bottomBound);
         //Vector3 topLineLeft = new Vector3(leftBound, topBound);
@@ -104,14 +88,14 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         //Vector3 rightLineTop = new Vector3(rightBound, topBound);
         //Vector3 rightLineBottom = new Vector3(rightBound, bottomBound);
 
-        // Draw bottom line.
-        Debug.DrawLine(bottomLeftCorner, bottomRightCorner, Color.green);
-        // Draw top line
-        Debug.DrawLine(topLeftCorner, topRightCorner, Color.green);
-        // Draw left line.
-        Debug.DrawLine(bottomLeftCorner, topLeftCorner, Color.green);
-        // Draw right line
-        Debug.DrawLine(bottomRightCorner, topRightCorner, Color.green);
+        //// Draw bottom line.
+        //Debug.DrawLine(bottomLineLeft, bottomLineRight, Color.green);
+        //// Draw top line
+        //Debug.DrawLine(topLineLeft, topLineRight, Color.green);
+        //// Draw left line.
+        //Debug.DrawLine(leftLineTop, leftLineBottom, Color.green);
+        //// Draw right line
+        //Debug.DrawLine(rightLineTop, rightLineBottom, Color.green);
 
         return;
     }
@@ -122,11 +106,33 @@ public class ObjectBoxEditor : Editor
 {
     private void OnSceneGUI()
     {
+        // Get the hull associated with this object.
         ObjectBoundingBoxHull2D boxHull = (ObjectBoundingBoxHull2D)target;
 
+        // Get the position and create a translation matrix.
+        Vector3 position = boxHull.particle.position;
+        Matrix4x4 translateMatrix = Matrix4x4.Translate(position);
+
+        // Get negative rotation. Create a rotation matrix and invert it.
+        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, -boxHull.particle.rotation);
+        Matrix4x4 rotationMatrix = Matrix4x4.Rotate(rotation);
+        Matrix4x4 rotationInverseMatrix = rotationMatrix.inverse;
+
+        // Create the model view matrix.
+        Matrix4x4 matrix = translateMatrix * rotationInverseMatrix;
+
+        // Muliply position by inverse model view matrix to position and rotate properly.
+        position = matrix.inverse.MultiplyPoint3x4(position);
+
+        // Create a color.
         Color purple = CreateColor(112.0f, 0.0f, 255.0f);
+
+        // Change gizmo drawing color.
         Handles.color = purple;
-        Handles.DrawWireCube(boxHull.particle.position, boxHull.boundingBox);
+        // Change the gizmo drawing matrix.
+        Handles.matrix = matrix;
+        // Draw the cube.
+        Handles.DrawWireCube(position, boxHull.boundingBox);
     }
 
     private Color CreateColor(float r, float g, float b)
