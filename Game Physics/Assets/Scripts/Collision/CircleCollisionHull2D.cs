@@ -201,5 +201,11 @@ public class CircleEditor : Editor
 
         Handles.color = new Color(112.0f / 255.0f, 0, 255.0f / 255.0f);
         Handles.DrawWireDisc(circleHull.particle.position, Vector3.back, circleHull.radius);
+
+        if (!Application.isPlaying)
+        {
+            circleHull.particle.position = circleHull.transform.position;
+            circleHull.particle.rotation = circleHull.transform.rotation.eulerAngles.z;
+        }
     }
 }
