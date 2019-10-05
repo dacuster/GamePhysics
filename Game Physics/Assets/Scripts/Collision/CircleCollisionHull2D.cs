@@ -29,7 +29,11 @@ public class CircleCollisionHull2D : CollisionHull2D
 
             if (hull.Type == CollisionHullType2D.hull_circle)
             {
-                TestCollisionVsCircle(hull as CircleCollisionHull2D);
+                if (TestCollisionVsCircle(hull as CircleCollisionHull2D))
+                {
+                    GetComponent<MeshRenderer>().material.color = Color.red;
+                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
             }
             else if (hull.Type == CollisionHullType2D.hull_aabb)
             {
@@ -41,7 +45,11 @@ public class CircleCollisionHull2D : CollisionHull2D
             }
             else if (hull.Type == CollisionHullType2D.hull_obb)
             {
-                TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D);
+                if (TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D))
+                {
+                    GetComponent<MeshRenderer>().material.color = Color.red;
+                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
             }
         }
     }
@@ -81,18 +89,17 @@ public class CircleCollisionHull2D : CollisionHull2D
         // 5. Calculate difference between bounding box point and circle edge.
         // 6. Test difference with radius. (Return true of less than radius)
 
-        Vector2 otherPosition = other.particle.position;
-        Vector2 boundingBox = other.boundingBox;
-        float leftBound = otherPosition.x - boundingBox.x / 2.0f;
-        float rightBound = leftBound + boundingBox.x;
-        float bottomBound = otherPosition.y - boundingBox.y / 2.0f;
-        float topBound = bottomBound + boundingBox.y;
 
-        float nearestX = Mathf.Max(leftBound, Mathf.Min(particle.position.x, rightBound));
-        float nearestY = Mathf.Max(bottomBound, Mathf.Min(particle.position.y, topBound));
+        float nearestX = Mathf.Clamp(particle.position.x, other.leftBound, other.rightBound);
+        float nearestY = Mathf.Clamp(particle.position.y, other.bottomBound, other.topBound);
 
         float deltaX = particle.position.x - nearestX;
-        float deltaY = particle.position.y - nearestY;        
+        float deltaY = particle.position.y - nearestY;
+
+        Vector2 start = new Vector2(nearestX, nearestY);
+        Vector2 end = new Vector2(particle.position.x, particle.position.y);
+
+        Debug.DrawLine(start, end, Color.red);
 
         return (deltaX * deltaX + deltaY * deltaY) <= (radius * radius);
     }
@@ -102,6 +109,107 @@ public class CircleCollisionHull2D : CollisionHull2D
         // same as above, but first...
         // transform circle position by multiplying by box world matrix inverse
         // 1. .....
+
+        //Vector3 circlePosition = particle.position;
+        //Vector3 circleRotation = new Vector3(0.0f, 0.0f, particle.rotation);
+        //Matrix4x4 inverseOther = other.transform.worldToLocalMatrix;
+        //inverseOther = inverseOther.inverse;
+        //particle.rotation = inverseOther.rotation.eulerAngles.z;
+        //inverseOther.transpose.MultiplyPoint3x4(particle.position);
+        //inverseOther.MultiplyPoint(circlePosition);
+        //particle.position = circleRotation;
+
+
+
+        Vector3 circlePosition = particle.position;
+        Vector3 circleScale = particle.transform.localScale;
+        Quaternion circleRotation = Quaternion.Euler(0.0f, 0.0f, particle.rotation);
+
+        Vector3 otherPosition = other.particle.position;
+        Vector3 otherScale = other.particle.transform.localScale;
+        Quaternion otherRotation = Quaternion.Euler(0.0f, 0.0f, other.particle.rotation);
+
+        Matrix4x4 otherMatrix = Matrix4x4.TRS(otherPosition, otherRotation, otherScale);
+        //otherMatrix = otherMatrix.inverse;
+        Matrix4x4 circleMatrix = Matrix4x4.TRS(circlePosition, circleRotation, circleScale);
+        //Matrix4x4 otherTranslateMatrix = Matrix4x4.Translate(otherPosition);
+        //Matrix4x4 otherRotationMatrix = Matrix4x4.Rotate(otherRotation);
+        //Matrix4x4 otherTranslateInverseMatrix = otherTranslateMatrix.inverse;
+        //Matrix4x4 otherRotationInverseMatrix = otherRotationMatrix.inverse;
+
+        //Matrix4x4 circleTranslateMatrix = Matrix4x4.Translate(circlePosition);
+        //Matrix4x4 circleRotationMatrix = Matrix4x4.Rotate(circleRotation);
+        //Matrix4x4 circleTranslateInverseMatrix = circleTranslateMatrix.inverse;
+        //Matrix4x4 circleRotationInverseMatrix = circleRotationMatrix.inverse;
+
+
+        //circleMatrix *= circleTranslateInverseMatrix;
+        //circleMatrix *= otherTranslateInverseMatrix;
+        //circleMatrix *= otherRotationMatrix;
+        //circleMatrix *= otherTranslateMatrix;
+        //circleMatrix *= circleTranslateMatrix;
+
+
+
+
+        //circleMatrix *= otherRotationMatrix;
+        //circleMatrix *= otherTranslateMatrix;
+        //circleMatrix *= otherRotationInverseMatrix;
+        //circleMatrix *= otherTranslateInverseMatrix;
+
+
+
+        //circleTranslateMatrix *= otherTranslateMatrix;
+        //circleRotationMatrix *= otherRotationMatrix;
+
+        //circleMatrix *= otherMatrix;
+
+        //circlePosition = circleMatrix.GetColumn(3);
+        //Vector4 column = otherMatrix.GetColumn(3);
+        //Vector3 columnToVector3 = new Vector3(column.x, column.y, column.z);
+        //circlePosition = circlePosition + columnToVector3;
+
+        //circlePosition = otherMatrix.MultiplyPoint3x4(circlePosition);
+        //otherMatrix = otherMatrix.inverse;
+
+
+        //Vector2 left = new Vector2(other.leftBound, 0.0f);
+        //Vector2 right = new Vector2(other.rightBound, 0.0f);
+        //Vector2 top = new Vector2(0.0f, other.topBound);
+        //Vector2 bottom = new Vector2(0.0f, other.bottomBound);
+
+
+
+
+        //left = otherMatrix.MultiplyPoint3x4(left);
+        //right = otherMatrix.MultiplyPoint3x4(right);
+        //top = otherMatrix.MultiplyPoint3x4(top);
+        //bottom = otherMatrix.MultiplyPoint3x4(bottom);
+
+
+
+        float nearestX = Mathf.Clamp(circlePosition.x, other.leftBound, other.rightBound);
+        float nearestY = Mathf.Clamp(circlePosition.y, other.bottomBound, other.topBound);
+        float nearestX = 0.0f;
+        float nearestY = 0.0f;
+
+        float deltaX = circlePosition.x - nearestX;
+        float deltaY = circlePosition.y - nearestY;
+
+        Vector2 start = new Vector2(nearestX, nearestY);
+        Vector2 end = new Vector2(circlePosition.x, circlePosition.y);
+
+        Debug.DrawLine(start, end, Color.red);
+
+        return (deltaX * deltaX + deltaY * deltaY) <= (radius * radius);
+        //= otherMatrix.rotation.eulerAngles.z;
+
+
+
+
+
+
+
 
         return false;
     }

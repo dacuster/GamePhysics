@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.4465782, g: 0.49641252, b: 0.5748167, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -131,7 +131,6 @@ GameObject:
   - component: {fileID: 63118094}
   - component: {fileID: 63118093}
   - component: {fileID: 63118092}
-  - component: {fileID: 63118091}
   - component: {fileID: 63118090}
   - component: {fileID: 63118095}
   m_Layer: 0
@@ -188,19 +187,6 @@ MonoBehaviour:
   dragActive: 0
   springActive: 0
   dampingSpringActive: 0
---- !u!135 &63118091
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 63118089}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &63118092
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -273,7 +259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 221b840dd6effc046a3e30516d64fff4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  particle: {fileID: 0}
+  particle: {fileID: 63118090}
   radius: 0.5
 --- !u!1 &195726218
 GameObject:
@@ -293,7 +279,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!135 &195726219
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -378,7 +364,6 @@ GameObject:
   - component: {fileID: 342896578}
   - component: {fileID: 342896577}
   - component: {fileID: 342896576}
-  - component: {fileID: 342896575}
   - component: {fileID: 342896574}
   - component: {fileID: 342896579}
   m_Layer: 0
@@ -400,21 +385,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb97927667404c84694d9793fef032f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  particle: {fileID: 0}
+  particle: {fileID: 342896579}
   boundingBox: {x: 1, y: 1}
---- !u!65 &342896575
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 342896573}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  bottomLeftCorner: {x: 0, y: 0}
+  topLeftCorner: {x: 0, y: 0}
+  bottomRightCorner: {x: 0, y: 0}
+  topRightCorner: {x: 0, y: 0}
 --- !u!23 &342896576
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -468,13 +444,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 342896573}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 1, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0.38268343, w: 0.92387956}
+  m_LocalPosition: {x: 3, y: 4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 45}
 --- !u!114 &342896579
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -487,10 +463,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00560fdb33bd0774c9d0a20aa5ff72ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  position: {x: 1, y: 1}
+  position: {x: 3, y: 4}
   velocity: {x: 0, y: 0}
   acceleration: {x: 0, y: 0}
-  rotation: 0
+  rotation: 45
   angularVelocity: 0
   angularAcceleration: 0
   positionType: 0
@@ -728,7 +704,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00560fdb33bd0774c9d0a20aa5ff72ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  position: {x: -1, y: 3}
+  position: {x: 1, y: 1}
   velocity: {x: 0, y: 0}
   acceleration: {x: 0, y: 0}
   rotation: 0
@@ -817,7 +793,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1238093406}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1, y: 3, z: 0}
+  m_LocalPosition: {x: 1, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -835,7 +811,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 221b840dd6effc046a3e30516d64fff4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  particle: {fileID: 0}
+  particle: {fileID: 1238093407}
   radius: 0.5
 --- !u!1 &1373288494
 GameObject:
@@ -848,7 +824,6 @@ GameObject:
   - component: {fileID: 1373288499}
   - component: {fileID: 1373288498}
   - component: {fileID: 1373288497}
-  - component: {fileID: 1373288496}
   - component: {fileID: 1373288495}
   - component: {fileID: 1373288500}
   m_Layer: 0
@@ -857,7 +832,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1373288495
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -905,19 +880,6 @@ MonoBehaviour:
   dragActive: 0
   springActive: 0
   dampingSpringActive: 0
---- !u!65 &1373288496
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1373288494}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1373288497
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -990,5 +952,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d483297de165cb9439d2a5d6fda068a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  particle: {fileID: 0}
+  particle: {fileID: 1373288495}
   boundingBox: {x: 1, y: 1}
+  leftBound: 0
+  rightBound: 0
+  bottomBound: 0
+  topBound: 0

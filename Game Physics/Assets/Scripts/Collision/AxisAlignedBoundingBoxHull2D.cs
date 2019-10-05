@@ -6,9 +6,17 @@ using UnityEditor;
 public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
 {
     public Vector2 boundingBox;
+    public float leftBound = 0.0f;
+    public float rightBound = 0.0f;
+    public float bottomBound = 0.0f;
+    public float topBound = 0.0f;
+
 
     private void FixedUpdate()
     {
+        // Calculate the bounding box edges.
+        CalculateBoundingBox();
+
         GetComponent<MeshRenderer>().material.color = Color.white;
 
         foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
@@ -20,7 +28,11 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
 
             if (hull.Type == CollisionHullType2D.hull_circle)
             {
-                TestCollisionVsCircle(hull as CircleCollisionHull2D);
+                if (TestCollisionVsCircle(hull as CircleCollisionHull2D))
+                {
+                    GetComponent<MeshRenderer>().material.color = Color.red;
+                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
             }
             else if (hull.Type == CollisionHullType2D.hull_aabb)
             {
@@ -32,7 +44,11 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
             }
             else if (hull.Type == CollisionHullType2D.hull_obb)
             {
-                TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D);
+                if (TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D))
+                {
+                    GetComponent<MeshRenderer>().material.color = Color.red;
+                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                }
             }
         }
     }
@@ -49,6 +65,11 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
     {
         // for each dimension, max extent of A >= min extent of B
         // 1. .....
+
+        if (leftBound <= other.rightBound && rightBound >= other.leftBound && topBound >= other.bottomBound && bottomBound <= other.topBound)
+        {
+            return true;
+        }
 
 
         return false;
@@ -67,15 +88,10 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
 
     private void CalculateBoundingBox()
     {
-        // Calculate width and height of bounding box.
-        //width = transform.localScale.x;
-        //height = transform.localScale.y;
-
-        //// Calculate positions of each bounding box wall.
-        //left = particle.position.x - width / 2;
-        //right = left + width;
-        //bottom = particle.position.y - height / 2;
-        //top = bottom + height;
+        leftBound = particle.position.x - boundingBox.x * 0.5f;
+        rightBound = leftBound + boundingBox.x;
+        bottomBound = particle.position.y - boundingBox.y * 0.5f;
+        topBound = bottomBound + boundingBox.y;
 
         return;
     }
