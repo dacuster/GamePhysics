@@ -18,6 +18,9 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
 
     private void FixedUpdate()
     {
+        // Update the bounding box.
+        CalculateBoundingBoxAxis();
+
         // Set the mesh color of this object to white. (No collision)
         GetComponent<MeshRenderer>().material.color = Color.white;
 
@@ -78,7 +81,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // for each dimension, max extent of A >= min extent of B
 
         // Compare the minimum and maximum extents of the bounding box for this object and the other object.
-        if (xAxisBound.x <= other.xAxisBound.y && xAxisBound.y >= other.xAxisBound.x && yAxisBound.y >= other.yAxisBound.x && yAxisBound.x <= other.yAxisBound.y)
+        if (X_AxisBound.x <= other.X_AxisBound.y && X_AxisBound.y >= other.X_AxisBound.x && Y_AxisBound.y >= other.Y_AxisBound.x && Y_AxisBound.x <= other.Y_AxisBound.y)
         {
             // Collision.
             return true;
@@ -96,21 +99,31 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // then, multiply by OBB inverse matrix, do test again
         // 1. .....
 
-        if (xAxisBound.x <= other.X_AxisBound.y && xAxisBound.y >= other.X_AxisBound.x && yAxisBound.y >= other.Y_AxisBound.x && yAxisBound.x <= other.Y_AxisBound.y)
+        if (X_AxisBound.x <= other.X_AxisBound.y && X_AxisBound.y >= other.X_AxisBound.x && Y_AxisBound.y >= other.Y_AxisBound.x && Y_AxisBound.x <= other.Y_AxisBound.y)
         {
+            Vector2 _xAxisBound = X_AxisBound;
+            Vector2 _yAxisBound = Y_AxisBound;
 
-            return true;
+            other.CalculateBoundingBoxAxis(other.Particle, other.BoundingBox, ref _xAxisBound, ref _yAxisBound);
+
+            if (_xAxisBound.x <= other.X_AxisBound.y && _xAxisBound.y >= other.X_AxisBound.x && _yAxisBound.y >= other.Y_AxisBound.x && _yAxisBound.x <= other.Y_AxisBound.y)
+            {
+                // Collision.
+                return true;
+            }
         }
 
         return false;
     }
 
     // Calculate the bounding box axis.
-    private void CalculateBoundingBoxAxis()
+    public void CalculateBoundingBoxAxis()
     {
-        xAxisBound.x = Particle.Position.x - boundingBox.x * 0.5f;
+        // Get the particle for use when game is not running.
+        Particle2D particle = GetComponent<Particle2D>();
+        xAxisBound.x = particle.Position.x - boundingBox.x * 0.5f;
         xAxisBound.y = xAxisBound.x + boundingBox.x;
-        yAxisBound.x = Particle.Position.y - boundingBox.y * 0.5f;
+        yAxisBound.x = particle.Position.y - boundingBox.y * 0.5f;
         yAxisBound.y = yAxisBound.x + boundingBox.y;
 
         return;
@@ -157,20 +170,26 @@ public class AxisBoxEditor : Editor
         // Get the box hull associated with this object.
         AxisAlignedBoundingBoxHull2D boxHull = (AxisAlignedBoundingBoxHull2D)target;
 
+        // Get the particle component since it isn't loaded until runtime. (For use in scene editor at all times.)
+        Particle2D particle = boxHull.GetComponent<Particle2D>();
+
         // Create a color.
         Color purple = CreateColor(112.0f, 0.0f, 255.0f);
 
         // Change gizmo drawing color.
         Handles.color = purple;
 
+        // Update bounding box axis.
+        boxHull.CalculateBoundingBoxAxis();
+
         // Draw a cube to represent the collider on this object.
-        Handles.DrawWireCube(boxHull.Particle.Position, boxHull.BoundingBox);
+        Handles.DrawWireCube(particle.Position, boxHull.BoundingBox);
 
         // Update Particle2D position and rotation based on the Transform component. Only works when the editor isn't in play mode.
         if (!Application.isPlaying)
         {
-            boxHull.Particle.Position = boxHull.transform.position;
-            boxHull.Particle.Rotation = boxHull.transform.rotation.eulerAngles.z;
+            particle.Position = boxHull.transform.position;
+            particle.Rotation = boxHull.transform.rotation.eulerAngles.z;
         }
     }
 

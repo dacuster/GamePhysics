@@ -9,8 +9,9 @@ public class CircleCollisionHull2D : CollisionHull2D
     public CircleCollisionHull2D() : base(CollisionHullType2D.hull_circle) { }
 
     // Apply range as positive value.
+    [SerializeField]
     [Range(0.0f, 100.0f)]
-    public float radius;
+    private float radius;
 
     private void FixedUpdate()
     {
@@ -74,7 +75,7 @@ public class CircleCollisionHull2D : CollisionHull2D
         float distanceSquared = differenceCenters.sqrMagnitude;
 
         // Get the radius of each circle. Calculate the sum of both.
-        float radiiSum = radius + other.radius;
+        float radiiSum = Radius + other.Radius;
 
         // Square the sum of the radii.
         float radiiSumSquared = radiiSum * radiiSum;
@@ -107,7 +108,7 @@ public class CircleCollisionHull2D : CollisionHull2D
         Debug.DrawLine(start, end, Color.red);
 
         // Check if the sum squared of the difference from the nearest point is less than or equal to the radius squared.
-        return (deltaX * deltaX + deltaY * deltaY) <= (radius * radius);
+        return (deltaX * deltaX + deltaY * deltaY) <= (Radius * Radius);
     }
 
     // Check for collision circle vs OBB.
@@ -122,7 +123,7 @@ public class CircleCollisionHull2D : CollisionHull2D
         // Get the local to world matrix of the other object.
         Matrix4x4 matrix = other.LocalToWorld();
 
-        // Transform the circle position.
+        // Transform the circle position by the other object's local space.
         circlePosition = matrix.MultiplyPoint3x4(circlePosition);
 
         // Clamp the circle to the other object.
@@ -136,16 +137,32 @@ public class CircleCollisionHull2D : CollisionHull2D
         // Create a vector of the nearest position for matrix multiplication.
         Vector3 nearestPosition = new Vector2(nearestX, nearestY);
 
-        // Muliply position by inverse model view matrix to position and rotate properly.
-        nearestPosition = matrix.inverse.MultiplyPoint3x4(nearestPosition);
+        // Bring nearest position on the other object to its local space.
+        nearestPosition = other.WorldToLocal().MultiplyPoint3x4(nearestPosition);
 
         // Debug drawing.
         Vector2 start = new Vector2(nearestPosition.x, nearestPosition.y);
-        Vector2 end = new Vector2(circlePosition.x, circlePosition.y);
+        Vector2 end = new Vector2(Particle.Position.x, Particle.Position.y);
         Debug.DrawLine(start, end, Color.red);
 
         // Check if the nearest point is colliding with the circle.
-        return (deltaX * deltaX + deltaY * deltaY) <= (radius * radius);
+        return (deltaX * deltaX + deltaY * deltaY) <= (Radius * Radius);
+    }
+
+    // Radius Accessor
+    public float Radius
+    {
+        get
+        {
+            return radius;
+        }
+
+        set
+        {
+            radius = value;
+
+            return;
+        }
     }
 
 }
@@ -157,6 +174,9 @@ public class CircleEditor : Editor
         // Get the circle hull attached to this script.
         CircleCollisionHull2D circleHull = (CircleCollisionHull2D)target;
 
+        // Get the particle component since it isn't loaded until runtime. (For use in scene editor at all times.)
+        Particle2D particle = circleHull.GetComponent<Particle2D>();
+
         // Create a color.
         Color purple = CreateColor(112.0f, 0.0f, 255.0f);
 
@@ -164,13 +184,13 @@ public class CircleEditor : Editor
         Handles.color = purple;
 
         // Draw a disc to represent the collider on this circle.
-        Handles.DrawWireDisc(circleHull.Particle.Position, Vector3.back, circleHull.radius);
+        Handles.DrawWireDisc(particle.Position, Vector3.back, circleHull.Radius);
 
         // Update Particle2D position and rotation based on the Transform component. Only works when the editor isn't in play mode.
         if (!Application.isPlaying)
         {
-            circleHull.Particle.Position = circleHull.transform.position;
-            circleHull.Particle.Rotation = circleHull.transform.rotation.eulerAngles.z;
+            particle.Position = circleHull.transform.position;
+            particle.Rotation = circleHull.transform.rotation.eulerAngles.z;
         }
     }
 

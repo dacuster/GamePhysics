@@ -18,6 +18,9 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
 
     private void FixedUpdate()
     {
+        // Update bounding box axis.
+        CalculateBoundingBoxAxis();
+
         // Set the mesh color of this object to white. (No collision)
         GetComponent<MeshRenderer>().material.color = Color.white;
 
@@ -90,12 +93,27 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
     }
 
     // Calculate the bounding box axis.
-    private void CalculateBoundingBox()
+    public void CalculateBoundingBoxAxis()
     {
-        xAxisBound.x = Particle.Position.x - boundingBox.x * 0.5f;
-        xAxisBound.y = xAxisBound.x + boundingBox.x;
-        yAxisBound.x = Particle.Position.y - boundingBox.y * 0.5f;
-        yAxisBound.y = yAxisBound.x + boundingBox.y;
+        // Get the particle for use when game is not running.
+        Particle2D particle = GetComponent<Particle2D>();
+        xAxisBound.x = particle.Position.x - BoundingBox.x * 0.5f;
+        xAxisBound.y = xAxisBound.x + BoundingBox.x;
+        yAxisBound.x = particle.Position.y - BoundingBox.y * 0.5f;
+        yAxisBound.y = yAxisBound.x + BoundingBox.y;
+
+        return;
+    }
+
+    // Calculate the bounding box axis.
+    public void CalculateBoundingBoxAxis(Particle2D particle, Vector2 boundingBox, ref Vector2 _xAxisBound, ref Vector2 _yAxisBound)
+    {
+        // Bring the particle to world space of this object.
+        Vector3 position = WorldToLocal().MultiplyPoint3x4(particle.Position);
+        _xAxisBound.x = position.x - boundingBox.x * 0.5f;
+        _xAxisBound.y = _xAxisBound.x + boundingBox.x;
+        _yAxisBound.x = position.y - boundingBox.y * 0.5f;
+        _yAxisBound.y = _yAxisBound.x + boundingBox.y;
 
         return;
     }
@@ -132,37 +150,62 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         }
     }
 
-    // Transform the bounding x-axis.
-    public Vector2 LocalToWorldAxisX()
-    {
-        return LocalToWorld().MultiplyPoint3x4(xAxisBound);
-    }
-
-    // Transform the bounding y-axis.
-    public Vector2 LocalToWorldAxisY()
-    {
-        return LocalToWorld().MultiplyPoint3x4(yAxisBound);
-    }
-
     // Get the local to world transformation.
     public Matrix4x4 LocalToWorld()
     {
+        // Particle needed for scene editor when game isn't running.
+        Particle2D particle = GetComponent<Particle2D>();
+
         // Get the position of this particle.
-        Vector3 position = Particle.Position;
+        Vector3 position = particle.Position;
+
         // Build a quaternion based on the euler rotation of this particle.
-        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, Particle.Rotation);
+        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, particle.Rotation);
 
         // Translation matrix of this particle.
         Matrix4x4 translate = Matrix4x4.Translate(position);
+
         // Invert the translation.
         Matrix4x4 translateInverse = translate.inverse;
+
         // Rotation matrix of this particle.
         Matrix4x4 rotate = Matrix4x4.Rotate(rotation);
+
         // Invert the rotation.
         Matrix4x4 rotateInverse = rotate.inverse;
 
         // Model matrix to convert from local to world space.
         Matrix4x4 model = translate * rotateInverse * translateInverse;
+
+        return model;
+    }
+
+    // Get the world to local transformation.
+    public Matrix4x4 WorldToLocal()
+    {
+        // Particle needed for scene editor when game isn't running.
+        Particle2D particle = GetComponent<Particle2D>();
+
+        // Get the position of this particle.
+        Vector3 position = particle.Position;
+
+        // Build a quaternion based on the euler rotation of this particle.
+        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, particle.Rotation);
+
+        // Translation matrix of this particle.
+        Matrix4x4 translate = Matrix4x4.Translate(position);
+
+        // Invert the translation.
+        Matrix4x4 translateInverse = translate.inverse;
+
+        // Rotation matrix of this particle.
+        Matrix4x4 rotate = Matrix4x4.Rotate(rotation);
+
+        // Invert the rotation.
+        Matrix4x4 rotateInverse = rotate.inverse;
+
+        // Model matrix to convert from local to world space.
+        Matrix4x4 model = translate * rotate * translateInverse;
 
         return model;
     }
@@ -176,11 +219,14 @@ public class ObjectBoxEditor : Editor
         // Get the box hull associated with this object.
         ObjectBoundingBoxHull2D boxHull = (ObjectBoundingBoxHull2D)target;
 
+        // Get the particle component since it isn't loaded until runtime. (For use in scene editor at all times.)
+        Particle2D particle = boxHull.GetComponent<Particle2D>();
+
         // Get the position of the box hull.
-        Vector3 position = boxHull.Particle.Position;
+        Vector3 position = particle.Position;
 
         // Get the world matrix of the box hull.
-        Matrix4x4 matrix = boxHull.LocalToWorld();
+        Matrix4x4 matrix = boxHull.WorldToLocal();
 
         // Transform position to world space of the box hull.
         position = matrix.MultiplyPoint3x4(position);
@@ -194,14 +240,27 @@ public class ObjectBoxEditor : Editor
         // Change the gizmo drawing matrix.
         Handles.matrix = matrix;
 
+        // Update bounding box axis.
+        boxHull.CalculateBoundingBoxAxis();
+
+        // Get the bounds position for each box edge.
+        Vector3 leftBound = new Vector3(boxHull.X_AxisBound.x, particle.Position.y);
+        Vector3 rightBound = new Vector3(boxHull.X_AxisBound.y, particle.Position.y);
+        Vector3 bottomBound = new Vector3(particle.Position.x, boxHull.Y_AxisBound.x);
+        Vector3 topBound = new Vector3(particle.Position.x, boxHull.Y_AxisBound.y);
+
+        // Draw the axis for the bounds. (Rotated automatically by the new handles matrix. WorldToLocal)
+        Handles.DrawLine(leftBound, rightBound);
+        Handles.DrawLine(bottomBound, topBound);
+
         // Draw a cube to represent the collider on this object.
         Handles.DrawWireCube(position, boxHull.BoundingBox);
 
         // Update Particle2D position and rotation based on the Transform component. Only works when the editor isn't in play mode.
         if (!Application.isPlaying)
         {
-            boxHull.Particle.Position = boxHull.transform.position;
-            boxHull.Particle.Rotation = boxHull.transform.rotation.eulerAngles.z;
+            particle.Position = boxHull.transform.position;
+            particle.Rotation = boxHull.transform.rotation.eulerAngles.z;
         }
     }
 
