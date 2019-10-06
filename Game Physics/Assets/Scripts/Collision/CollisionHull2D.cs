@@ -5,6 +5,22 @@ using UnityEngine;
 // Abstract prevent anything from instantiating it.
 public abstract class CollisionHull2D : MonoBehaviour
 {
+    // TODO: Comment for lab 5.
+    public struct Contact
+    {
+        Vector2 point;
+        Vector2 normal;
+        float restitution;
+    }
+
+    public CollisionHull2D a = null, b = null;
+    public Contact[] contact = new Contact[4];
+    public int contactCount = 0;
+    public bool status = false;
+
+    public Vector2 closingVelocity;
+    // END TODO
+
     // Different types of collision hulls.
     public enum CollisionHullType2D
     {
@@ -12,7 +28,6 @@ public abstract class CollisionHull2D : MonoBehaviour
         hull_aabb,
         hull_obb
     }
-
 
     // Constructor.
     protected CollisionHull2D(CollisionHullType2D type)
@@ -31,7 +46,7 @@ public abstract class CollisionHull2D : MonoBehaviour
         return;
     }
 
-    public static bool TestCollision(CollisionHull2D a, CollisionHull2D b)
+    public static bool TestCollision(CollisionHull2D a, CollisionHull2D b, ref Collision c)
     {		
         return false;
     }
@@ -41,11 +56,11 @@ public abstract class CollisionHull2D : MonoBehaviour
     ********************************/
 
     // Check collision of this vs circle.
-    public abstract bool TestCollisionVsCircle(CircleCollisionHull2D other);
+    public abstract bool TestCollisionVsCircle(CircleCollisionHull2D other, ref Collision c);
     // Check collision of this vs AABB.
-    public abstract bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull2D other);
+    public abstract bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull2D other, ref Collision c);
     // Check collision of this vs OBB.
-    public abstract bool TestCollisionVsOBB(ObjectBoundingBoxHull2D other);
+    public abstract bool TestCollisionVsOBB(ObjectBoundingBoxHull2D other, ref Collision c);
 
     // Particle accessor.
     public Particle2D Particle { get; set; }

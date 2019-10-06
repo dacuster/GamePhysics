@@ -27,6 +27,9 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // Check for collision with all types of collision hulls currently in the game.
         foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
         {
+            // TODO: Properly implement.
+            Collision collision = new Collision();
+
             // Don't check collision with itself.
             if (hull == this)
             {
@@ -36,7 +39,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
             if (hull.Type == CollisionHullType2D.hull_circle)
             {
                 // Check for collision vs circle.
-                if (TestCollisionVsCircle(hull as CircleCollisionHull2D))
+                if (TestCollisionVsCircle(hull as CircleCollisionHull2D, ref collision))
                 {
                     // Change the mesh color of both colliding objects.
                     GetComponent<MeshRenderer>().material.color = Color.red;
@@ -47,7 +50,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
             else if (hull.Type == CollisionHullType2D.hull_aabb)
             {
                 // Check collision vs AABB.
-                if (TestCollisionVsAABB(hull as AxisAlignedBoundingBoxHull2D))
+                if (TestCollisionVsAABB(hull as AxisAlignedBoundingBoxHull2D, ref collision))
                 {
                     // Change the mesh color of both colliding objects.
                     GetComponent<MeshRenderer>().material.color = Color.red;
@@ -58,7 +61,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
             else if (hull.Type == CollisionHullType2D.hull_obb)
             {
                 // Check collision vs OBB.
-                if (TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D))
+                if (TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D, ref collision))
                 {
                     // Change the mesh color of both colliding objects.
                     GetComponent<MeshRenderer>().material.color = Color.red;
@@ -69,14 +72,14 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
     }
 
     // Check for collision AABB vs circle.
-    public override bool TestCollisionVsCircle(CircleCollisionHull2D other)
+    public override bool TestCollisionVsCircle(CircleCollisionHull2D other, ref Collision c)
     {
         // Perform check with circle. (Algorithm implemented there already).
-        return other.TestCollisionVsAABB(this);
+        return other.TestCollisionVsAABB(this, ref c);
     }
 
     // Check for collision AABB vs AABB.
-    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull2D other)
+    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull2D other, ref Collision c)
     {
         // for each dimension, max extent of A >= min extent of B
 
@@ -92,7 +95,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
     }
 
     // Check for collision AABB vs OBB.
-    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull2D other)
+    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull2D other, ref Collision c)
     {
         // same as above twice
         // first, test AABB vs max extents of OBB
