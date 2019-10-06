@@ -97,16 +97,26 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // same as above twice
         // first, test AABB vs max extents of OBB
         // then, multiply by OBB inverse matrix, do test again
-        // 1. .....
 
-        if (X_AxisBound.x <= other.X_AxisBound.y && X_AxisBound.y >= other.X_AxisBound.x && Y_AxisBound.y >= other.Y_AxisBound.x && Y_AxisBound.x <= other.Y_AxisBound.y)
+        // OBB max extends
+        Vector2 _xAxisBoundOBB = other.X_AxisBound;
+        Vector2 _yAxisBoundOBB = other.Y_AxisBound;
+
+        // Transform the entends to OBB world space.
+        other.CalculateBoundingBoxWorld(ref _xAxisBoundOBB, ref _yAxisBoundOBB);
+
+        // Check if the extends for the AABB are colliding with the extends for the OBB in OBB world space.
+        if (X_AxisBound.x <= _xAxisBoundOBB.y && X_AxisBound.y >= _xAxisBoundOBB.x && Y_AxisBound.y >= _yAxisBoundOBB.x && Y_AxisBound.x <= _yAxisBoundOBB.y)
         {
-            Vector2 _xAxisBound = X_AxisBound;
-            Vector2 _yAxisBound = Y_AxisBound;
+            // AABB max extends
+            Vector2 _xAxisBoundAABB = X_AxisBound;
+            Vector2 _yAxisBoundAABB = Y_AxisBound;
 
-            other.CalculateBoundingBoxAxis(other.Particle, other.BoundingBox, ref _xAxisBound, ref _yAxisBound);
+            // Transform the entends to OBB local space.
+            other.CalculateBoundingBoxWorld(ref _xAxisBoundAABB, ref _yAxisBoundAABB);
 
-            if (_xAxisBound.x <= other.X_AxisBound.y && _xAxisBound.y >= other.X_AxisBound.x && _yAxisBound.y >= other.Y_AxisBound.x && _yAxisBound.x <= other.Y_AxisBound.y)
+            // Check if the extends for the AABB in OBB local space are colliding with the extends for the OBB in OBB world space.
+            if (_xAxisBoundAABB.x <= other.X_AxisBound.y && _xAxisBoundAABB.y >= other.X_AxisBound.x && _yAxisBoundAABB.y >= other.Y_AxisBound.x && _yAxisBoundAABB.x <= other.Y_AxisBound.y)
             {
                 // Collision.
                 return true;
