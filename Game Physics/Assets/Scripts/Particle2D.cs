@@ -4,243 +4,330 @@ using UnityEngine;
 
 public class Particle2D : MonoBehaviour
 {
-    /*
-     *  Lab 1 Step 1
-     *  Define particle variables.
-     */
-    [Header("Particle")]
-    public Vector2 position = Vector2.zero;
-    [SerializeField]
-    private Vector2 velocity = Vector2.right;
-    [SerializeField]
-    private Vector2 acceleration = Vector2.zero;
+    /***********************************************
+    **  Lab 1 Step 1. Define particle variables.  **
+    ***********************************************/
 
-    public float rotation = 0.0f;
+    // Particle transform fields.
+    [Header("Transform")]
+
     [SerializeField]
+    // Position of this object.
+    private Vector2 position = Vector2.zero;
+    [SerializeField]
+    // Velocity of this object.
+    private Vector2 velocity = Vector2.zero;
+    [SerializeField]
+    // Acceleration of this object.
+    private Vector2 acceleration = Vector2.zero;
+    
+    // Add a space in the inspector.
+    [Space]
+
+    [SerializeField]
+    // 2D rotation of this object. (z rotation)
+    private float rotation = 0.0f;
+    [SerializeField]
+    // Angular velocity of this object.
     private float angularVelocity = 0.0f;
     [SerializeField]
+    // Angular acceleration of this object.
     private float angularAcceleration = 0.0f;
 
+    // Position and rotation algorithm types.
     private enum PositionType { Euler, Kinematic };
     private enum RotationType { Euler, Kinematic };
 
+    // Velocity option fields.
     [Header("Velocity Options")]
+
     [SerializeField]
+    // Algorithm used for position.
     private PositionType positionType = PositionType.Euler;
     [SerializeField]
+    // Algorithm used for rotation.
     private RotationType rotationType = RotationType.Euler;
 
-    /*
-     *  Lab 2 Step 1
-     */
+    
+    /********************
+    **  Lab 2 Step 1.  **
+    ********************/
+
+    // Mass fields.
     [Header("Mass")]
+
     [SerializeField]
+    // Starting mass of this object.
     private float startingMass = 0.0f;
-    [SerializeField]
+    // Current mass of this object.
     private float mass = 0.0f;
+    // Current invert mass of this object.
     private float massInverse = 0.0f;
 
-    /*
-     *  Lab 2 Step 2
-     */
+    
+    /********************
+    **  Lab 2 Step 2.  **
+    ********************/
+
+    // Force applied to this object.
     private Vector2 force;
 
-    /*
-     *  Lab 2
-     *  Gravity variables.
-     */
-    private const float GRAVITY = -9.8f;
+
+    /********************************
+    **  Lab 2. Gravity variables.  **
+    ********************************/
+
+    // Gravity fields.
     [Header("Gravity")]
+
+    // Gravity constant.
+    private const float GRAVITY = -9.8f;
     [SerializeField]
+    // Upward direction of the world.
     private Vector2 worldUp = Vector2.up;
 
-    /*
-     *  Lab 2
-     *  Spring variables.
-     */
+
+    /*******************************
+    **  Lab 2. Spring variables.  **
+    *******************************/
+
+    // Spring fields.
     [Header("Spring")]
+
     [SerializeField]
+    // Spring anchor point object.
     private Transform springAnchor = null;
     [SerializeField]
+    // Spring resting length.
     private float springRestLength = 0.0f;
     [SerializeField]
+    // Spring stiffness.
     private float springStiffness = 0.0f;
     [SerializeField]
+    // Spring damping.
     private float springDamping = 0.0f;
     [SerializeField]
+    // Spring constant.
     private float springConstant = 0.0f;
 
-    /*
-     *  Lab 2
-     *  Surface normal variables.
-     */
+
+    /***************************************
+    **  Lab 2. Surface normal variables.  **
+    ***************************************/
+
+    // Surface normal fields.
     [Header("Surface Normal")]
+
     [SerializeField]
+    // Normal force direction.
     private Vector2 surfaceNormal = Vector2.zero;
 
-    /*
-     *  Lab 2
-     *  Drag variables.
-     */
+
+    /******************************
+    **  Lab 2.  Drag variables.  **
+    ******************************/
+
+    // Drag fields.
     [Header("Drag")]
+
     [SerializeField]
+    // Fluid velocity.
     private Vector2 fluidVelocity = Vector2.zero;
     [SerializeField]
+    // Fluid density.
     private float fluidDensity = 0.0f;
     [SerializeField]
+    // Object cross section.
     private float objectCrossSection = 0.0f;
     [SerializeField]
+    // Drag coefficient.
     private float dragCoefficient = 0.0f;
 
-    /*
-     *  Lab 2
-     *  Friction variables.
-     */
+
+    /*********************************
+    **  Lab 2. Friction variables.  **
+    *********************************/
+
+    // Friction fields.
     [Header("Friction")]
+
     [SerializeField]
+    // Kinematic friction coefficient.
     private float kinematicFrictionCoefficient = 0.0f;
     [SerializeField]
+    // Normal force of kinematic friction.
     private Vector2 kinematicNormalForce = Vector2.zero;
     [SerializeField]
+    // Static friction coefficient.
     private float staticFrictionCoefficient = 0.0f;
     [SerializeField]
+    // Normal force of static friction.
     private Vector2 staticFrictionNormal = Vector2.zero;
     [SerializeField]
+    // Opposing force to static friction.
     private Vector2 staticFrictionOpposingForce = Vector2.zero;
 
 
-    /*
-     *  Lab 2
-     *  Sliding variables.
-     */
+    /********************************
+    **  Lab 2. Sliding variables.  **
+    ********************************/
+
+    // Sliding fields.
     [Header("Sliding")]
+
     [SerializeField]
+    // Sliding normal force.
     private Vector2 slidingNormalForce = Vector2.zero;
 
 
-    /*
-     *  Lab 2
-     *  Inspector selections.
-     */
-    [Header("Forces")]
+    /***********************************
+    **  Lab 2. Inspector selections.  **
+    ***********************************/
+
+    // Active forces options.
+    [Header("Activate Forces")]
+
     [SerializeField]
+    // Gravitational force option.
     private bool gravityActive = false;
     [SerializeField]
+    // Normal force option.
     private bool normalActive = false;
     [SerializeField]
+    // Sliding force option.
     private bool slidingActive = false;
     [SerializeField]
+    // Static friction force option.
     private bool staticFrictionActive = false;
     [SerializeField]
+    // Kinematic friction force option.
     private bool kinematicFrictionActive = false;
     [SerializeField]
+    // Drag force option.
     private bool dragActive = false;
     [SerializeField]
+    // Spring force option.
     private bool springActive = false;
     [SerializeField]
+    // Damping spring force option.
     private bool dampingSpringActive = false;
 
 
-    private void Awake()
-    {
-        //SetInitailVelocity();
-    }
     // Start is called before the first frame update
     void Start()
     {
+        // Set the mass as the starting mass.
         Mass = startingMass;
 
         return;
     }
 
-    // Update is called once per frame
+    // Physics update method.
     void FixedUpdate()
     {
-        // Check user selection from menu items.
+        // Check algorithm type from user selection menu items.
         GetInspectorItems();
 
+        // Update acceleration before setting transforms.
         UpdateAcceleration();
 
-        // Lab 1 Apply to transform.
+        // Apply position to Unity's transform component.
         transform.position = position;
 
+        // Apply rotation to Unity's transform component. (z rotation)
         transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
 
         return;
     }
 
-    /*
-     *  Lab 1
-     *  Integrate user friendly menu.
-     */
-     // Get selectable items from the inspector menu.
-     private void GetInspectorItems()
-    {
-        /*
-         *  Lab 1 Step 3
-         */
 
-        // Integrate.
+    /*******************************************
+    **  Lab 1. Integrate user friendly menu.  **
+    *******************************************/
+
+    // Get selectable items from the inspector menu.
+    private void GetInspectorItems()
+    {
+        /*******************************
+        **  Lab 1 Step 3. Integrate.  **
+        *******************************/
+
+        /**************************************
+        **  Update position based on method. **
+        **************************************/
+
+        // Euler explicit method.
         if (positionType == PositionType.Euler)
         {
             UpdatePositionEulerExplicit(Time.fixedDeltaTime);
         }
+        // Kinematic method.
         else if (positionType == PositionType.Kinematic)
         {
             UpdatePositionKinematic(Time.fixedDeltaTime);
         }
 
+        // Euler explicit rotation method.
         if (rotationType == RotationType.Euler)
         {
             UpdateRotationEulerExplicit(Time.fixedDeltaTime);
         }
+        // Kinematic rotation method.
         else if (rotationType == RotationType.Kinematic)
         {
             UpdateRotationKinematic(Time.fixedDeltaTime);
         }
 
+        // Apply gravitational force if it is active.
         if (gravityActive)
         {
-            // Gravity force.
+            // Gravitational force.
             AddForce(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector2.up));
         }
 
+        // Apply spring force if it is active.
         if (springActive)
         {
             // Spring force.
             AddForce(ForceGenerator.GenerateForce_Spring(springAnchor.position, transform.position, springRestLength, springStiffness));
         }
 
+        // Apply static friction force if it is active.
         if (staticFrictionActive)
         {
             // Static friction force.
             AddForce(ForceGenerator.GenerateForce_Friction_Static(staticFrictionNormal, staticFrictionOpposingForce, staticFrictionCoefficient));
         }
 
+        // Apply kinematic friction force if it is active.
         if (kinematicFrictionActive)
         {
             // Kinematic friction force.
             AddForce(ForceGenerator.GenerateForce_Friction_Kinetic(kinematicNormalForce, velocity, kinematicFrictionCoefficient));
         }
 
+        // Apply sliding force if it is active.
         if (slidingActive)
         {
             // Sliding force.
             AddForce(ForceGenerator.GenerateForce_Sliding(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, worldUp), slidingNormalForce));
         }
 
+        // Apply drag force if it is active.
         if (dragActive)
         {
             // Drag force.
             AddForce(ForceGenerator.GenerateForce_Drag(velocity, fluidVelocity, fluidDensity, objectCrossSection, dragCoefficient));
         }
 
+        // Apply normal force if it is active.
         if (normalActive)
         {
             // Normal force.
             AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, worldUp), surfaceNormal));
         }
 
+        // Apply damping spring force if it is active.
         if (dampingSpringActive)
         {
             // Damping spring force.
@@ -250,79 +337,205 @@ public class Particle2D : MonoBehaviour
         return;
     }
 
-    /*
-     *  Lab 1 Step 2
-     *  Integration algorithms.
-     */
-    private void UpdatePositionEulerExplicit(float _deltaTime)
-    {
-        /*  
-         *  x(t + dt) = x(t) + v(t)dt
-         *  Euler's method:
-         *  F(t + dt) = F(t) + f(t)dt
-         *                   + (dF / dt)dt
-         */
-        position += velocity * _deltaTime;
 
-        /*
-         *  v(t + dt) = v(t) + a(t)dt
-         */
-        velocity += acceleration * _deltaTime;
+    /********************************************
+    **  Lab 1 Step 2. Integration algorithms.  **
+    ********************************************/
+
+    // Update position using euler explicit method.
+    private void UpdatePositionEulerExplicit(float deltaTime)
+    {
+        /*************************************
+        **  x(t + dt) = x(t) + v(t)dt       **
+        **  Euler's method:                 **
+        **  F(t + dt) = F(t) + f(t)dt       **
+        **                   + (dF / dt)dt  **
+        *************************************/
+        position += velocity * deltaTime;
+
+        // v(t + dt) = v(t) + a(t)dt
+        velocity += acceleration * deltaTime;
 
         return;
     }
 
-    private void UpdatePositionKinematic(float _deltaTime)
+    // Update position using kinematic method.
+    private void UpdatePositionKinematic(float deltaTime)
     {
-        /*
-         *  x(t + dt) = x(t) + v(t)dt + 1/2 a(t) dt^2
-         */
+        // x(t + dt) = x(t) + v(t)dt + 1/2 a(t) dt^2
+        position += velocity * deltaTime + 0.5f * acceleration * deltaTime * deltaTime;
 
-        position += velocity * _deltaTime + 0.5f * acceleration * _deltaTime * _deltaTime;
-
-        /*
-         *  v(t + dt) = v(t) + a(t)dt
-         */
-        velocity += acceleration * _deltaTime;
+        // v(t + dt) = v(t) + a(t)dt
+        velocity += acceleration * deltaTime;
 
         return;
     }
 
-    private void UpdateRotationEulerExplicit(float _deltaTime)
+    // Update rotation using euler explicit method.
+    private void UpdateRotationEulerExplicit(float deltaTime)
     {
-        /*  
-         *  x(t + dt) = x(t) + v(t)dt
-         *  Euler's method:
-         *  F(t + dt) = F(t) + f(t)dt
-         *                   + (dF / dt)dt
-         */
-        rotation += angularVelocity * _deltaTime;
+        /*************************************  
+        **  x(t + dt) = x(t) + v(t)dt       **
+        **  Euler's method:                 **
+        **  F(t + dt) = F(t) + f(t)dt       **
+        **                   + (dF / dt)dt  **
+        *************************************/
+        rotation += angularVelocity * deltaTime;
 
-        /*
-         *  v(t + dt) = v(t) + a(t)dt
-         */
-        angularVelocity += angularAcceleration * _deltaTime;
+        // v(t + dt) = v(t) + a(t)dt
+        angularVelocity += angularAcceleration * deltaTime;
 
         return;
     }
 
-    private void UpdateRotationKinematic(float _deltaTime)
+    // Update rotation using kinematic method.
+    private void UpdateRotationKinematic(float deltaTime)
     {
-        /*
-         *  x(t + dt) = x(t) + v(t)dt + 1/2 a(t) dt^2
-         */
+        // x(t + dt) = x(t) + v(t)dt + 1/2 a(t) dt^2
+        rotation += angularVelocity * deltaTime + 0.5f * angularAcceleration * deltaTime * deltaTime;
 
-        rotation += angularVelocity * _deltaTime + 0.5f * angularAcceleration * _deltaTime * _deltaTime;
-
-        /*
-         *  v(t + dt) = v(t) + a(t)dt
-         */
-        angularVelocity += angularAcceleration * _deltaTime;
+        // v(t + dt) = v(t) + a(t)dt
+        angularVelocity += angularAcceleration * deltaTime;
 
         return;
     }
 
-    // Mass accessors.
+    // Add a new force to the current force.
+    public void AddForce(Vector2 newForce)
+    {
+        // D'Alembert's law.
+        force += newForce;
+
+        return;
+    }
+
+    // Update the acceleration.
+    private void UpdateAcceleration()
+    {
+        // Newton's second law.
+        acceleration = massInverse * force;
+
+        // Reset force so new forces can be applied.
+        force = Vector2.zero;
+
+        return;
+    }
+
+
+    /**************************************
+    **          Start Accessors          ** 
+    **************************************/
+
+    /*********************************
+    **  Position Related Accessors  **
+    *********************************/
+
+    // Position Accessor
+    public Vector2 Position
+    {
+        get
+        {
+            return position;
+        }
+
+        set
+        {
+            position = value;
+
+            return;
+        }
+
+    }
+
+    // Velocity Accessor.
+    public Vector2 Velocity
+    {
+        get
+        {
+            return velocity;
+        }
+
+        set
+        {
+            velocity = value;
+            return;
+        }
+    }
+
+    // Acceleration Accessor.
+    public Vector2 Acceleration
+    {
+        get
+        {
+            return acceleration;
+        }
+
+        set
+        {
+            acceleration = value;
+            return;
+        }
+    }
+
+    /*************************************
+    **  End Position Related Accessors  **
+    *************************************/
+
+
+    /***************************************
+    **  Start Rotation Related Accessors  **
+    ***************************************/
+
+    // Rotation Accessor.
+    public float Rotation
+    {
+        get
+        {
+            return rotation;
+        }
+
+        set
+        {
+            rotation = value;
+            return;
+        }
+    }
+
+    // Angular Velocity Accessor.
+    public float AngularVelocity
+    {
+        get
+        {
+            return angularVelocity;
+        }
+
+        set
+        {
+            angularVelocity = value;
+            return;
+        }
+    }
+    
+    // Angular Acceleration Accessor.
+    public float AngularAcceleration
+    {
+        get
+        {
+            return angularAcceleration;
+        }
+
+        set
+        {
+            angularAcceleration = value;
+            return;
+        }
+    }
+
+    /*************************************
+    **  End Rotation Related Accessors  **
+    *************************************/
+
+    // Mass Accessor
     public float Mass
     {
         get
@@ -332,27 +545,17 @@ public class Particle2D : MonoBehaviour
 
         set
         {
+            // Prevent negative mass.
             mass = value > 0.0f ? value : 0.0f;
+            
+            // Invert the mass. (Prevent divide by 0)
             massInverse = mass > 0.0f ? 1.0f / mass : 0.0f;
+
+            return;
         }
-
     }
 
-    public void AddForce(Vector2 _newForce)
-    {
-        // D'Alembert's law.
-        force += _newForce;
-
-        return;
-    }
-
-    private void UpdateAcceleration()
-    {
-        // Newton's second law.
-        acceleration = massInverse * force;
-
-        force = Vector2.zero;
-
-        return;
-    }
+    /************************************
+    **          End Accessors          ** 
+    ************************************/
 }

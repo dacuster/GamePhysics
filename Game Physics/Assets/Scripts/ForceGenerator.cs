@@ -4,67 +4,67 @@ using UnityEngine;
 
 public class ForceGenerator
 {
-    public static Vector2 GenerateForce_Gravity(float _particleMass, float _gravitationalConstant, Vector2 _worldUp)
+    public static Vector2 GenerateForce_Gravity(float particleMass, float gravitationalConstant, Vector2 worldUp)
     {
         // f = mg
-        return (_particleMass * _gravitationalConstant * _worldUp);
+        return (particleMass * gravitationalConstant * worldUp);
     }
 
-    public static Vector2 GenerateForce_Normal(Vector2 _forceGravity, Vector2 _surfaceNormal_unit)
+    public static Vector2 GenerateForce_Normal(Vector2 forceGravity, Vector2 surfaceNormalUnit)
     {
         // f_normal = proj(f_gravity, surfaceNormal_unit)
         // proj = (norm(x) * grav(x) + norm(y) * grav(y)) / grav(x)^2 + grav(y)^2
         // finalProj = proj * grav
 
         // Calculate the projection of surface normal onto gravity.
-        float projection = (_surfaceNormal_unit.x * _forceGravity.x + _surfaceNormal_unit.y * _forceGravity.y) / (_forceGravity.x * _forceGravity.x + _forceGravity.y * _forceGravity.y);
+        float projection = (surfaceNormalUnit.x * forceGravity.x + surfaceNormalUnit.y * forceGravity.y) / (forceGravity.x * forceGravity.x + forceGravity.y * forceGravity.y);
         
         // Apply projection onto gravity.
-        Vector2 force = projection * _forceGravity;
+        Vector2 force = projection * forceGravity;
 
         return force;
     }
 
-    public static Vector2 GenerateForce_Sliding(Vector2 _forceGravity, Vector2 _forceNormal)
+    public static Vector2 GenerateForce_Sliding(Vector2 forceGravity, Vector2 forceNormal)
     {
         // f_sliding = f_gravity + f_normal
-        return (_forceGravity + _forceNormal);
+        return (forceGravity + forceNormal);
     }
 
-    public static Vector2 GenerateForce_Friction_Static(Vector2 _forceNormal, Vector2 _forceOpposing, float _frictionCoefficient_Static)
+    public static Vector2 GenerateForce_Friction_Static(Vector2 forceNormal, Vector2 forceOpposing, float frictionCoefficientStatic)
     {
         // f_friction_s = -f_opposing if less than max, else -coeff*f_normal (max amount is coeff*|f_normal|)
 
-        float max = _frictionCoefficient_Static * _forceNormal.magnitude;
+        float max = frictionCoefficientStatic * forceNormal.magnitude;
 
-        Vector2 force = _frictionCoefficient_Static * _forceNormal;
+        Vector2 force = frictionCoefficientStatic * forceNormal;
 
-        if (_forceOpposing.magnitude > max)
+        if (forceOpposing.magnitude > max)
         {
-            force -= _forceOpposing;
+            force -= forceOpposing;
         }
         else
         {
-            force = -_frictionCoefficient_Static * _forceNormal;
+            force = -frictionCoefficientStatic * forceNormal;
         }
 
         return force;
     }
 
-    public static Vector2 GenerateForce_Friction_Kinetic(Vector2 f_normal, Vector2 particleVelocity, float frictionCoefficient_kinetic)
+    public static Vector2 GenerateForce_Friction_Kinetic(Vector2 forceNormal, Vector2 particleVelocity, float frictionCoefficientKinetic)
     {
         // f_friction_k = -coeff*|f_normal| * unit(vel)
 
-        Vector2 force = -frictionCoefficient_kinetic * f_normal.magnitude * particleVelocity;
+        Vector2 force = -frictionCoefficientKinetic * forceNormal.magnitude * particleVelocity;
 
         return force;
     }
 
-    public static Vector2 GenerateForce_Drag(Vector2 particleVelocity, Vector2 fluidVelocity, float fluidDensity, float objectArea_crossSection, float objectDragCoefficient)
+    public static Vector2 GenerateForce_Drag(Vector2 particleVelocity, Vector2 fluidVelocity, float fluidDensity, float objectAreaCrossSection, float objectDragCoefficient)
     {
         // f_drag = (p * u^2 * area * coeff)/2
 
-        Vector2 force = (particleVelocity - fluidVelocity) * (fluidDensity * particleVelocity.magnitude * particleVelocity.magnitude * objectArea_crossSection * objectDragCoefficient * 0.5f);
+        Vector2 force = (particleVelocity - fluidVelocity) * (fluidDensity * particleVelocity.magnitude * particleVelocity.magnitude * objectAreaCrossSection * objectDragCoefficient * 0.5f);
 
         return force;
     }
