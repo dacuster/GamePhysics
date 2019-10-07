@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Particle2D))]
+
 // Abstract prevent anything from instantiating it.
 public abstract class CollisionHull2D : MonoBehaviour
 {

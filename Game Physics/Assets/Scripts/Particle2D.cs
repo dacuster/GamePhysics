@@ -457,12 +457,12 @@ public class Particle2D : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.UpArrow))
         {
-            AddForce(CalculateFront());
+            AddForce(CalculateDirection());
         }
 
         if (Input.GetKey(KeyCode.DownArrow))
         {
-            AddForce(-CalculateFront());
+            AddForce(-CalculateDirection());
         }
 
         if (Input.GetKey(KeyCode.LeftArrow))
@@ -485,12 +485,11 @@ public class Particle2D : MonoBehaviour
     }
 
     // get direction to move forward
-    public Vector2 CalculateFront()
+    public Vector2 CalculateDirection()
     {
-        GameObject player = GameObject.Find("Player");
-        GameObject front = GameObject.Find("Front");
-        Vector2 distance = player.transform.position - front.transform.position;
-        return distance *= -5.0f;
+        float radians = rotation * Mathf.PI / 180.0f;
+        Vector2 direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
+        return direction;
     }
     /**************************************
     **          Start Accessors          ** 
