@@ -12,9 +12,13 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
     // Bounding box for this object.
     private Vector2 boundingBox;
 
-    // Bounding axis for this object.
+    // Non-transformed bounding axis for this object.
     private Vector2 xAxisBound;
     private Vector2 yAxisBound;
+
+    // Transformed bounding box with max extends in world space.
+    private Vector2 xAxisTransformedBound;
+    private Vector2 yAxisTransformedBound;
 
     private void FixedUpdate()
     {
