@@ -88,37 +88,66 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         // AABB-OBB part 2 twice
         // 1. .....
 
-        //// This OBB max extends.
-        //Vector2 _xAxisBoundThis = X_AxisBound;
-        //Vector2 _yAxisBoundThis = Y_AxisBound;
+        // This OBB max extends.
+        Vector2 _xAxisBoundThis = X_AxisBound;
+        Vector2 _yAxisBoundThis = Y_AxisBound;
 
-        //// Transform the entends to OBB local space.
-        //other.CalculateBoundingBoxLocal(ref _xAxisBoundThis, ref _yAxisBoundThis);
+        // Transform the entends to OBB local space.
+        CalculateBoundingBoxWorld(ref _xAxisBoundThis, ref _yAxisBoundThis);
 
-        //// Other OBB max extends.
-        //Vector2 _xAxisBoundOther = other.X_AxisBound;
-        //Vector2 _yAxisBoundOther = other.Y_AxisBound;
+        // Other OBB max extends.
+        Vector2 _xAxisBoundOther = other.X_AxisBound;
+        Vector2 _yAxisBoundOther = other.Y_AxisBound;
 
-        //// Transform the entends to this OBB world space.
-        //CalculateBoundingBoxLocal(ref _xAxisBoundOther, ref _yAxisBoundOther);
+        // Transform the entends to this OBB world space.
+        other.CalculateBoundingBoxWorld(ref _xAxisBoundOther, ref _yAxisBoundOther);
 
-        //// Check if the extends for the AABB are colliding with the extends for the OBB in OBB world space.
-        //if (_xAxisBoundOther.x <= _xAxisBoundThis.y && _xAxisBoundOther.y >= _xAxisBoundThis.x && _yAxisBoundOther.y >= _yAxisBoundThis.x && _yAxisBoundOther.x <= _yAxisBoundThis.y)
-        //{
-        //    Matrix4x4 otherWorldSpace = other.WorldToLocal();
+        // Check if the extends for the AABB are colliding with the extends for the OBB in OBB world space.
+        if (_xAxisBoundOther.x <= _xAxisBoundThis.y && _xAxisBoundOther.y >= _xAxisBoundThis.x && _yAxisBoundOther.y >= _yAxisBoundThis.x && _yAxisBoundOther.x <= _yAxisBoundThis.y)
+        {
+            Matrix4x4 otherWorldSpace = other.WorldToLocal();
 
-        //    _xAxisBoundOther = otherWorldSpace.MultiplyPoint3x4(other.X_AxisBound);
-        //    _yAxisBoundOther = otherWorldSpace.MultiplyPoint3x4(other.Y_AxisBound);
-        //    _xAxisBoundThis = WorldToLocal().MultiplyPoint3x4(X_AxisBound);
-        //    _yAxisBoundThis = WorldToLocal().MultiplyPoint3x4(Y_AxisBound);
+            _xAxisBoundOther = other.X_AxisBound;
+            _yAxisBoundOther = other.Y_AxisBound;
+            _xAxisBoundThis = X_AxisBound;
+            _yAxisBoundThis = Y_AxisBound;
 
-        //    // Check if the extends for the AABB in OBB local space are colliding with the extends for the OBB in OBB world space.
-        //    if (_xAxisBoundOther.x <= _xAxisBoundThis.y && _xAxisBoundOther.y >= _xAxisBoundThis.x && _yAxisBoundOther.y >= _yAxisBoundThis.x && _yAxisBoundOther.x <= _yAxisBoundThis.y)
-        //    {
-        //        // Collision.
-        //        return true;
-        //    }
-        //}
+
+            CalculateBoundingBoxLocal(ref _xAxisBoundOther, ref _yAxisBoundOther);
+            CalculateBoundingBoxLocal(ref _xAxisBoundThis, ref _yAxisBoundThis);
+
+
+
+            // Get the bounds position for each box edge.
+            Vector3 corner1 = new Vector3(_xAxisBoundThis.x, _yAxisBoundThis.x);
+            Vector3 corner2 = new Vector3(_xAxisBoundThis.x, _yAxisBoundThis.y);
+            Vector3 corner3 = new Vector3(_xAxisBoundThis.y, _yAxisBoundThis.y);
+            Vector3 corner4 = new Vector3(_xAxisBoundThis.y, _yAxisBoundThis.x);
+
+            //corner1 = WorldToLocal().MultiplyPoint3x4(corner1);
+            //corner2 = WorldToLocal().MultiplyPoint3x4(corner2);
+            //corner3 = WorldToLocal().MultiplyPoint3x4(corner3);
+            //corner4 = WorldToLocal().MultiplyPoint3x4(corner4);
+
+            // Draw the axis for the bounds. (Rotated automatically by the new handles matrix. WorldToLocal)
+            Debug.DrawLine(corner1, corner2, Color.blue);
+            Debug.DrawLine(corner2, corner3, Color.blue);
+            Debug.DrawLine(corner3, corner4, Color.blue);
+            Debug.DrawLine(corner4, corner1, Color.blue);
+
+
+
+
+
+
+
+            // Check if the extends for the AABB in OBB local space are colliding with the extends for the OBB in OBB world space.
+            if (_xAxisBoundOther.x <= _xAxisBoundThis.y && _xAxisBoundOther.y >= _xAxisBoundThis.x && _yAxisBoundOther.y >= _yAxisBoundThis.x && _yAxisBoundOther.x <= _yAxisBoundThis.y)
+            {
+                // Collision.
+                return true;
+            }
+        }
 
         return false;
     }
@@ -132,6 +161,40 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         xAxisBound.y = xAxisBound.x + BoundingBox.x;
         yAxisBound.x = particle.Position.y - BoundingBox.y * 0.5f;
         yAxisBound.y = yAxisBound.x + BoundingBox.y;
+
+        CalculateBoundingBoxWorld();
+
+        return;
+    }
+
+    // Calculate the bounding box limits in local to world space.
+    private void CalculateBoundingBoxLocal()
+    {
+        // Rotate bound corners.
+        // Find min/max extends for x and y.
+        // return min and max extends into ref variables.
+
+        // Get the bounds position for each box corner.
+        Vector2 corner1 = new Vector2(xAxisBound.x, yAxisBound.x);
+        Vector2 corner2 = new Vector2(xAxisBound.x, yAxisBound.y);
+        Vector2 corner3 = new Vector2(xAxisBound.y, yAxisBound.y);
+        Vector2 corner4 = new Vector2(xAxisBound.y, yAxisBound.x);
+
+        // Transform the corners from local to world space.
+        corner1 = WorldToLocal().MultiplyPoint3x4(corner1);
+        corner2 = WorldToLocal().MultiplyPoint3x4(corner2);
+        corner3 = WorldToLocal().MultiplyPoint3x4(corner3);
+        corner4 = WorldToLocal().MultiplyPoint3x4(corner4);
+
+        // Determine the minimum and maximum extends for each axis.
+        float minimumX = Mathf.Min(corner1.x, corner2.x, corner3.x, corner4.x);
+        float maximumX = Mathf.Max(corner1.x, corner2.x, corner3.x, corner4.x);
+        float minimumY = Mathf.Min(corner1.y, corner2.y, corner3.y, corner4.y);
+        float maximumY = Mathf.Max(corner1.y, corner2.y, corner3.y, corner4.y);
+
+        // Create vector2 of new extends.
+        xAxisBound = new Vector2(minimumX, maximumX);
+        yAxisBound = new Vector2(minimumY, maximumY);
 
         return;
     }
@@ -180,6 +243,38 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         Debug.DrawLine(drawCorner2, drawCorner3, Color.red);
         Debug.DrawLine(drawCorner3, drawCorner4, Color.red);
         Debug.DrawLine(drawCorner4, drawCorner1, Color.red);
+
+        return;
+    }
+
+    // Calculate the bounding box limits in local to world space.
+    public void CalculateBoundingBoxWorld()
+    {
+        // Rotate bound corners.
+        // Find min/max extends for x and y.
+        // return min and max extends into ref variables.
+
+        // Get the bounds position for each box corner.
+        Vector2 corner1 = new Vector2(xAxisBound.x, yAxisBound.x);
+        Vector2 corner2 = new Vector2(xAxisBound.x, yAxisBound.y);
+        Vector2 corner3 = new Vector2(xAxisBound.y, yAxisBound.y);
+        Vector2 corner4 = new Vector2(xAxisBound.y, yAxisBound.x);
+
+        // Transform the corners from local to world space.
+        corner1 = LocalToWorld().MultiplyPoint3x4(corner1);
+        corner2 = LocalToWorld().MultiplyPoint3x4(corner2);
+        corner3 = LocalToWorld().MultiplyPoint3x4(corner3);
+        corner4 = LocalToWorld().MultiplyPoint3x4(corner4);
+
+        // Determine the minimum and maximum extends for each axis.
+        float minimumX = Mathf.Min(corner1.x, corner2.x, corner3.x, corner4.x);
+        float maximumX = Mathf.Max(corner1.x, corner2.x, corner3.x, corner4.x);
+        float minimumY = Mathf.Min(corner1.y, corner2.y, corner3.y, corner4.y);
+        float maximumY = Mathf.Max(corner1.y, corner2.y, corner3.y, corner4.y);
+
+        // Create vector2 of new extends.
+        xAxisBound = new Vector2(minimumX, maximumX);
+        yAxisBound = new Vector2(minimumY, maximumY);
 
         return;
     }
