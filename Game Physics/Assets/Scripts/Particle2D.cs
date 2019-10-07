@@ -86,6 +86,13 @@ public class Particle2D : MonoBehaviour
     // Upward direction of the world.
     private Vector2 worldUp = Vector2.up;
 
+    // Torque Stuff
+    [Header("Torque")]
+
+    [SerializeField]
+    private float torque = 0.0f;
+    private float inertia = 0.0f;
+    private float inertiaInv = 0.0f;
 
     /*******************************
     **  Lab 2. Spring variables.  **
@@ -225,15 +232,20 @@ public class Particle2D : MonoBehaviour
     // Physics update method.
     void FixedUpdate()
     {
+        CubeInvInertiaCalc();
+        
         // Check algorithm type from user selection menu items.
-        GetInspectorItems();
+        
 
         // Update acceleration before setting transforms.
         UpdateAcceleration();
-
+        UpdateAngularAcceleration();
+        torque = 0;
         // Apply position to Unity's transform component.
         transform.position = position;
+        PlayerControls();
 
+        GetInspectorItems();
         // Apply rotation to Unity's transform component. (z rotation)
         transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
 
@@ -421,7 +433,65 @@ public class Particle2D : MonoBehaviour
         return;
     }
 
+    // Update angular acceleration
+    void UpdateAngularAcceleration()
+    {
+        angularAcceleration = inertiaInv * torque;
+    }
 
+    // Calulate Inverse Cube Inertia
+    void CubeInvInertiaCalc()
+    {
+        inertiaInv = 12 / mass * (transform.localScale.x * transform.localScale.x + transform.localScale.y * transform.localScale.y);
+    }
+
+    // Apply torque
+    public void ApplyTorque(Vector2 pos, Vector2 newForce)
+    {
+        // t = px*fy - py*fx
+        torque = pos.x * newForce.y - pos.y * newForce.x;
+    }
+
+    // get keyboard inputs
+    public void PlayerControls()
+    {
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            AddForce(CalculateFront());
+        }
+
+        if (Input.GetKey(KeyCode.DownArrow))
+        {
+            AddForce(-CalculateFront());
+        }
+
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            ApplyTorque(new Vector2(0, 1), new Vector2(-1.0f, 0.0f));
+        }
+
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+            ApplyTorque(new Vector2(0, 1), new Vector2(1.0f, 0.0f));
+        }
+        
+        if(Input.GetKey(KeyCode.Space))
+        {
+            angularVelocity = 0;
+            angularAcceleration = 0;
+            acceleration = new Vector2(0.0f, 0.0f);
+            velocity = new Vector2(0.0f,0.0f);
+        } 
+    }
+
+    // get direction to move forward
+    public Vector2 CalculateFront()
+    {
+        GameObject player = GameObject.Find("Player");
+        GameObject front = GameObject.Find("Front");
+        Vector2 distance = player.transform.position - front.transform.position;
+        return distance *= -5.0f;
+    }
     /**************************************
     **          Start Accessors          ** 
     **************************************/
