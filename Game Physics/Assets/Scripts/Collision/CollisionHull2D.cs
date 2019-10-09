@@ -8,19 +8,52 @@ using UnityEngine;
 public abstract class CollisionHull2D : MonoBehaviour
 {
     // TODO: Comment for lab 5.
-    public struct Contact
+    public class Collision
     {
-        Vector2 point;
-        Vector2 normal;
-        float restitution;
+        public struct Contact
+        {
+            Vector2 position;
+            Vector2 normal;
+            float restitution;
+            // float? collisionDepth;
+        }
+        // The 2 hulls which are colliding.
+        public CollisionHull2D a = null;
+        public CollisionHull2D b = null;
+
+        // All the contact involved in the collision.
+        public Contact[] contact = new Contact[4];
+
+        // Number of contacts involved in the collision.
+        public int contactCount = 0;
+
+        // Was there a collision.
+        public bool status = false;
+
+        // Closing velocity of the collision.
+        public float closingVelocity;
+
+        // Calculate the closing velocity of the 2 colliding objects.
+        public void CalculateClosingVelocity()
+        {
+            // Calculate the difference in velocities.
+            Vector2 velocityDifference = a.Particle.Velocity - b.Particle.Velocity;
+            
+            // Get the opposite values of the difference.
+            velocityDifference *= -1.0f;
+            
+            // Get the difference in positions.
+            Vector2 positionDifference = a.Particle.Position - b.Particle.Position;
+            
+            // Normalize the difference in positions.
+            positionDifference.Normalize();
+
+            // Find the scalar(dot) product of the difference in velocities and difference in positions normalized.
+            closingVelocity = Vector2.Dot(velocityDifference, positionDifference);
+
+            return;
+        }
     }
-
-    public CollisionHull2D a = null, b = null;
-    public Contact[] contact = new Contact[4];
-    public int contactCount = 0;
-    public bool status = false;
-
-    public Vector2 closingVelocity;
     // END TODO
 
     // Different types of collision hulls.
