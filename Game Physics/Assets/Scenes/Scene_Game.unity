@@ -153,11 +153,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb97927667404c84694d9793fef032f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  a: {fileID: 0}
-  b: {fileID: 0}
-  contactCount: 0
-  status: 0
-  closingVelocity: {x: 0, y: 0}
   boundingBox: {x: 0, y: 0}
 --- !u!114 &605708747
 MonoBehaviour:
@@ -306,7 +301,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1131511804}
-  m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.507, y: 0, z: -0.70814633}
   m_LocalScale: {x: 1, y: 0.5000001, z: 1}
   m_Children: []

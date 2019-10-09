@@ -26,7 +26,7 @@ public class SpawnProjectile : MonoBehaviour
 
     public void Fire()
     {
-        projectile = Instantiate(projectilePrefab, projectileSpawn.position , Quaternion.identity);
+        projectile = Instantiate(projectilePrefab, projectileSpawn.position , projectileSpawn.rotation);
         Particle2D particle = projectile.GetComponent<Particle2D>();
         particle.Position = projectileSpawn.position;
         particle.Rotation = projectileSpawn.rotation.eulerAngles.z;
