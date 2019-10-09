@@ -32,7 +32,8 @@ public class GameController : MonoBehaviour
                 Debug.Log(i);
                 Vector2 spawnPosition = new Vector2(Random.Range(-spawnValue.x, spawnValue.x), Random.Range(-spawnValue.y, spawnValue.y));
                 Quaternion spawnRotation = Quaternion.identity;
-                Instantiate(asteroid, spawnPosition, spawnRotation);
+                GameObject newAsteroid = Instantiate(asteroid, spawnPosition, spawnRotation);
+                newAsteroid.GetComponent<Particle2D>().Position = spawnPosition;
                 yield return new WaitForSeconds(spawnWait);
             }
 

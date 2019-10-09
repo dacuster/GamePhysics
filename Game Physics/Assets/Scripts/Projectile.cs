@@ -16,6 +16,7 @@ public class Projectile : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        particle.Velocity = particle.CalculateDirection();
         particle.AddForce(particle.CalculateDirection() * 10.0f);
         
         lifeTimer += Time.deltaTime;

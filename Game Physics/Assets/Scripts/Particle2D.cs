@@ -13,7 +13,7 @@ public class Particle2D : MonoBehaviour
 
     [SerializeField]
     // Position of this object.
-    public Vector2 position = Vector2.zero;
+    private Vector2 position = Vector2.zero;
     [SerializeField]
     // Velocity of this object.
     private Vector2 velocity = Vector2.zero;
@@ -220,6 +220,7 @@ public class Particle2D : MonoBehaviour
     private bool dampingSpringActive = false;
 
     public bool isProjectile = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -243,13 +244,13 @@ public class Particle2D : MonoBehaviour
         if(name == "Player")
         {
             UpdateAngularAcceleration();
-            torque = 0;
+            Torque = 0;
 
             // Apply position to Unity's transform component.
             PlayerControls();
         }
 
-        transform.position = position;
+        transform.position = Position;
         // Apply rotation to Unity's transform component. (z rotation)
         transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
 
@@ -305,7 +306,7 @@ public class Particle2D : MonoBehaviour
         if (springActive)
         {
             // Spring force.
-            AddForce(ForceGenerator.GenerateForce_Spring(springAnchor.position, transform.position, springRestLength, springStiffness));
+            AddForce(ForceGenerator.GenerateForce_Spring(Position, springAnchor.position, springRestLength, springStiffness));
         }
 
         // Apply static friction force if it is active.
@@ -319,7 +320,7 @@ public class Particle2D : MonoBehaviour
         if (kinematicFrictionActive)
         {
             // Kinematic friction force.
-            AddForce(ForceGenerator.GenerateForce_Friction_Kinetic(kinematicNormalForce, velocity, kinematicFrictionCoefficient));
+            AddForce(ForceGenerator.GenerateForce_Friction_Kinetic(kinematicNormalForce, Velocity, kinematicFrictionCoefficient));
         }
 
         // Apply sliding force if it is active.
@@ -333,7 +334,7 @@ public class Particle2D : MonoBehaviour
         if (dragActive)
         {
             // Drag force.
-            AddForce(ForceGenerator.GenerateForce_Drag(velocity, fluidVelocity, fluidDensity, objectCrossSection, dragCoefficient));
+            AddForce(ForceGenerator.GenerateForce_Drag(Velocity, fluidVelocity, fluidDensity, objectCrossSection, dragCoefficient));
         }
 
         // Apply normal force if it is active.
@@ -347,7 +348,7 @@ public class Particle2D : MonoBehaviour
         if (dampingSpringActive)
         {
             // Damping spring force.
-            AddForce(ForceGenerator.GenerateForce_Spring_Damping(position, springAnchor.position, springRestLength, springStiffness, springDamping, springConstant, velocity));
+            AddForce(ForceGenerator.GenerateForce_Spring_Damping(Position, springAnchor.position, springRestLength, springStiffness, springDamping, springConstant, Velocity));
         }
 
         return;
@@ -367,10 +368,10 @@ public class Particle2D : MonoBehaviour
         **  F(t + dt) = F(t) + f(t)dt       **
         **                   + (dF / dt)dt  **
         *************************************/
-        position += velocity * deltaTime;
+        Position += Velocity * deltaTime;
 
         // v(t + dt) = v(t) + a(t)dt
-        velocity += acceleration * deltaTime;
+        Velocity += Acceleration * deltaTime;
 
         return;
     }
@@ -379,10 +380,10 @@ public class Particle2D : MonoBehaviour
     private void UpdatePositionKinematic(float deltaTime)
     {
         // x(t + dt) = x(t) + v(t)dt + 1/2 a(t) dt^2
-        position += velocity * deltaTime + 0.5f * acceleration * deltaTime * deltaTime;
+        Position += Velocity * deltaTime + 0.5f * Acceleration * deltaTime * deltaTime;
 
         // v(t + dt) = v(t) + a(t)dt
-        velocity += acceleration * deltaTime;
+        Velocity += Acceleration * deltaTime;
 
         return;
     }
@@ -396,10 +397,10 @@ public class Particle2D : MonoBehaviour
         **  F(t + dt) = F(t) + f(t)dt       **
         **                   + (dF / dt)dt  **
         *************************************/
-        rotation += angularVelocity * deltaTime;
+        Rotation += AngularVelocity * deltaTime;
 
         // v(t + dt) = v(t) + a(t)dt
-        angularVelocity += angularAcceleration * deltaTime;
+        AngularVelocity += AngularAcceleration * deltaTime;
 
         return;
     }
@@ -408,10 +409,10 @@ public class Particle2D : MonoBehaviour
     private void UpdateRotationKinematic(float deltaTime)
     {
         // x(t + dt) = x(t) + v(t)dt + 1/2 a(t) dt^2
-        rotation += angularVelocity * deltaTime + 0.5f * angularAcceleration * deltaTime * deltaTime;
+        Rotation += AngularVelocity * deltaTime + 0.5f * AngularAcceleration * deltaTime * deltaTime;
 
         // v(t + dt) = v(t) + a(t)dt
-        angularVelocity += angularAcceleration * deltaTime;
+        AngularVelocity += AngularAcceleration * deltaTime;
 
         return;
     }
@@ -420,7 +421,7 @@ public class Particle2D : MonoBehaviour
     public void AddForce(Vector2 newForce)
     {
         // D'Alembert's law.
-        force += newForce;
+        Force += newForce;
 
         return;
     }
@@ -429,10 +430,10 @@ public class Particle2D : MonoBehaviour
     private void UpdateAcceleration()
     {
         // Newton's second law.
-        acceleration = massInverse * force;
+        Acceleration = massInverse * Force;
 
         // Reset force so new forces can be applied.
-        force = Vector2.zero;
+        Force = Vector2.zero;
 
         return;
     }
@@ -440,20 +441,20 @@ public class Particle2D : MonoBehaviour
     // Update angular acceleration
     void UpdateAngularAcceleration()
     {
-        angularAcceleration = inertiaInv * torque;
+        AngularAcceleration = inertiaInv * Torque;
     }
 
     // Calulate Inverse Cube Inertia
     void CubeInvInertiaCalc()
     {
-        inertiaInv = 12 / mass * (transform.localScale.x * transform.localScale.x + transform.localScale.y * transform.localScale.y);
+        inertiaInv = 12 / Mass * (transform.localScale.x * transform.localScale.x + transform.localScale.y * transform.localScale.y);
     }
 
     // Apply torque
     public void ApplyTorque(Vector2 pos, Vector2 newForce)
     {
         // t = px*fy - py*fx
-        torque = pos.x * newForce.y - pos.y * newForce.x;
+        Torque = pos.x * newForce.y - pos.y * newForce.x;
     }
 
     // get keyboard inputs
@@ -481,10 +482,10 @@ public class Particle2D : MonoBehaviour
         
         if(Input.GetKey(KeyCode.Space))
         {
-            angularVelocity = 0;
-            angularAcceleration = 0;
-            acceleration = new Vector2(0.0f, 0.0f);
-            velocity = new Vector2(0.0f,0.0f);
+            AngularVelocity = 0;
+            AngularAcceleration = 0;
+            Acceleration = new Vector2(0.0f, 0.0f);
+            Velocity = new Vector2(0.0f,0.0f);
         } 
 
         if(Input.GetKey(KeyCode.E))
@@ -496,7 +497,7 @@ public class Particle2D : MonoBehaviour
     // get direction to move forward
     public Vector2 CalculateDirection()
     {
-        float radians = rotation * Mathf.PI / 180.0f;
+        float radians = Rotation * Mathf.PI / 180.0f;
         Vector2 direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
         return direction;
     }
@@ -509,51 +510,13 @@ public class Particle2D : MonoBehaviour
     *********************************/
 
     // Position Accessor
-    public Vector2 Position
-    {
-        get
-        {
-            return position;
-        }
-
-        set
-        {
-            position = value;
-
-            return;
-        }
-
-    }
+    public Vector2 Position { get => position; set => position = value; }
 
     // Velocity Accessor.
-    public Vector2 Velocity
-    {
-        get
-        {
-            return velocity;
-        }
-
-        set
-        {
-            velocity = value;
-            return;
-        }
-    }
+    public Vector2 Velocity { get => velocity; set => velocity = value; }
 
     // Acceleration Accessor.
-    public Vector2 Acceleration
-    {
-        get
-        {
-            return acceleration;
-        }
-
-        set
-        {
-            acceleration = value;
-            return;
-        }
-    }
+    public Vector2 Acceleration { get => acceleration; set => acceleration = value; }
 
     /*************************************
     **  End Position Related Accessors  **
@@ -565,61 +528,22 @@ public class Particle2D : MonoBehaviour
     ***************************************/
 
     // Rotation Accessor.
-    public float Rotation
-    {
-        get
-        {
-            return rotation;
-        }
-
-        set
-        {
-            rotation = value;
-            return;
-        }
-    }
+    public float Rotation { get => rotation; set => rotation = value; }
 
     // Angular Velocity Accessor.
-    public float AngularVelocity
-    {
-        get
-        {
-            return angularVelocity;
-        }
-
-        set
-        {
-            angularVelocity = value;
-            return;
-        }
-    }
+    public float AngularVelocity { get => angularVelocity; set => angularVelocity = value; }
     
     // Angular Acceleration Accessor.
-    public float AngularAcceleration
-    {
-        get
-        {
-            return angularAcceleration;
-        }
-
-        set
-        {
-            angularAcceleration = value;
-            return;
-        }
-    }
+    public float AngularAcceleration { get => angularAcceleration; set => angularAcceleration = value; }
 
     /*************************************
     **  End Rotation Related Accessors  **
     *************************************/
 
-    // Mass Accessor
+    // Mass Accessor.
     public float Mass
     {
-        get
-        {
-            return mass;
-        }
+        get => mass;
 
         set
         {
@@ -632,6 +556,12 @@ public class Particle2D : MonoBehaviour
             return;
         }
     }
+
+    // Force Accessor.
+    public Vector2 Force { get => force; set => force = value; }
+
+    // Torque Accessor.
+    public float Torque { get => torque; set => torque = value; }
 
     /************************************
     **          End Accessors          ** 
