@@ -13,7 +13,7 @@ public class Particle2D : MonoBehaviour
 
     [SerializeField]
     // Position of this object.
-    private Vector2 position = Vector2.zero;
+    public Vector2 position = Vector2.zero;
     [SerializeField]
     // Velocity of this object.
     private Vector2 velocity = Vector2.zero;
@@ -219,7 +219,7 @@ public class Particle2D : MonoBehaviour
     // Damping spring force option.
     private bool dampingSpringActive = false;
 
-
+    public bool isProjectile = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -233,19 +233,23 @@ public class Particle2D : MonoBehaviour
     void FixedUpdate()
     {
         CubeInvInertiaCalc();
-        
+
         // Check algorithm type from user selection menu items.
-        
+        GetInspectorItems();
 
         // Update acceleration before setting transforms.
         UpdateAcceleration();
-        UpdateAngularAcceleration();
-        torque = 0;
-        // Apply position to Unity's transform component.
-        transform.position = position;
-        PlayerControls();
 
-        GetInspectorItems();
+        if(name == "Player")
+        {
+            UpdateAngularAcceleration();
+            torque = 0;
+
+            // Apply position to Unity's transform component.
+            PlayerControls();
+        }
+
+        transform.position = position;
         // Apply rotation to Unity's transform component. (z rotation)
         transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
 
@@ -482,6 +486,11 @@ public class Particle2D : MonoBehaviour
             acceleration = new Vector2(0.0f, 0.0f);
             velocity = new Vector2(0.0f,0.0f);
         } 
+
+        if(Input.GetKey(KeyCode.E))
+        {
+            SpawnProjectile.instance.Fire();
+        }
     }
 
     // get direction to move forward
