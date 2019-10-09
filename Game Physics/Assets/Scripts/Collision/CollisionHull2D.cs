@@ -18,41 +18,51 @@ public abstract class CollisionHull2D : MonoBehaviour
             // float? collisionDepth;
         }
         // The 2 hulls which are colliding.
-        public CollisionHull2D a = null;
-        public CollisionHull2D b = null;
+        private CollisionHull2D a = null;
+        private CollisionHull2D b = null;
 
         // All the contact involved in the collision.
-        public Contact[] contact = new Contact[4];
+        private Contact[] contact = new Contact[4];
 
         // Number of contacts involved in the collision.
-        public int contactCount = 0;
+        private int contactCount = 0;
 
         // Was there a collision.
-        public bool status = false;
+        private bool status = false;
 
         // Closing velocity of the collision.
-        public float closingVelocity;
+        private Vector2 closingVelocity;
 
-        // Calculate the closing velocity of the 2 colliding objects.
-        public void CalculateClosingVelocity()
+        // Calculate the closing velocity of the 2 colliding objects for the given contact normal.
+        public Vector2 CalculateClosingVelocity(Vector2 contactNormal)
         {
             // Calculate the difference in velocities.
-            Vector2 velocityDifference = a.Particle.Velocity - b.Particle.Velocity;
+            Vector2 velocityDifference = A.Particle.Velocity - B.Particle.Velocity;
             
             // Get the opposite values of the difference.
             velocityDifference *= -1.0f;
             
             // Get the difference in positions.
-            Vector2 positionDifference = a.Particle.Position - b.Particle.Position;
+            Vector2 positionDifference = A.Particle.Position - B.Particle.Position;
             
             // Normalize the difference in positions.
             positionDifference.Normalize();
 
             // Find the scalar(dot) product of the difference in velocities and difference in positions normalized.
-            closingVelocity = Vector2.Dot(velocityDifference, positionDifference);
-
-            return;
+            return Vector2.Dot(velocityDifference, positionDifference) * contactNormal;
         }
+
+        // Collision hull a accessor.
+        public CollisionHull2D A { get => a; set => a = value; }
+
+        // Collision hull b accessor.
+        public CollisionHull2D B { get => b; set => b = value; }
+
+        // Collision status accessor.
+        public bool Status { get => status; set => status = value; }
+
+        // Collsion contact count accessor.
+        public int ContactCount { get => contactCount; set => contactCount = value; }
     }
     // END TODO
 
