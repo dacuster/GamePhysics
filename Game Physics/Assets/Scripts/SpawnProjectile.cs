@@ -30,7 +30,6 @@ public class SpawnProjectile : MonoBehaviour
         Particle2D particle = projectile.GetComponent<Particle2D>();
         particle.Position = projectileSpawn.position;
         particle.Rotation = projectileSpawn.rotation.eulerAngles.z;
-        Debug.Log("Send");
     }
 
     void Update()

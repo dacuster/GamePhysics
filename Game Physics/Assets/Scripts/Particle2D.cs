@@ -246,10 +246,10 @@ public class Particle2D : MonoBehaviour
             UpdateAngularAcceleration();
             Torque = 0;
 
-            // Apply position to Unity's transform component.
-            PlayerControls();
+            PlayerController.instance.PlayerControls();
         }
 
+        // Apply position to Unity's transform component.
         transform.position = Position;
         // Apply rotation to Unity's transform component. (z rotation)
         transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
@@ -455,43 +455,6 @@ public class Particle2D : MonoBehaviour
     {
         // t = px*fy - py*fx
         Torque = pos.x * newForce.y - pos.y * newForce.x;
-    }
-
-    // get keyboard inputs
-    public void PlayerControls()
-    {
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            AddForce(CalculateDirection());
-        }
-
-        if (Input.GetKey(KeyCode.DownArrow))
-        {
-            AddForce(-CalculateDirection());
-        }
-
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            ApplyTorque(new Vector2(0, 1), new Vector2(-1.0f, 0.0f));
-        }
-
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-            ApplyTorque(new Vector2(0, 1), new Vector2(1.0f, 0.0f));
-        }
-        
-        if(Input.GetKey(KeyCode.Space))
-        {
-            AngularVelocity = 0;
-            AngularAcceleration = 0;
-            Acceleration = new Vector2(0.0f, 0.0f);
-            Velocity = new Vector2(0.0f,0.0f);
-        } 
-
-        if(Input.GetKey(KeyCode.E))
-        {
-            SpawnProjectile.instance.Fire();
-        }
     }
 
     // get direction to move forward
