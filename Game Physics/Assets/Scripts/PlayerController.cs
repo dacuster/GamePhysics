@@ -4,13 +4,20 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController instance = null;
     Particle2D particle;
     // Start is called before the first frame update
     void Start()
     {
         particle = GetComponent<Particle2D>();   
     }
-
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+    }
     // Update is called once per frame
     void Update()
     {
@@ -50,6 +57,16 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.E))
         {
             SpawnProjectile.instance.Fire();
+        }
+
+        if (Input.GetKey(KeyCode.I))
+        {
+            GameController.instance.IncreaseScore();
+        }
+
+        if (Input.GetKey(KeyCode.L))
+        {
+            GameController.instance.PlayerHit();
         }
     }
 }
