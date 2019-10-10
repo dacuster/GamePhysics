@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        particle = GetComponent<Particle2D>();   
+        particle = GetComponent<Particle2D>();
     }
     private void Awake()
     {
