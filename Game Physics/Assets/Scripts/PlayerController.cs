@@ -48,23 +48,23 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Space))
         {
-            //particle.angularVelocity = 0;
-            //angularAcceleration = 0;
-            //acceleration = new Vector2(0.0f, 0.0f);
-            //velocity = new Vector2(0.0f, 0.0f);
+            particle.GetComponent<Particle2D>().AngularVelocity = 0;
+            particle.GetComponent<Particle2D>().AngularAcceleration = 0;
+            particle.GetComponent<Particle2D>().Acceleration =  Vector2.zero;
+            particle.GetComponent<Particle2D>().Velocity = Vector2.zero;
         }
 
-        if (Input.GetKey(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E))
         {
             SpawnProjectile.instance.Fire();
         }
 
-        if (Input.GetKey(KeyCode.I))
+        if (Input.GetKeyDown(KeyCode.I))
         {
             GameController.instance.IncreaseScore();
         }
 
-        if (Input.GetKey(KeyCode.L))
+        if (Input.GetKeyDown(KeyCode.L))
         {
             GameController.instance.PlayerHit();
         }

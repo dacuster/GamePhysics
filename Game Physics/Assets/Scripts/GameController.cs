@@ -35,11 +35,6 @@ public class GameController : MonoBehaviour
         scoretext.text = "Score: " + score;
         lifeText.text = "Lives: " + lives;
 
-        if(lives <= 0)
-        {
-            Debug.Log("Dead");
-        }
-
     }
 
     public void IncreaseScore()
@@ -50,6 +45,26 @@ public class GameController : MonoBehaviour
     public void PlayerHit()
     {
         lives -= 1;
+        if (lives <= 0)
+        {
+            Dead();
+        }
+    }
+    public void Dead()
+    {
+        Particle2D particle = GameObject.Find("Player").GetComponent<Particle2D>();
+        particle.AngularVelocity = 0;
+        particle.AngularAcceleration = 0;
+        particle.Acceleration = Vector2.zero;
+        particle.Velocity = Vector2.zero;
+
+        Destroy(GameObject.Find("Player"));
+        // Player explosion
+    }
+    
+    IEnumerator WaitASec()
+    {
+        yield return new WaitForSeconds(spawnWait);
     }
 
     IEnumerator SpawnWaves()
