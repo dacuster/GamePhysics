@@ -84,7 +84,20 @@ public class CircleCollisionHull2D : CollisionHull2D
         float radiiSumSquared = radiiSum * radiiSum;
 
         // Check if the distance from centers is less than or equal to sum of the radii.
-        return distanceSquared <= radiiSumSquared;
+        c.Status = distanceSquared <= radiiSumSquared;
+
+        // Set the collsion data.
+        if (c.Status)
+        {
+            c.ContactCount = 1;
+            c.A = this;
+            c.B = other;
+            Vector2 normal = differenceCenters.normalized;
+            c.AddContact(normal * Radius, normal, 0.9f, 0);
+        }
+
+        // Return the collision status.
+        return c.Status;
     }
 
     // Check for collision circle vs AABB.

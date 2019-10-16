@@ -2,27 +2,34 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// This class requires Particle2D to prevent null references.
 [RequireComponent(typeof(Particle2D))]
 
 // Abstract prevent anything from instantiating it.
 public abstract class CollisionHull2D : MonoBehaviour
 {
+    // Video tutorial circle collision handler. https://www.youtube.com/watch?v=LPzyNOHY3A4
     // TODO: Comment for lab 5.
+    // Collision data.
     public class Collision
     {
+        // Point of contact in collision.
         public struct Contact
         {
-            Vector2 position;
-            Vector2 normal;
-            float restitution;
-            // float? collisionDepth;
+            // Position of the contact.
+            public Vector2 position;
+            // Contact normal.
+            public Vector2 normal;
+            // Coefficient of restitution of the contact.
+            public float restitution;
         }
+
         // The 2 hulls which are colliding.
         private CollisionHull2D a = null;
         private CollisionHull2D b = null;
 
-        // All the contact involved in the collision.
-        private Contact[] contact = new Contact[4];
+        // All the contacts involved in the collision.
+        private Contact[] contacts = new Contact[4];
 
         // Number of contacts involved in the collision.
         private int contactCount = 0;
@@ -52,6 +59,45 @@ public abstract class CollisionHull2D : MonoBehaviour
             return Vector2.Dot(velocityDifference, positionDifference) * contactNormal;
         }
 
+        // Create a contact and add it to the contacts list.
+        public void AddContact(Vector2 _position, Vector2 _normal, float _restitution, int _id)
+        {
+            // Create a new contact.
+            Contact contact;
+
+            // Set the position of the contact.
+            contact.position = _position;
+
+            // Set the normal of the contact.
+            contact.normal = _normal;
+
+            // Set the restitution of the contact.
+            contact.restitution = _restitution;
+
+            // Add this contact to the list of contacts based on the current contact id.
+            Contacts[_id] = contact;
+
+            return;
+        }
+
+        public void ResolveCollision()
+        {
+            Particle2D particleA = A.Particle;
+            Particle2D particleB = B.Particle;
+            Vector2 newVelocity = Vector2.zero;
+
+            for (int currentContact = 0; currentContact < contactCount; currentContact++)
+            {
+                // TODO: Closing velocity is overlap of both objects?
+                CalculateClosingVelocity(Contacts[currentContact].normal);
+                newVelocity = 0.5f * -closingVelocity * Contacts[currentContact].restitution;
+            }
+
+            particleA.Velocity = newVelocity;
+
+            return;
+        }
+
         // Collision hull a accessor.
         public CollisionHull2D A { get => a; set => a = value; }
 
@@ -63,6 +109,9 @@ public abstract class CollisionHull2D : MonoBehaviour
 
         // Collsion contact count accessor.
         public int ContactCount { get => contactCount; set => contactCount = value; }
+
+        // Contacts of the collision.
+        public Contact[] Contacts { get => contacts; set => contacts = value; }
     }
     // END TODO
 
@@ -91,10 +140,57 @@ public abstract class CollisionHull2D : MonoBehaviour
         return;
     }
 
-    public static bool TestCollision(CollisionHull2D a, CollisionHull2D b, ref Collision c)
-    {		
+    // Update for physics.
+    private void FixedUpdate()
+    {
+        // Iterate through every CollisionHull2D in the game.
+        foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
+        {
+            // Ignore collisions with self.
+            if (hull == this)
+            {
+                continue;
+            }
+
+            // Create new potential collision.
+            Collision collision = new Collision();
+
+            // Check for collision and collect collision data.
+            if (TestCollision(this, hull, ref collision))
+            {
+                // Resolve the collision.
+                collision.ResolveCollision();
+            }
+        }
+
+        return;
+    }
+
+    // Test collision with given hulls and collect collision data.
+    public static bool TestCollision(CollisionHull2D left, CollisionHull2D right, ref Collision collision)
+    {
+        // Other hull is a circle.
+        if (right.Type == CollisionHullType2D.hull_circle)
+        {
+            // Test for collision with a circle and collect collision data.
+            return left.TestCollisionVsCircle(right as CircleCollisionHull2D, ref collision);
+        }
+        // Other hull is an AABB.
+        else if (right.Type == CollisionHullType2D.hull_aabb)
+        {
+            // Test for collision with an AABB and collect collision data.
+            return left.TestCollisionVsAABB(right as AxisAlignedBoundingBoxHull2D, ref collision);
+        }
+        // Other hull is an OBB.
+        else if (right.Type == CollisionHullType2D.hull_obb)
+        {
+            // Test for collision with an OBB and collect collision data.
+            return left.TestCollisionVsOBB(right as ObjectBoundingBoxHull2D, ref collision);
+        }
+
         return false;
     }
+
 
     /********************************
     **  Abstract Collision Checks  **
@@ -107,11 +203,14 @@ public abstract class CollisionHull2D : MonoBehaviour
     // Check collision of this vs OBB.
     public abstract bool TestCollisionVsOBB(ObjectBoundingBoxHull2D other, ref Collision c);
 
+
+    /****************
+    **  Accessors  ** 
+    ****************/
+
     // Particle accessor.
     public Particle2D Particle { get; set; }
 
     // Accessor for collision hull type.
     public CollisionHullType2D Type { get; }
-
-    //protected CollisionHullType2D Type { set; }
 }
