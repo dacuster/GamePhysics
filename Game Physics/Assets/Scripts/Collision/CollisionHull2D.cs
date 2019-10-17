@@ -203,26 +203,56 @@ public abstract class CollisionHull2D : MonoBehaviour
             }
 
             // Players can only collide with enemies.
-            bool playerCollisions = Layer == CollisionLayer.player && hull.Layer == CollisionLayer.enemy;
+            bool playerCollision = Layer == CollisionLayer.player && hull.Layer == CollisionLayer.enemy;
             // Enemies can collide with anything.
             bool enemyCollision = Layer == CollisionLayer.enemy;
             bool projectileCollision = Layer == CollisionLayer.projectile && hull.Layer == CollisionLayer.enemy;
 
             // Check if collision can happen.
-            if (playerCollisions || enemyCollision || projectileCollision)
+            if (playerCollision || enemyCollision || projectileCollision)
             {
                 // Check for collision and collect collision data.
                 if (TestCollision(this, hull, ref collision))
                 {
-                    GetComponent<MeshRenderer>().material.color = Color.red;
-                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
                     // Resolve the collision.
                     collision.ResolveCollision();
-                }
-                else
-                {
-                    GetComponent<MeshRenderer>().material.color = Color.white;
-                    hull.GetComponent<MeshRenderer>().material.color = Color.white;
+
+
+                    if (playerCollision)
+                    {
+                        if (hull.gameObject != null)
+                        {
+                            hull.GetComponent<Asteroid>().DecrementLife();
+                        }
+                        if (gameObject != null)
+                        {
+                            GameController.instance.PlayerHit();
+                        }
+                    }
+                    else if (projectileCollision)
+                    {
+                        GameController.instance.IncreaseScore();
+
+                        if (hull.gameObject != null)
+                        {
+                            hull.GetComponent<Asteroid>().DecrementLife();
+                        }
+                        if (gameObject != null)
+                        {
+                            Destroy(gameObject);
+                        }
+                    }
+                    else if (enemyCollision)
+                    {
+                        if (hull.gameObject != null)
+                        {
+                            hull.GetComponent<Asteroid>().DecrementLife();
+                        }
+                        if (gameObject != null)
+                        {
+                            GetComponent<Asteroid>().DecrementLife();
+                        }
+                    }
                 }
             }
         }

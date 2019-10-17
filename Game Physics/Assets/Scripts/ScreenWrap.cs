@@ -9,6 +9,9 @@ public class ScreenWrap : MonoBehaviour
 
     // Camera width
     float camWidth;
+
+    // The particle.
+    Particle2D particle;
    
     // Start is called before the first frame update
     public void Start()
@@ -18,73 +21,38 @@ public class ScreenWrap : MonoBehaviour
 
         // Get camera width
         camWidth = camHeight * Camera.main.aspect;
+
+        particle = GetComponent<Particle2D>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-        // Get player gameobject
-        GameObject player = GameObject.Find("Player");
+        Vector2 position = particle.Position;
 
-        // Set player position
-        Vector3 playerPos = player.transform.position;
-
-        // loop through asteroid list
-        for (int i = 0; i < GameController.instance.asteroidList.Count; i++)
+        if (position.x > camWidth)
         {
-
-            Vector3 asteroidPos = (GameController.instance.asteroidList[i].transform.position);
-           
-            // Check if asteroid pos x > camera Width
-            if (asteroidPos.x > camWidth)
-            {
-                GameController.instance.asteroidList[i].GetComponent<Particle2D>().Position = new Vector2((camWidth * -1) + 2.0f, asteroidPos.y);
-            }
-
-            // Check if asteroid pos y > camera height
-            else if (asteroidPos.y > camHeight)
-            {
-                GameController.instance.asteroidList[i].GetComponent<Particle2D>().Position = new Vector2(asteroidPos.x, (camHeight * -1) + 2.0f);
-            }
-
-            // Check if asteroid pos x < -camera width
-            else if (asteroidPos.x < -camWidth)
-            {
-                GameController.instance.asteroidList[i].GetComponent<Particle2D>().Position = new Vector2((camWidth * 1), asteroidPos.y);
-            }
-
-            // Check if asteroid pos y < -camera height
-            else if (asteroidPos.y < -camHeight)
-            {
-                GameController.instance.asteroidList[i].GetComponent<Particle2D>().Position = new Vector2(asteroidPos.x, (camHeight * 1));
-            }
+            position += Vector2.left * camWidth * 2.0f;
+            position.x += 2.0f;
+        }
+        else if (position.x < -camWidth)
+        {
+            position += Vector2.right * camWidth * 2.0f;
+            position.x -= 2.0f;
         }
 
-        // Check if player pos x > camera Width
-        if (player.GetComponent<Particle2D>().Position.x > camWidth)
+        if (position.y > camHeight)
         {
-            player.GetComponent<Particle2D>().Position = new Vector2((camWidth * -1) + 2.0f, playerPos.y);
+            position += Vector2.down * camHeight * 2.0f;
+            position.y += 2.0f;
 
         }
-
-        // Check if player pos y > camera height
-        else if (player.GetComponent<Particle2D>().Position.y > camHeight)
+        else if (position.y < -camHeight)
         {
-            player.GetComponent<Particle2D>().Position = new Vector2(playerPos.x, (camHeight * -1) + 2.0f);
+            position += Vector2.up * camHeight * 2.0f;
+            position.y -= 2.0f;
         }
 
-        // Check if player pos x < -camera width
-        else if (player.GetComponent<Particle2D>().Position.x < -camWidth)
-        {
-            player.GetComponent<Particle2D>().Position = new Vector2((camWidth * 1), playerPos.y);
-
-        }
-
-        // Check if player pos y < -camera height
-        else if (player.GetComponent<Particle2D>().Position.y < -camHeight)
-        {
-            player.GetComponent<Particle2D>().Position = new Vector2(playerPos.x, (camHeight * 1));
-        }
+        GetComponent<Particle2D>().Position = position;
     }
 }
