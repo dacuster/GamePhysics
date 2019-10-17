@@ -6,7 +6,7 @@ using UnityEngine;
 public class Asteroid : MonoBehaviour
 {
     // Asteroid lives.
-    private int lives = 3;
+    private int lives = 1;
 
 
     // Start is called before the first frame update
