@@ -109,8 +109,33 @@ public class CircleCollisionHull2D : CollisionHull2D
         Vector2 end = new Vector2(Particle.Position.x, Particle.Position.y);
         Debug.DrawLine(start, end, Color.red);
 
-        // Check if the nearest point is colliding with the circle.
-        return (deltaX * deltaX + deltaY * deltaY) <= (Radius * Radius);
+        // Check if the distance from centers is less than or equal to sum of the radii.
+        c.Status = (deltaX * deltaX + deltaY * deltaY) <= (Radius * Radius);
+
+        // Set the collsion data.
+        if (c.Status)
+        {
+            //// Calculate the max extents of the OBB.
+            //other.CalculateBoundingBoxWorld();
+
+            //// Tracker for points of contact count.
+            //int numberOfContacts = 0;
+
+            //// Add each point of contact that is colliding with the circle.
+            //for (int currentExtent = 0; currentExtent < 4; currentExtent++)
+            //{
+            //    if ()
+            //}
+
+            c.ContactCount = 1;
+            c.A = this;
+            c.B = other;
+            Vector2 normal = (Particle.Position - other.Particle.Position).normalized;
+            c.AddContact(normal * Radius, normal, 0.9f, 0);
+        }
+
+        // Return the collision status.
+        return c.Status;
     }
 
     // Radius Accessor

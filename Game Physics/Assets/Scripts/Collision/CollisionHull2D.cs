@@ -165,6 +165,14 @@ public abstract class CollisionHull2D : MonoBehaviour
         hull_obb
     }
 
+    // Different layers for collision.
+    public enum CollisionLayer
+    {
+        player,
+        enemy,
+        projectile
+    }
+
     // Constructor.
     protected CollisionHull2D(CollisionHullType2D type)
     {
@@ -194,24 +202,28 @@ public abstract class CollisionHull2D : MonoBehaviour
                 continue;
             }
 
-            // TODO: Remove for player check. Skip for testing circle vs circle.
-            if (hull.name == "Player" || this.name == "Player")
-            {
-                continue;
-            }
+            // Players can only collide with enemies.
+            bool playerCollisions = Layer == CollisionLayer.player && hull.Layer == CollisionLayer.enemy;
+            // Enemies can collide with anything.
+            bool enemyCollision = Layer == CollisionLayer.enemy;
+            bool projectileCollision = Layer == CollisionLayer.projectile && hull.Layer == CollisionLayer.enemy;
 
-            // Check for collision and collect collision data.
-            if (TestCollision(this, hull, ref collision))
+            // Check if collision can happen.
+            if (playerCollisions || enemyCollision || projectileCollision)
             {
-                GetComponent<MeshRenderer>().material.color = Color.red;
-                hull.GetComponent<MeshRenderer>().material.color = Color.red;
-                // Resolve the collision.
-                collision.ResolveCollision();
-            }
-            else
-            {
-                GetComponent<MeshRenderer>().material.color = Color.white;
-                hull.GetComponent<MeshRenderer>().material.color = Color.white;
+                // Check for collision and collect collision data.
+                if (TestCollision(this, hull, ref collision))
+                {
+                    GetComponent<MeshRenderer>().material.color = Color.red;
+                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
+                    // Resolve the collision.
+                    collision.ResolveCollision();
+                }
+                else
+                {
+                    GetComponent<MeshRenderer>().material.color = Color.white;
+                    hull.GetComponent<MeshRenderer>().material.color = Color.white;
+                }
             }
         }
 
@@ -267,6 +279,12 @@ public abstract class CollisionHull2D : MonoBehaviour
 
     // Accessor for collision hull type.
     public CollisionHullType2D Type { get; }
+
+    // Layer of collision.
+    [SerializeField]
+    private CollisionLayer layer;
+
+    public CollisionLayer Layer { get { return layer; } set { layer = value; } }
 }
 
 
