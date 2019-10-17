@@ -103,24 +103,24 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // first, test AABB vs max extents of OBB
         // then, multiply by OBB inverse matrix, do test again
 
-        // OBB max extends
-        Vector2 _xAxisBoundOBB = other.X_AxisBound;
-        Vector2 _yAxisBoundOBB = other.Y_AxisBound;
+        // Transform the extents to OBB world space.
+        other.CalculateBoundingBoxWorld();
 
-        // Transform the entends to OBB world space.
-        other.CalculateBoundingBoxWorld(ref _xAxisBoundOBB, ref _yAxisBoundOBB);
+        // OBB max extents
+        Vector2 xAxisBoundOBB = other.X_AxisMaxBound;
+        Vector2 yAxisBoundOBB = other.Y_AxisMaxBound;
 
-        // Check if the extends for the AABB are colliding with the extends for the OBB in OBB world space.
-        if (X_AxisBound.x <= _xAxisBoundOBB.y && X_AxisBound.y >= _xAxisBoundOBB.x && Y_AxisBound.y >= _yAxisBoundOBB.x && Y_AxisBound.x <= _yAxisBoundOBB.y)
+        // Check if the extents for the AABB are colliding with the extents for the OBB in OBB world space.
+        if (X_AxisBound.x <= xAxisBoundOBB.y && X_AxisBound.y >= xAxisBoundOBB.x && Y_AxisBound.y >= yAxisBoundOBB.x && Y_AxisBound.x <= yAxisBoundOBB.y)
         {
-            // AABB max extends
+            // AABB max extents
             Vector2 _xAxisBoundAABB = X_AxisBound;
             Vector2 _yAxisBoundAABB = Y_AxisBound;
 
-            // Transform the entends to OBB local space.
+            // Transform the entents to OBB local space.
             other.CalculateBoundingBoxWorld(ref _xAxisBoundAABB, ref _yAxisBoundAABB);
 
-            // Check if the extends for the AABB in OBB local space are colliding with the extends for the OBB in OBB world space.
+            // Check if the extents for the AABB in OBB local space are colliding with the extents for the OBB in OBB world space.
             if (_xAxisBoundAABB.x <= other.X_AxisBound.y && _xAxisBoundAABB.y >= other.X_AxisBound.x && _yAxisBoundAABB.y >= other.Y_AxisBound.x && _yAxisBoundAABB.x <= other.Y_AxisBound.y)
             {
                 // Collision.

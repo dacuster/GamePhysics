@@ -85,7 +85,7 @@ public class CircleCollisionHull2D : CollisionHull2D
         Vector3 circlePosition = Particle.Position;
 
         // Get the local to world matrix of the other object.
-        Matrix4x4 matrix = other.LocalToWorld();
+        Matrix4x4 matrix = other.LocalToWorldOther();
 
         // Transform the circle position by the other object's local space.
         circlePosition = matrix.MultiplyPoint3x4(circlePosition);
@@ -102,7 +102,7 @@ public class CircleCollisionHull2D : CollisionHull2D
         Vector3 nearestPosition = new Vector2(nearestX, nearestY);
 
         // Bring nearest position on the other object to its local space.
-        nearestPosition = other.WorldToLocal().MultiplyPoint3x4(nearestPosition);
+        nearestPosition = other.LocalToWorldOther().MultiplyPoint3x4(nearestPosition);
 
         // Debug drawing.
         Vector2 start = new Vector2(nearestPosition.x, nearestPosition.y);

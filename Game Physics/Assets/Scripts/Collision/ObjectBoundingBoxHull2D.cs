@@ -16,6 +16,10 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
     private Vector2 xAxisBound;
     private Vector2 yAxisBound;
 
+    // Bounding axis for max extents.
+    private Vector2 xAxisMaxBound;
+    private Vector2 yAxisMaxBound;
+
     private void FixedUpdate()
     {
         // Update bounding box axis.
@@ -93,21 +97,21 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         // AABB-OBB part 2 twice
         // 1. .....
 
-        //// This OBB max extends.
+        //// This OBB max extents.
         //Vector2 _xAxisBoundThis = X_AxisBound;
         //Vector2 _yAxisBoundThis = Y_AxisBound;
 
-        //// Transform the entends to OBB local space.
+        //// Transform the entents to OBB local space.
         //other.CalculateBoundingBoxLocal(ref _xAxisBoundThis, ref _yAxisBoundThis);
 
-        //// Other OBB max extends.
+        //// Other OBB max extents.
         //Vector2 _xAxisBoundOther = other.X_AxisBound;
         //Vector2 _yAxisBoundOther = other.Y_AxisBound;
 
-        //// Transform the entends to this OBB world space.
+        //// Transform the entents to this OBB world space.
         //CalculateBoundingBoxLocal(ref _xAxisBoundOther, ref _yAxisBoundOther);
 
-        //// Check if the extends for the AABB are colliding with the extends for the OBB in OBB world space.
+        //// Check if the extents for the AABB are colliding with the extents for the OBB in OBB world space.
         //if (_xAxisBoundOther.x <= _xAxisBoundThis.y && _xAxisBoundOther.y >= _xAxisBoundThis.x && _yAxisBoundOther.y >= _yAxisBoundThis.x && _yAxisBoundOther.x <= _yAxisBoundThis.y)
         //{
         //    Matrix4x4 otherWorldSpace = other.WorldToLocal();
@@ -117,13 +121,41 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         //    _xAxisBoundThis = WorldToLocal().MultiplyPoint3x4(X_AxisBound);
         //    _yAxisBoundThis = WorldToLocal().MultiplyPoint3x4(Y_AxisBound);
 
-        //    // Check if the extends for the AABB in OBB local space are colliding with the extends for the OBB in OBB world space.
+        //    // Check if the extents for the AABB in OBB local space are colliding with the extents for the OBB in OBB world space.
         //    if (_xAxisBoundOther.x <= _xAxisBoundThis.y && _xAxisBoundOther.y >= _xAxisBoundThis.x && _yAxisBoundOther.y >= _yAxisBoundThis.x && _yAxisBoundOther.x <= _yAxisBoundThis.y)
         //    {
         //        // Collision.
         //        return true;
         //    }
         //}
+
+
+        // AABB max extents
+        Vector2 _xAxisBoundThis = X_AxisBound;
+        Vector2 _yAxisBoundThis = Y_AxisBound;
+
+        // Transform the entents to OBB local space.
+        CalculateBoundingBoxWorld(ref _xAxisBoundThis, ref _yAxisBoundThis);
+
+        // Check if the extents for the AABB in OBB local space are colliding with the extents for the OBB in OBB world space.
+        if (_xAxisBoundThis.x <= other.X_AxisBound.y && _xAxisBoundThis.y >= other.X_AxisBound.x && _yAxisBoundThis.y >= other.Y_AxisBound.x && _yAxisBoundThis.x <= other.Y_AxisBound.y)
+        {
+            //// AABB max extents
+            //Vector2 _xAxisBoundOther = other.X_AxisBound;
+            //Vector2 _yAxisBoundOther = other.Y_AxisBound;
+
+            //// Transform the entents to OBB local space.
+            //CalculateBoundingBoxWorld(ref _xAxisBoundOther, ref _yAxisBoundThis);
+
+            //// Check if the extents for the AABB in OBB local space are colliding with the extents for the OBB in OBB world space.
+            //if (X_AxisBound.x <= _xAxisBoundOther.y && X_AxisBound.y >= _xAxisBoundOther.x && Y_AxisBound.y >= _yAxisBoundOther.x && Y_AxisBound.x <= _yAxisBoundOther.y)
+            //{
+            //    GetComponent<MeshRenderer>().material.color = Color.red;
+            //    other.GetComponent<MeshRenderer>().material.color = Color.red;
+            //    // Collision.
+            //    return true;
+            //}
+        }
 
         return false;
     }
@@ -141,18 +173,51 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         return;
     }
 
+    public void CalculateBoundingBoxAxisWorld(Particle2D _particle, ref Vector2 _xAxisBound, ref Vector2 _yAxisBound)
+    {
+        // Get the particle for use when game is not running.
+        Particle2D particle = GetComponent<Particle2D>();
+        
+        // Get the position of the particle.
+        Vector2 position = _particle.Position;
+        
+        // Place the particle position in world space.
+        WorldToLocal().MultiplyPoint3x4(position);
+
+        // Calculate the bounds at the world position.
+        _xAxisBound.x = position.x - BoundingBox.x * 0.5f;
+        _xAxisBound.y = _xAxisBound.x + BoundingBox.x;
+        _yAxisBound.x = position.y - BoundingBox.y * 0.5f;
+        _yAxisBound.y = _yAxisBound.x + BoundingBox.y;
+
+        // Debug drawing data for extents in world space.
+        Vector2 drawCorner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+        Vector2 drawCorner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+        Vector2 drawCorner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+        Vector2 drawCorner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
+        
+        // Draw the extents in world space.
+        Debug.DrawLine(drawCorner1, drawCorner2, Color.white);
+        Debug.DrawLine(drawCorner2, drawCorner3, Color.white);
+        Debug.DrawLine(drawCorner3, drawCorner4, Color.white);
+        Debug.DrawLine(drawCorner4, drawCorner1, Color.white);
+
+
+        return;
+    }
+
     // Calculate the bounding box limits in local to world space.
-    public void CalculateBoundingBoxLocal(ref Vector2 _xBound, ref Vector2 _yBound)
+    public void CalculateBoundingBoxLocal()
     {
         // Rotate bound corners.
-        // Find min/max extends for x and y.
-        // return min and max extends into ref variables.
+        // Find min/max extents for x and y.
+        // return min and max extents into ref variables.
 
         // Get the bounds position for each box corner.
-        Vector2 corner1 = new Vector2(_xBound.x, _yBound.x);
-        Vector2 corner2 = new Vector2(_xBound.x, _yBound.y);
-        Vector2 corner3 = new Vector2(_xBound.y, _yBound.y);
-        Vector2 corner4 = new Vector2(_xBound.y, _yBound.x);
+        Vector2 corner1 = new Vector2(X_AxisBound.x, Y_AxisBound.x);
+        Vector2 corner2 = new Vector2(X_AxisBound.x, Y_AxisBound.y);
+        Vector2 corner3 = new Vector2(X_AxisBound.y, Y_AxisBound.y);
+        Vector2 corner4 = new Vector2(X_AxisBound.y, Y_AxisBound.x);
 
         // Transform the corners from local to world space.
         corner1 = WorldToLocal().MultiplyPoint3x4(corner1);
@@ -160,27 +225,23 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         corner3 = WorldToLocal().MultiplyPoint3x4(corner3);
         corner4 = WorldToLocal().MultiplyPoint3x4(corner4);
 
-        // Determine the minimum and maximum extends for each axis.
+        // Determine the minimum and maximum extents for each axis.
         float minimumX = Mathf.Min(corner1.x, corner2.x, corner3.x, corner4.x);
         float maximumX = Mathf.Max(corner1.x, corner2.x, corner3.x, corner4.x);
         float minimumY = Mathf.Min(corner1.y, corner2.y, corner3.y, corner4.y);
         float maximumY = Mathf.Max(corner1.y, corner2.y, corner3.y, corner4.y);
 
-        // Create vector2 of new extends.
-        Vector2 newBoundX = new Vector2(minimumX, maximumX);
-        Vector2 newBoundY = new Vector2(minimumY, maximumY);
+        // Create vector2 of new extents.
+        xAxisMaxBound = new Vector2(minimumX, maximumX);
+        yAxisMaxBound = new Vector2(minimumY, maximumY);
 
-        // Assign referenced variables the new extend values.
-        _xBound = newBoundX;
-        _yBound = newBoundY;
+        // Debug drawing data for extents in world space.
+        Vector2 drawCorner1 = new Vector2(X_AxisMaxBound.x, Y_AxisMaxBound.x);
+        Vector2 drawCorner2 = new Vector2(X_AxisMaxBound.x, Y_AxisMaxBound.y);
+        Vector2 drawCorner3 = new Vector2(X_AxisMaxBound.y, Y_AxisMaxBound.y);
+        Vector2 drawCorner4 = new Vector2(X_AxisMaxBound.y, Y_AxisMaxBound.x);
 
-        // Debug drawing data for extends in world space.
-        Vector2 drawCorner1 = new Vector2(newBoundX.x, newBoundY.x);
-        Vector2 drawCorner2 = new Vector2(newBoundX.x, newBoundY.y);
-        Vector2 drawCorner3 = new Vector2(newBoundX.y, newBoundY.y);
-        Vector2 drawCorner4 = new Vector2(newBoundX.y, newBoundY.x);
-
-        // Draw the extends in world space.
+        // Draw the extents in world space.
         Debug.DrawLine(drawCorner1, drawCorner2, Color.red);
         Debug.DrawLine(drawCorner2, drawCorner3, Color.red);
         Debug.DrawLine(drawCorner3, drawCorner4, Color.red);
@@ -190,17 +251,61 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
     }
 
     // Calculate the bounding box limits in local to world space.
-    public void CalculateBoundingBoxWorld(ref Vector2 _xBound, ref Vector2 _yBound)
+    public void CalculateBoundingBoxLocal(ref Vector2 _xAxisBound, ref Vector2 _yAxisBound)
     {
         // Rotate bound corners.
-        // Find min/max extends for x and y.
-        // return min and max extends into ref variables.
+        // Find min/max extents for x and y.
+        // return min and max extents into ref variables.
 
         // Get the bounds position for each box corner.
-        Vector2 corner1 = new Vector2(_xBound.x, _yBound.x);
-        Vector2 corner2 = new Vector2(_xBound.x, _yBound.y);
-        Vector2 corner3 = new Vector2(_xBound.y, _yBound.y);
-        Vector2 corner4 = new Vector2(_xBound.y, _yBound.x);
+        Vector2 corner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+        Vector2 corner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+        Vector2 corner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+        Vector2 corner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
+
+        // Transform the corners from local to world space.
+        corner1 = WorldToLocalOther().MultiplyPoint3x4(corner1);
+        corner2 = WorldToLocalOther().MultiplyPoint3x4(corner2);
+        corner3 = WorldToLocalOther().MultiplyPoint3x4(corner3);
+        corner4 = WorldToLocalOther().MultiplyPoint3x4(corner4);
+
+        // Determine the minimum and maximum extents for each axis.
+        float minimumX = Mathf.Min(corner1.x, corner2.x, corner3.x, corner4.x);
+        float maximumX = Mathf.Max(corner1.x, corner2.x, corner3.x, corner4.x);
+        float minimumY = Mathf.Min(corner1.y, corner2.y, corner3.y, corner4.y);
+        float maximumY = Mathf.Max(corner1.y, corner2.y, corner3.y, corner4.y);
+
+        // Set new max extents.
+        _xAxisBound = new Vector2(minimumX, maximumX);
+        _yAxisBound = new Vector2(minimumY, maximumY);
+
+        // Debug drawing data for extents in world space.
+        Vector2 drawCorner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+        Vector2 drawCorner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+        Vector2 drawCorner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+        Vector2 drawCorner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
+
+        // Draw the extents in world space.
+        Debug.DrawLine(drawCorner1, drawCorner2, Color.magenta);
+        Debug.DrawLine(drawCorner2, drawCorner3, Color.magenta);
+        Debug.DrawLine(drawCorner3, drawCorner4, Color.magenta);
+        Debug.DrawLine(drawCorner4, drawCorner1, Color.magenta);
+
+        return;
+    }
+
+    // Calculate the bounding box limits in local to world space.
+    public void CalculateBoundingBoxWorld()
+    {
+        // Rotate bound corners.
+        // Find min/max extents for x and y.
+        // return min and max extents into ref variables.
+
+        // Get the bounds position for each box corner.
+        Vector2 corner1 = new Vector2(X_AxisBound.x, Y_AxisBound.x);
+        Vector2 corner2 = new Vector2(X_AxisBound.x, Y_AxisBound.y);
+        Vector2 corner3 = new Vector2(X_AxisBound.y, Y_AxisBound.y);
+        Vector2 corner4 = new Vector2(X_AxisBound.y, Y_AxisBound.x);
 
         // Transform the corners from local to world space.
         corner1 = LocalToWorld().MultiplyPoint3x4(corner1);
@@ -208,31 +313,82 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         corner3 = LocalToWorld().MultiplyPoint3x4(corner3);
         corner4 = LocalToWorld().MultiplyPoint3x4(corner4);
 
-        // Determine the minimum and maximum extends for each axis.
+        // Determine the minimum and maximum extents for each axis.
         float minimumX = Mathf.Min(corner1.x, corner2.x, corner3.x, corner4.x);
         float maximumX = Mathf.Max(corner1.x, corner2.x, corner3.x, corner4.x);
         float minimumY = Mathf.Min(corner1.y, corner2.y, corner3.y, corner4.y);
         float maximumY = Mathf.Max(corner1.y, corner2.y, corner3.y, corner4.y);
 
-        // Create vector2 of new extends.
-        Vector2 newBoundX = new Vector2(minimumX, maximumX);
-        Vector2 newBoundY = new Vector2(minimumY, maximumY);
+        // Create vector2 of new extents.
+        xAxisMaxBound = new Vector2(minimumX, maximumX);
+        yAxisMaxBound = new Vector2(minimumY, maximumY);
 
-        // Assign referenced variables the new extend values.
-        _xBound = newBoundX;
-        _yBound = newBoundY;
+        // Debug drawing data for extents in world space.
+        Vector2 drawCorner1 = new Vector2(X_AxisMaxBound.x, Y_AxisMaxBound.x);
+        Vector2 drawCorner2 = new Vector2(X_AxisMaxBound.x, Y_AxisMaxBound.y);
+        Vector2 drawCorner3 = new Vector2(X_AxisMaxBound.y, Y_AxisMaxBound.y);
+        Vector2 drawCorner4 = new Vector2(X_AxisMaxBound.y, Y_AxisMaxBound.x);
 
-        // Debug drawing data for extends in world space.
-        Vector2 drawCorner1 = new Vector2(newBoundX.x, newBoundY.x);
-        Vector2 drawCorner2 = new Vector2(newBoundX.x, newBoundY.y);
-        Vector2 drawCorner3 = new Vector2(newBoundX.y, newBoundY.y);
-        Vector2 drawCorner4 = new Vector2(newBoundX.y, newBoundY.x);
-
-        // Draw the extends in world space.
+        // Draw the extents in world space.
         Debug.DrawLine(drawCorner1, drawCorner2, Color.red);
         Debug.DrawLine(drawCorner2, drawCorner3, Color.red);
         Debug.DrawLine(drawCorner3, drawCorner4, Color.red);
         Debug.DrawLine(drawCorner4, drawCorner1, Color.red);
+
+        return;
+    }
+
+    // Calculate the bounding box limits in local to world space.
+    public void CalculateBoundingBoxWorld(ref Vector2 _xAxisBound, ref Vector2 _yAxisBound)
+    {
+        // Rotate bound corners.
+        // Find min/max extents for x and y.
+        // return min and max extents into ref variables.
+
+        // Get the bounds position for each box corner .
+        Vector2 corner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+        Vector2 corner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+        Vector2 corner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+        Vector2 corner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
+
+        // Transform the corners from local to world space.
+        corner1 = LocalToWorldOther().MultiplyPoint3x4(corner1);
+        corner2 = LocalToWorldOther().MultiplyPoint3x4(corner2);
+        corner3 = LocalToWorldOther().MultiplyPoint3x4(corner3);
+        corner4 = LocalToWorldOther().MultiplyPoint3x4(corner4);
+
+        // Determine the minimum and maximum extents for each axis.
+        float minimumX = Mathf.Min(corner1.x, corner2.x, corner3.x, corner4.x);
+        float maximumX = Mathf.Max(corner1.x, corner2.x, corner3.x, corner4.x);
+        float minimumY = Mathf.Min(corner1.y, corner2.y, corner3.y, corner4.y);
+        float maximumY = Mathf.Max(corner1.y, corner2.y, corner3.y, corner4.y);
+
+        // Create vector2 of new extents.
+        _xAxisBound = new Vector2(minimumX, maximumX);
+        _yAxisBound = new Vector2(minimumY, maximumY);
+
+        // Debug drawing data for extents in world space.
+        Vector2 drawCorner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+        Vector2 drawCorner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+        Vector2 drawCorner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+        Vector2 drawCorner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
+
+        if (name == "OBB")
+        {
+            // Draw the extents in world space.
+            Debug.DrawLine(drawCorner1, drawCorner2, Color.blue);
+            Debug.DrawLine(drawCorner2, drawCorner3, Color.blue);
+            Debug.DrawLine(drawCorner3, drawCorner4, Color.blue);
+            Debug.DrawLine(drawCorner4, drawCorner1, Color.blue);
+        }
+        else
+        {
+            // Draw the extents in world space.
+            Debug.DrawLine(drawCorner1, drawCorner2, Color.white);
+            Debug.DrawLine(drawCorner2, drawCorner3, Color.white);
+            Debug.DrawLine(drawCorner3, drawCorner4, Color.white);
+            Debug.DrawLine(drawCorner4, drawCorner1, Color.white);
+        }
 
         return;
     }
@@ -252,6 +408,24 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         get
         {
             return yAxisBound;
+        }
+    }
+
+    // Accessor for the bounding box x-axis.
+    public Vector2 X_AxisMaxBound
+    {
+        get
+        {
+            return xAxisMaxBound;
+        }
+    }
+
+    // Accessor for the bounding box y-axis.
+    public Vector2 Y_AxisMaxBound
+    {
+        get
+        {
+            return yAxisMaxBound;
         }
     }
 
@@ -299,6 +473,36 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         return model;
     }
 
+    // Get the local to world transformation.
+    public Matrix4x4 LocalToWorldOther()
+    {
+        // Particle needed for scene editor when game isn't running.
+        Particle2D particle = GetComponent<Particle2D>();
+
+        // Get the position of this particle.
+        Vector3 position = particle.Position;
+
+        // Build a quaternion based on the euler rotation of this particle.
+        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, particle.Rotation);
+
+        // Translation matrix of this particle.
+        Matrix4x4 translate = Matrix4x4.Translate(position);
+
+        // Invert the translation.
+        Matrix4x4 translateInverse = translate.inverse;
+
+        // Rotation matrix of this particle.
+        Matrix4x4 rotate = Matrix4x4.Rotate(rotation);
+
+        // Invert the rotation.
+        Matrix4x4 rotateInverse = rotate.inverse;
+
+        // Model matrix to convert from local to world space.
+        Matrix4x4 model = translate * rotateInverse * translateInverse;
+
+        return model;
+    }
+
     // Get the world to local transformation.
     public Matrix4x4 WorldToLocal()
     {
@@ -325,6 +529,36 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
 
         // Model matrix to convert from local to world space.
         Matrix4x4 model = translateInverse * rotateInverse * translate;
+
+        return model;
+    }
+
+    // Get the world to local transformation.
+    public Matrix4x4 WorldToLocalOther()
+    {
+        // Particle needed for scene editor when game isn't running.
+        Particle2D particle = GetComponent<Particle2D>();
+
+        // Get the position of this particle.
+        Vector3 position = particle.Position;
+
+        // Build a quaternion based on the euler rotation of this particle.
+        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, particle.Rotation);
+
+        // Translation matrix of this particle.
+        Matrix4x4 translate = Matrix4x4.Translate(position);
+
+        // Invert the translation.
+        Matrix4x4 translateInverse = translate.inverse;
+
+        // Rotation matrix of this particle.
+        Matrix4x4 rotate = Matrix4x4.Rotate(rotation);
+
+        // Invert the rotation.
+        Matrix4x4 rotateInverse = rotate.inverse;
+
+        // Model matrix to convert from local to world space.
+        Matrix4x4 model = translateInverse * rotate * translate;
 
         return model;
     }

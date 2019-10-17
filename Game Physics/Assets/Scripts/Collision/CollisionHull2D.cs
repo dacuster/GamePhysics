@@ -203,8 +203,15 @@ public abstract class CollisionHull2D : MonoBehaviour
             // Check for collision and collect collision data.
             if (TestCollision(this, hull, ref collision))
             {
+                GetComponent<MeshRenderer>().material.color = Color.red;
+                hull.GetComponent<MeshRenderer>().material.color = Color.red;
                 // Resolve the collision.
                 collision.ResolveCollision();
+            }
+            else
+            {
+                GetComponent<MeshRenderer>().material.color = Color.white;
+                hull.GetComponent<MeshRenderer>().material.color = Color.white;
             }
         }
 
