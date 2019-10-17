@@ -242,17 +242,7 @@ public abstract class CollisionHull2D : MonoBehaviour
                             Destroy(gameObject);
                         }
                     }
-                    else if (enemyCollision)
-                    {
-                        if (hull.gameObject != null)
-                        {
-                            hull.GetComponent<Asteroid>().DecrementLife();
-                        }
-                        if (gameObject != null)
-                        {
-                            GetComponent<Asteroid>().DecrementLife();
-                        }
-                    }
+                    
                 }
             }
         }
