@@ -2,10 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     public static GameController instance = null;
     public GameObject asteroid;
+    public GameObject explosion;
+    public GameObject gameCanvas;
+    public GameObject deadCanvas;
+    public GameObject winCanvas;
     public List<GameObject> asteroidList;
     public Vector2 spawnValue;
     public int asteroidCount;
@@ -15,7 +20,7 @@ public class GameController : MonoBehaviour
     public Text scoretext;
     public Text lifeText;
     float score = 0.0f;
-    int lives = 3;
+    public int lives = 3;
     private void Awake()
     {
         if(instance == null)
@@ -27,6 +32,7 @@ public class GameController : MonoBehaviour
     void Start()
     {
         StartCoroutine(SpawnWaves());
+        gameCanvas.SetActive(true);
     }
 
     // Update is called once per frame
@@ -35,6 +41,11 @@ public class GameController : MonoBehaviour
         scoretext.text = "Score: " + score;
         lifeText.text = "Lives: " + lives;
 
+        if(score >= 1000)
+        {
+            gameCanvas.SetActive(false);
+            winCanvas.SetActive(true);
+        }
     }
 
     public void IncreaseScore()
@@ -48,8 +59,21 @@ public class GameController : MonoBehaviour
         if (lives <= 0)
         {
             Dead();
+            gameCanvas.SetActive(false);
+            deadCanvas.SetActive(true);
         }
     }
+
+    public void PlayExplosion()
+    {
+        Instantiate(explosion);
+    }
+
+    public void Restart()
+    {
+        SceneManager.LoadScene("Scene_Game");
+    }
+
     public void Dead()
     {
         Particle2D particle = GameObject.Find("Player").GetComponent<Particle2D>();
@@ -57,9 +81,10 @@ public class GameController : MonoBehaviour
         particle.AngularAcceleration = 0;
         particle.Acceleration = Vector2.zero;
         particle.Velocity = Vector2.zero;
-
+        PlayExplosion();
         Destroy(GameObject.Find("Player"));
         // Player explosion
+        
     }
     
     IEnumerator WaitASec()

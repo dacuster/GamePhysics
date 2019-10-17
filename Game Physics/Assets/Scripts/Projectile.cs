@@ -5,7 +5,7 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     Particle2D particle;
-    private float projectileLife = 0.75f;
+    private float projectileLife = 1.5f;
     private float lifeTimer = 0.0f;
     // Start is called before the first frame update
     void Start()
