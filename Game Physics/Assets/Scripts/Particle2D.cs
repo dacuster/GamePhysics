@@ -373,6 +373,8 @@ public class Particle2D : MonoBehaviour
         // v(t + dt) = v(t) + a(t)dt
         Velocity += Acceleration * deltaTime;
 
+        Debug.DrawRay(Position, Velocity.normalized * 3.0f, Color.white);
+
         return;
     }
 
@@ -518,6 +520,11 @@ public class Particle2D : MonoBehaviour
 
             return;
         }
+    }
+
+    public float MassInverse
+    {
+        get => massInverse;
     }
 
     // Force Accessor.

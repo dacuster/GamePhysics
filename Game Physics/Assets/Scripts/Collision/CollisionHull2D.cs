@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 // This class requires Particle2D to prevent null references.
 [RequireComponent(typeof(Particle2D))]
@@ -38,25 +39,25 @@ public abstract class CollisionHull2D : MonoBehaviour
         private bool status = false;
 
         // Closing velocity of the collision.
-        private Vector2 closingVelocity;
+        private Vector2 closingVelocity = Vector2.zero;
 
         // Calculate the closing velocity of the 2 colliding objects for the given contact normal.
-        public Vector2 CalculateClosingVelocity(Vector2 contactNormal)
+        public float CalculateClosingVelocity()
         {
             // Calculate the difference in velocities.
             Vector2 velocityDifference = A.Particle.Velocity - B.Particle.Velocity;
-            
+
             // Get the opposite values of the difference.
-            velocityDifference *= -1.0f;
-            
+            //velocityDifference *= -1.0f;
+
             // Get the difference in positions.
             Vector2 positionDifference = A.Particle.Position - B.Particle.Position;
-            
+
             // Normalize the difference in positions.
             positionDifference.Normalize();
 
             // Find the scalar(dot) product of the difference in velocities and difference in positions normalized.
-            return Vector2.Dot(velocityDifference, positionDifference) * contactNormal;
+            return Vector2.Dot(velocityDifference, positionDifference);
         }
 
         // Create a contact and add it to the contacts list.
@@ -82,18 +83,56 @@ public abstract class CollisionHull2D : MonoBehaviour
 
         public void ResolveCollision()
         {
-            Particle2D particleA = A.Particle;
-            Particle2D particleB = B.Particle;
-            Vector2 newVelocity = Vector2.zero;
+            //Particle2D particleA = A.Particle;
+            //Particle2D particleB = B.Particle;
+            //Vector2 newVelocity = particleA.Velocity;
 
-            for (int currentContact = 0; currentContact < contactCount; currentContact++)
+            //for (int currentContact = 0; currentContact < contactCount; currentContact++)
+            //{
+            //    // TODO: Closing velocity is overlap of both objects?
+            //    ClosingVelocity = CalculateClosingVelocity(Contacts[currentContact].normal);
+            //    Debug.DrawRay(Contacts[currentContact].position, Contacts[currentContact].position + Contacts[currentContact].normal, Color.yellow);
+            //    newVelocity = ClosingVelocity.normalized * Contacts[currentContact].restitution;
+
+            //    //particleA.AddForce(ClosingVelocity.normalized * Contacts[currentContact].restitution);
+            //    //particleB.AddForce(ClosingVelocity * Contacts[currentContact].restitution);
+            //}
+
+            //particleA.Velocity = -newVelocity;
+            ////particleB.Velocity = -newVelocity;
+            for (int currentContact = 0; currentContact < ContactCount; currentContact++)
             {
-                // TODO: Closing velocity is overlap of both objects?
-                CalculateClosingVelocity(Contacts[currentContact].normal);
-                newVelocity = 0.5f * -closingVelocity * Contacts[currentContact].restitution;
+                Contact contact = Contacts[currentContact];
+
+                float separatingVelocity = CalculateClosingVelocity();
+                
+                // Stationary or separating contact.
+                if (separatingVelocity > 0)
+                {
+                    return;
+                }
+
+                // Calculate new separating velocity.
+                float newSeparatingVelocity = -separatingVelocity * contact.restitution;
+
+                float deltaVelocity = newSeparatingVelocity - separatingVelocity;
+
+                float totalInverseMass = A.Particle.MassInverse + B.Particle.MassInverse;
+
+                if (totalInverseMass <= 0)
+                {
+                    return;
+                }
+
+                float impulse = deltaVelocity / totalInverseMass;
+
+                Vector2 impulsePerInverseMass = contact.normal * impulse;
+
+                A.Particle.Velocity += impulsePerInverseMass * A.Particle.MassInverse;
+
+                B.Particle.Velocity += impulsePerInverseMass * -B.Particle.MassInverse;
             }
 
-            particleA.Velocity = newVelocity;
 
             return;
         }
@@ -112,6 +151,9 @@ public abstract class CollisionHull2D : MonoBehaviour
 
         // Contacts of the collision.
         public Contact[] Contacts { get => contacts; set => contacts = value; }
+
+        // Closing velocity of the collision.
+        public Vector2 ClosingVelocity { get => closingVelocity; set => closingVelocity = value; }
     }
     // END TODO
 
@@ -141,7 +183,7 @@ public abstract class CollisionHull2D : MonoBehaviour
     }
 
     // Update for physics.
-    private void FixedUpdate()
+    public void FixedUpdate()
     {
         // Iterate through every CollisionHull2D in the game.
         foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
@@ -152,8 +194,11 @@ public abstract class CollisionHull2D : MonoBehaviour
                 continue;
             }
 
-            // Create new potential collision.
-            Collision collision = new Collision();
+            // TODO: Remove for player check. Skip for testing circle vs circle.
+            if (hull.name == "Player" || this.name == "Player")
+            {
+                continue;
+            }
 
             // Check for collision and collect collision data.
             if (TestCollision(this, hull, ref collision))
@@ -211,6 +256,42 @@ public abstract class CollisionHull2D : MonoBehaviour
     // Particle accessor.
     public Particle2D Particle { get; set; }
 
+    public Collision collision = new Collision();
+
     // Accessor for collision hull type.
     public CollisionHullType2D Type { get; }
+}
+
+
+[CustomEditor(typeof(CollisionHull2D))]
+public class CollisionEditor : Editor
+{
+    public void OnSceneGUI()
+    {
+        // Get the circle hull attached to this script.
+        CollisionHull2D hull = (CollisionHull2D)target;
+
+        // Get the particle component since it isn't loaded until runtime. (For use in scene editor at all times.)
+        Particle2D particle = hull.GetComponent<Particle2D>();
+
+        // Create a color.
+        Color purple = CreateColor(112.0f, 0.0f, 255.0f);
+
+        // Change gizmo drawing color.
+        //Handles.color = purple;
+
+        if (hull.collision.Status)
+        {
+            float angle = Mathf.Atan2(hull.collision.ClosingVelocity.y, hull.collision.ClosingVelocity.x);
+            Quaternion rot = new Quaternion();
+            rot.eulerAngles = new Vector3(0.0f, 0.0f, angle);
+            Handles.ArrowHandleCap(0, hull.collision.A.Particle.Position, rot, 2.0f, EventType.Repaint);
+        }
+    }
+
+    // Create colors from 0-255 values.
+    private Color CreateColor(float r, float g, float b)
+    {
+        return new Color(r / 255.0f, g / 255.0f, b / 255.0f);
+    }
 }

@@ -21,54 +21,56 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // Update the bounding box.
         CalculateBoundingBoxAxis();
 
-        // Set the mesh color of this object to white. (No collision)
-        GetComponent<MeshRenderer>().material.color = Color.white;
+        base.FixedUpdate();
 
-        // Check for collision with all types of collision hulls currently in the game.
-        foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
-        {
-            // TODO: Properly implement.
-            Collision collision = new Collision();
+        //// Set the mesh color of this object to white. (No collision)
+        //GetComponent<MeshRenderer>().material.color = Color.white;
 
-            // Don't check collision with itself.
-            if (hull == this)
-            {
-                continue;
-            }
-            // Other hull is a circle.
-            if (hull.Type == CollisionHullType2D.hull_circle)
-            {
-                // Check for collision vs circle.
-                if (TestCollisionVsCircle(hull as CircleCollisionHull2D, ref collision))
-                {
-                    // Change the mesh color of both colliding objects.
-                    GetComponent<MeshRenderer>().material.color = Color.red;
-                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
-                }
-            }
-            // Other hull is AABB.
-            else if (hull.Type == CollisionHullType2D.hull_aabb)
-            {
-                // Check collision vs AABB.
-                if (TestCollisionVsAABB(hull as AxisAlignedBoundingBoxHull2D, ref collision))
-                {
-                    // Change the mesh color of both colliding objects.
-                    GetComponent<MeshRenderer>().material.color = Color.red;
-                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
-                }
-            }
-            // Other hull is OBB.
-            else if (hull.Type == CollisionHullType2D.hull_obb)
-            {
-                // Check collision vs OBB.
-                if (TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D, ref collision))
-                {
-                    // Change the mesh color of both colliding objects.
-                    GetComponent<MeshRenderer>().material.color = Color.red;
-                    hull.GetComponent<MeshRenderer>().material.color = Color.red;
-                }
-            }
-        }
+        //// Check for collision with all types of collision hulls currently in the game.
+        //foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
+        //{
+        //    // TODO: Properly implement.
+        //    Collision collision = new Collision();
+
+        //    // Don't check collision with itself.
+        //    if (hull == this)
+        //    {
+        //        continue;
+        //    }
+        //    // Other hull is a circle.
+        //    if (hull.Type == CollisionHullType2D.hull_circle)
+        //    {
+        //        // Check for collision vs circle.
+        //        if (TestCollisionVsCircle(hull as CircleCollisionHull2D, ref collision))
+        //        {
+        //            // Change the mesh color of both colliding objects.
+        //            GetComponent<MeshRenderer>().material.color = Color.red;
+        //            hull.GetComponent<MeshRenderer>().material.color = Color.red;
+        //        }
+        //    }
+        //    // Other hull is AABB.
+        //    else if (hull.Type == CollisionHullType2D.hull_aabb)
+        //    {
+        //        // Check collision vs AABB.
+        //        if (TestCollisionVsAABB(hull as AxisAlignedBoundingBoxHull2D, ref collision))
+        //        {
+        //            // Change the mesh color of both colliding objects.
+        //            GetComponent<MeshRenderer>().material.color = Color.red;
+        //            hull.GetComponent<MeshRenderer>().material.color = Color.red;
+        //        }
+        //    }
+        //    // Other hull is OBB.
+        //    else if (hull.Type == CollisionHullType2D.hull_obb)
+        //    {
+        //        // Check collision vs OBB.
+        //        if (TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D, ref collision))
+        //        {
+        //            // Change the mesh color of both colliding objects.
+        //            GetComponent<MeshRenderer>().material.color = Color.red;
+        //            hull.GetComponent<MeshRenderer>().material.color = Color.red;
+        //        }
+        //    }
+        //}
     }
 
     // Check for collision AABB vs circle.

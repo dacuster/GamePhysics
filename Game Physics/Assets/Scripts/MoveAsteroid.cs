@@ -9,7 +9,7 @@ public class MoveAsteroid : MonoBehaviour
     void Start()
     {
         particle = GetComponent<Particle2D>();
-        particle.Velocity = new Vector2(Random.Range(-10, 10), Random.Range(-10, 10)) * 1.0f;
-        particle.AddForce(new Vector2(Random.Range(-10, 10), Random.Range(-10, 10)));
+        particle.Velocity = new Vector2(Random.Range(-10, 10), Random.Range(-10, 10));// * 1.0f;
+        //particle.AddForce(new Vector2(Random.Range(-10, 10), Random.Range(-10, 10)));
     }
 }
