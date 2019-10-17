@@ -70,6 +70,7 @@ public class Particle2D : MonoBehaviour
     ********************/
 
     // Force applied to this object.
+    [SerializeField]
     private Vector2 force;
 
 
