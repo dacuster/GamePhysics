@@ -66,7 +66,7 @@ public class GameController : MonoBehaviour
 
     public void PlayExplosion()
     {
-        Instantiate(explosion);
+        Instantiate(explosion, GameObject.Find("Player").transform);
     }
 
     public void Restart()

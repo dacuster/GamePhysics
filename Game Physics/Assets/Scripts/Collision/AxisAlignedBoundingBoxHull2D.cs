@@ -124,6 +124,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
             if (_xAxisBoundAABB.x <= other.X_AxisBound.y && _xAxisBoundAABB.y >= other.X_AxisBound.x && _yAxisBoundAABB.y >= other.Y_AxisBound.x && _yAxisBoundAABB.x <= other.Y_AxisBound.y)
             {
                 // Collision.
+                Debug.Log("Collision!");
                 return true;
             }
         }

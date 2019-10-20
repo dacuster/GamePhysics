@@ -130,31 +130,32 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         //}
 
 
-        // AABB max extents
-        Vector2 _xAxisBoundThis = X_AxisBound;
-        Vector2 _yAxisBoundThis = Y_AxisBound;
+        // Transform the extents to OBB world space.
+        other.CalculateBoundingBoxWorld();
 
-        // Transform the entents to OBB local space.
-        CalculateBoundingBoxWorld(ref _xAxisBoundThis, ref _yAxisBoundThis);
+        // OBB max extents
+        Vector2 xAxisBoundOther = other.X_AxisMaxBound;
+        Vector2 yAxisBoundOther = other.Y_AxisMaxBound;
 
-        // Check if the extents for the AABB in OBB local space are colliding with the extents for the OBB in OBB world space.
-        if (_xAxisBoundThis.x <= other.X_AxisBound.y && _xAxisBoundThis.y >= other.X_AxisBound.x && _yAxisBoundThis.y >= other.Y_AxisBound.x && _yAxisBoundThis.x <= other.Y_AxisBound.y)
+        // Check if the extents for the AABB are colliding with the extents for the OBB in OBB world space.
+        if (X_AxisBound.x <= xAxisBoundOther.y && X_AxisBound.y >= xAxisBoundOther.x && Y_AxisBound.y >= yAxisBoundOther.x && Y_AxisBound.x <= yAxisBoundOther.y)
         {
-            //// AABB max extents
-            //Vector2 _xAxisBoundOther = other.X_AxisBound;
-            //Vector2 _yAxisBoundOther = other.Y_AxisBound;
+            CalculateBoundingBoxWorld();
 
-            //// Transform the entents to OBB local space.
-            //CalculateBoundingBoxWorld(ref _xAxisBoundOther, ref _yAxisBoundThis);
+            // AABB max extents
+            Vector2 _xAxisBoundThis = X_AxisMaxBound;
+            Vector2 _yAxisBoundThis = Y_AxisMaxBound;
 
-            //// Check if the extents for the AABB in OBB local space are colliding with the extents for the OBB in OBB world space.
-            //if (X_AxisBound.x <= _xAxisBoundOther.y && X_AxisBound.y >= _xAxisBoundOther.x && Y_AxisBound.y >= _yAxisBoundOther.x && Y_AxisBound.x <= _yAxisBoundOther.y)
-            //{
-            //    GetComponent<MeshRenderer>().material.color = Color.red;
-            //    other.GetComponent<MeshRenderer>().material.color = Color.red;
-            //    // Collision.
-            //    return true;
-            //}
+            // Transform the entents to OBB local space.
+            other.CalculateBoundingBoxWorld(ref _xAxisBoundThis, ref _yAxisBoundThis);
+
+            // Check if the extents for the AABB in OBB local space are colliding with the extents for the OBB in OBB world space.
+            if (_xAxisBoundThis.x <= other.X_AxisBound.y && _xAxisBoundThis.y >= other.X_AxisBound.x && _yAxisBoundThis.y >= other.Y_AxisBound.x && _yAxisBoundThis.x <= other.Y_AxisBound.y)
+            {
+                // Collision.
+                Debug.Log("Collision!");
+                return true;
+            }
         }
 
         return false;

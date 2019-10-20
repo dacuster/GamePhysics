@@ -209,13 +209,13 @@ public abstract class CollisionHull2D : MonoBehaviour
             bool projectileCollision = Layer == CollisionLayer.projectile && hull.Layer == CollisionLayer.enemy;
 
             // Check if collision can happen.
-            if (playerCollision || enemyCollision || projectileCollision)
+            if (true || playerCollision || enemyCollision || projectileCollision)
             {
                 // Check for collision and collect collision data.
                 if (TestCollision(this, hull, ref collision))
                 {
                     // Resolve the collision.
-                    collision.ResolveCollision();
+                    //collision.ResolveCollision();
 
 
                     if (playerCollision)
