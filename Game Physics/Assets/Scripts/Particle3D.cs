@@ -9,7 +9,7 @@ public class Particle3D : MonoBehaviour
     public class Quaternion
     {
         // w scalar
-        private float w = 0.0f;
+        private float w = 1.0f;
         // x rotation    
         private float x = 0.0f;
         // y rotation     
@@ -60,7 +60,102 @@ public class Particle3D : MonoBehaviour
         // TODO: implement vector and quaternion multiplacation
         public static Quaternion operator *(Quaternion quaternion, Vector3 vector)
         {
-            return new Quaternion();
+            float X = quaternion.X;
+            float Y = quaternion.Y;
+            float Z = quaternion.Z;
+            float W = quaternion.W;
+
+            Matrix4x4 rotationMatrix = new Matrix4x4
+            {
+
+                // X tranformation.
+                m00 = 1.0f - 2.0f * Y * Y - 2.0f * Z * Z,
+                m01 = 2.0f * X * Y - 2.0f * W * Z,
+                m02 = 2.0f * X * Z + 2.0f * W * Y,
+                m03 = 0.0f,
+
+                // Y tranformation.
+                m10 = 2.0f * X * Y + 2.0f * W * Z,
+                m11 = 1.0f - 2.0f * X * X - 2.0f * Z * Z,
+                m12 = 2.0f * Y * Z + 2.0f * W * X,
+                m13 = 0.0f,
+
+                // Z tranformation.
+                m20 = 2.0f * X * Z - 2.0f * W * Y,
+                m21 = 2.0f * Y * Z - 2.0f * W * X,
+                m22 = 1.0f - 2.0f * X * X - 2.0f * Y * Y,
+                m23 = 0.0f,
+
+                // W tranformation.
+                m30 = 0.0f,
+                m31 = 0.0f,
+                m32 = 0.0f,
+                m33 = 1.0f
+            };
+
+            vector = rotationMatrix.MultiplyPoint3x4(vector);
+
+            Quaternion newQuaternion = new Quaternion
+            {
+                X = vector.x,
+                Y = vector.y,
+                Z = vector.z,
+                W = 1.0f
+            };
+
+            return newQuaternion;
+        }
+
+        // Multiply two quaternions together.
+        public static Quaternion operator* (Quaternion left, Quaternion right)
+        {
+            Quaternion quaternion = new Quaternion
+            {
+                W = left.W * right.W - left.X * right.X - left.Y * right.Y - left.Z * right.Z,
+
+                X = left.W * right.X + left.X * right.W + left.Y * right.Z - left.Z * right.Y,
+
+                Y = left.W * right.Y - left.X * right.Z + left.Y * right.W + left.Z * right.X,
+
+                Z = left.W * right.Z + left.X * right.Y - left.Y * right.X + left.Z * right.W
+            };
+
+            return quaternion;
+        }
+
+        public void Rotate(ref Vector3 rotation)
+        {
+            Matrix4x4 rotationMatrix = new Matrix4x4
+            {
+
+                // X tranformation.
+                m00 = 1.0f - 2.0f * Y * Y - 2.0f * Z * Z,
+                m01 = 2.0f * X * Y - 2.0f * W * Z,
+                m02 = 2.0f * X * Z + 2.0f * W * Y,
+                m03 = 0.0f,
+
+                // Y tranformation.
+                m10 = 2.0f * X * Y + 2.0f * W * Z,
+                m11 = 1.0f - 2.0f * X * X - 2.0f * Z * Z,
+                m12 = 2.0f * Y * Z + 2.0f * W * X,
+                m13 = 0.0f,
+
+                // Z tranformation.
+                m20 = 2.0f * X * Z - 2.0f * W * Y,
+                m21 = 2.0f * Y * Z - 2.0f * W * X,
+                m22 = 1.0f - 2.0f * X * X - 2.0f * Y * Y,
+                m23 = 0.0f,
+
+                // W tranformation.
+                m30 = 0.0f,
+                m31 = 0.0f,
+                m32 = 0.0f,
+                m33 = 1.0f
+            };
+
+            rotation = rotationMatrix.MultiplyPoint3x4(rotation);
+
+            return;
         }
 
     }
@@ -288,6 +383,9 @@ public class Particle3D : MonoBehaviour
     {
         // Set the mass as the starting mass.
         Mass = startingMass;
+
+        Quaternion quaternion = new Quaternion(1, 1, 1, 1);
+        quaternion = quaternion.normalized;
 
         return;
     }
