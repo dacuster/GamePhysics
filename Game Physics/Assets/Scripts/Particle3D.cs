@@ -5,6 +5,66 @@ using UnityEditor;
 
 public class Particle3D : MonoBehaviour
 {
+    // Quaternion Class
+    public class Quaternion
+    {
+        // w scalar
+        private float w = 0.0f;
+        // x rotation    
+        private float x = 0.0f;
+        // y rotation     
+        private float y = 0.0f;
+        // z rotation    
+        private float z = 0.0f;
+
+
+
+        // variable getters and setters
+        public float W { get => w; set => w = value; }
+        public float X { get => x; set => x = value; }
+        public float Y { get => y; set => y = value; }
+        public float Z { get => z; set => z = value; }
+
+        public Quaternion(float _x, float _y, float _z, float _w)
+        {
+            X = _x;
+            Y = _y;
+            Z = _z;
+            W = _w;
+        }
+
+        public Quaternion() { }
+
+        public Quaternion normalized
+        {
+            get { return new Quaternion(X / magnitude, Y / magnitude, Z / magnitude, W / magnitude);  }
+        }
+
+        public float sqrMagnitude
+        {
+            get { return (x * x + y * y + z * z + w * w); }
+        }
+
+        // calculate magnitude
+        public float magnitude
+        {
+            get { return Mathf.Sqrt(sqrMagnitude); }
+        }
+
+        // TODO: implement scalar and quaternion multiplacation
+        public static Quaternion operator *(Quaternion quaternion, float scalar)
+        {
+            return new Quaternion();
+        }
+
+        // TODO: implement vector and quaternion multiplacation
+        public static Quaternion operator *(Quaternion quaternion, Vector3 vector)
+        {
+            return new Quaternion();
+        }
+
+    }
+
     /***********************************************
     **  Lab 1 Step 1. Define particle variables.  **
     ***********************************************/
