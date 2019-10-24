@@ -200,13 +200,6 @@ public class AxisBoxEditor : Editor
 
         // Draw a cube to represent the collider on this object.
         Handles.DrawWireCube(particle.Position, boxHull.BoundingBox);
-
-        // Update Particle2D position and rotation based on the Transform component. Only works when the editor isn't in play mode.
-        if (!Application.isPlaying)
-        {
-            particle.Position = boxHull.transform.position;
-            particle.Rotation = boxHull.transform.rotation.eulerAngles.z;
-        }
     }
 
     // Create colors from 0-255 values.

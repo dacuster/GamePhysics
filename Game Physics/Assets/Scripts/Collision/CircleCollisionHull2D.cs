@@ -174,13 +174,6 @@ public class CircleEditor : Editor
 
         // Draw a disc to represent the collider on this circle.
         Handles.DrawWireDisc(particle.Position, Vector3.back, circleHull.Radius);
-
-        // Update Particle2D position and rotation based on the Transform component. Only works when the editor isn't in play mode.
-        if (!Application.isPlaying)
-        {
-            particle.Position = circleHull.transform.position;
-            particle.Rotation = circleHull.transform.rotation.eulerAngles.z;
-        }
     }
 
     // Create colors from 0-255 values.

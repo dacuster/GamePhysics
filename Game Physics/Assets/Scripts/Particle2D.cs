@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class Particle2D : MonoBehaviour
 {
@@ -537,4 +538,22 @@ public class Particle2D : MonoBehaviour
     /************************************
     **          End Accessors          ** 
     ************************************/
+}
+
+
+[CustomEditor(typeof(Particle2D))]
+public class Particle2DEditor : Editor
+{
+    private void OnSceneGUI()
+    {
+        // Get the particle associated with this object.
+        Particle2D particle = (Particle2D)target;
+
+        // Update Particle2D position and rotation based on the Transform component. Only works when the editor isn't in play mode.
+        if (!Application.isPlaying)
+        {
+            particle.Position = particle.transform.position;
+            particle.Rotation = particle.transform.rotation.eulerAngles.z;
+        }
+    }
 }
