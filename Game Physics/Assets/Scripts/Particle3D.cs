@@ -35,35 +35,105 @@ public class Particle3D : MonoBehaviour
 
         public Quaternion() { }
 
+        public void normalize()
+        {
+                X /= magnitude;
+                Y /= magnitude;
+                Z /= magnitude;
+                W /= magnitude;
+
+            return;
+        }
+
         public Quaternion normalized
         {
-            get { return new Quaternion(X / magnitude, Y / magnitude, Z / magnitude, W / magnitude);  }
+            get
+            {
+                return new Quaternion
+                (
+                    X / magnitude,
+                    Y / magnitude,
+                    Z / magnitude,
+                    W / magnitude
+                );
+            }
         }
 
         public float sqrMagnitude
         {
-            get { return (x * x + y * y + z * z + w * w); }
+            get
+            {
+                return x * x + y * y + z * z + w * w;
+            }
         }
 
         // calculate magnitude
         public float magnitude
         {
-            get { return Mathf.Sqrt(sqrMagnitude); }
+            get
+            {
+                return Mathf.Sqrt(sqrMagnitude);
+            }
+        }
+
+        public static Quaternion identity
+        {
+            get
+            {
+                return new Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
+            }
+        }
+
+        public Vector3 eulerAngles
+        {
+            get
+            {
+                return new Vector3(X, Y, Z);
+
+            }
         }
 
         // TODO: implement scalar and quaternion multiplacation
-        public static Quaternion operator *(Quaternion quaternion, float scalar)
+        public static Quaternion operator* (Quaternion left, float right)
         {
-            return new Quaternion();
+            Quaternion quaternion = new Quaternion
+            {
+                W = left.W * right,
+                X = left.X * right,
+                Y = left.Y * right,
+                Z = left.Z * right
+            };
+
+            return quaternion;
+        }
+
+        public Quaternion AngleAxisRotate(float angle, Vector3 axis)
+        {
+            float halfAngle = angle * 0.5f;
+            float sinHalfAngle = Mathf.Sin(halfAngle);
+
+            Quaternion newQuaternion = new Quaternion
+            {
+                W = Mathf.Cos(halfAngle),
+                X = axis.x * sinHalfAngle,
+                Y = axis.y * sinHalfAngle,
+                Z = axis.z * sinHalfAngle
+            };
+
+            newQuaternion = newQuaternion * this;
+
+            return newQuaternion;
         }
 
         // TODO: implement vector and quaternion multiplacation
-        public static Quaternion operator *(Quaternion quaternion, Vector3 vector)
+        public static Quaternion operator* (Vector3 left, Quaternion right)
         {
-            float X = quaternion.X;
-            float Y = quaternion.Y;
-            float Z = quaternion.Z;
-            float W = quaternion.W;
+            //right = right.normalized;
+
+            float X = right.X;
+            float Y = right.Y;
+            float Z = right.Z;
+            float W = right.W;
 
             Matrix4x4 rotationMatrix = new Matrix4x4
             {
@@ -93,13 +163,15 @@ public class Particle3D : MonoBehaviour
                 m33 = 1.0f
             };
 
-            vector = rotationMatrix.MultiplyPoint3x4(vector);
+            rotationMatrix = rotationMatrix.transpose;
+
+            left = rotationMatrix.MultiplyPoint3x4(left);
 
             Quaternion newQuaternion = new Quaternion
             {
-                X = vector.x,
-                Y = vector.y,
-                Z = vector.z,
+                X = left.x,
+                Y = left.y,
+                Z = left.z,
                 W = 1.0f
             };
 
@@ -109,15 +181,40 @@ public class Particle3D : MonoBehaviour
         // Multiply two quaternions together.
         public static Quaternion operator* (Quaternion left, Quaternion right)
         {
+            float real = left.W * right.W;
+            Vector3 leftVector = new Vector3(left.X, left.Y, left.Z);
+            Vector3 rightVector = new Vector3(right.X, right.Y, right.Z);
+            
+            // Calculate the real(W) of the new quaternion.
+            real -= Vector3.Dot(leftVector, rightVector);
+
+            Vector3 newVector = left.W * rightVector +right.W * leftVector + Vector3.Cross(leftVector, rightVector);
+
+            //Quaternion quaternion = new Quaternion
+            //{
+            //    W = left.W * right.W - left.X * right.X - left.Y * right.Y - left.Z * right.Z,
+
+            //    X = left.W * right.X + left.X * right.W + left.Y * right.Z - left.Z * right.Y,
+
+            //    Y = left.W * right.Y - left.X * right.Z + left.Y * right.W + left.Z * right.X,
+
+            //    Z = left.W * right.Z + left.X * right.Y - left.Y * right.X + left.Z * right.W
+            //};
+
+            Quaternion quaternion = new Quaternion(real, newVector.x, newVector.y, newVector.z);
+
+            return quaternion;
+        }
+
+        // Add two quaternions together.
+        public static Quaternion operator+ (Quaternion left, Quaternion right)
+        {
             Quaternion quaternion = new Quaternion
             {
-                W = left.W * right.W - left.X * right.X - left.Y * right.Y - left.Z * right.Z,
-
-                X = left.W * right.X + left.X * right.W + left.Y * right.Z - left.Z * right.Y,
-
-                Y = left.W * right.Y - left.X * right.Z + left.Y * right.W + left.Z * right.X,
-
-                Z = left.W * right.Z + left.X * right.Y - left.Y * right.X + left.Z * right.W
+                W = left.W + right.W,
+                X = left.X + right.X,
+                Y = left.Y + right.Y,
+                Z = left.Z + right.Z
             };
 
             return quaternion;
@@ -176,19 +273,19 @@ public class Particle3D : MonoBehaviour
     [SerializeField]
     // Acceleration of this object.
     private Vector3 acceleration = Vector3.zero;
-    
+
     // Add a space in the inspector.
     [Space]
 
     [SerializeField]
-    // 2D rotation of this object. (z rotation)
-    private float rotation = 0.0f;
+    // 3D rotation of this object.
+    private Quaternion rotation = Quaternion.identity;
     [SerializeField]
     // Angular velocity of this object.
-    private float angularVelocity = 0.0f;
+    private Vector3 angularVelocity = Vector3.zero;
     [SerializeField]
     // Angular acceleration of this object.
-    private float angularAcceleration = 0.0f;
+    private Vector3 angularAcceleration = Vector3.zero;
 
     // Position and rotation algorithm types.
     private enum PositionType { Euler, Kinematic };
@@ -411,8 +508,9 @@ public class Particle3D : MonoBehaviour
 
         // Apply position to Unity's transform component.
         transform.position = Position;
-        // Apply rotation to Unity's transform component. (z rotation)
-        transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
+        // Apply rotation to Unity's transform component.
+        //transform.eulerAngles = AngularVelocity;
+        transform.rotation = new UnityEngine.Quaternion(Rotation.X, Rotation.Y, Rotation.Z, Rotation.W);
 
         return;
     }
@@ -559,7 +657,12 @@ public class Particle3D : MonoBehaviour
         **  F(t + dt) = F(t) + f(t)dt       **
         **                   + (dF / dt)dt  **
         *************************************/
-        Rotation += AngularVelocity * deltaTime;
+        //Rotation += AngularVelocity * deltaTime;
+        //Rotation = Rotation + (AngularVelocity * Rotation) * deltaTime * 0.5f;
+
+        Rotation = Rotation.AngleAxisRotate(10.0f, AngularVelocity);
+
+        //Rotation.normalize();
 
         // v(t + dt) = v(t) + a(t)dt
         AngularVelocity += AngularAcceleration * deltaTime;
@@ -571,7 +674,7 @@ public class Particle3D : MonoBehaviour
     private void UpdateRotationKinematic(float deltaTime)
     {
         // x(t + dt) = x(t) + v(t)dt + 1/2 a(t) dt^2
-        Rotation += AngularVelocity * deltaTime + 0.5f * AngularAcceleration * deltaTime * deltaTime;
+        //Rotation += AngularVelocity * deltaTime + 0.5f * AngularAcceleration * deltaTime * deltaTime;
 
         // v(t + dt) = v(t) + a(t)dt
         AngularVelocity += AngularAcceleration * deltaTime;
@@ -603,7 +706,9 @@ public class Particle3D : MonoBehaviour
     // Update angular acceleration
     void UpdateAngularAcceleration()
     {
-        AngularAcceleration = inertiaInv * Torque;
+        // TODO: Fix angular acceleration implementation.
+        //AngularAcceleration = inertiaInv * Torque;
+        //AngularAcceleration = Vector3.forward * 20.0f;
     }
 
     // Calulate Inverse Cube Inertia
@@ -622,9 +727,11 @@ public class Particle3D : MonoBehaviour
     // get direction to move forward
     public Vector3 CalculateDirection()
     {
-        float radians = Rotation * Mathf.PI / 180.0f;
-        Vector3 direction = new Vector3(Mathf.Cos(radians), Mathf.Sin(radians));
-        return direction;
+        // TODO: Calculate direction convert for quaternion use.
+        //float radians = Rotation * Mathf.PI / 180.0f;
+        //Vector3 direction = new Vector3(Mathf.Cos(radians), Mathf.Sin(radians));
+        //return direction;
+        return Vector3.zero;
     }
     /**************************************
     **          Start Accessors          ** 
@@ -653,13 +760,13 @@ public class Particle3D : MonoBehaviour
     ***************************************/
 
     // Rotation Accessor.
-    public float Rotation { get => rotation; set => rotation = value; }
+    public Quaternion Rotation { get => rotation; set => rotation = value; }
 
     // Angular Velocity Accessor.
-    public float AngularVelocity { get => angularVelocity; set => angularVelocity = value; }
+    public Vector3 AngularVelocity { get => angularVelocity; set => angularVelocity = value; }
     
     // Angular Acceleration Accessor.
-    public float AngularAcceleration { get => angularAcceleration; set => angularAcceleration = value; }
+    public Vector3 AngularAcceleration { get => angularAcceleration; set => angularAcceleration = value; }
 
     /*************************************
     **  End Rotation Related Accessors  **
@@ -710,7 +817,10 @@ public class Particle3DEditor : Editor
         if (!Application.isPlaying)
         {
             particle.Position = particle.transform.position;
-            particle.Rotation = particle.transform.rotation.eulerAngles.z;
+
+            // TODO: Implement quaternion rotation into scene GUI.
+            // Get eulerAngles from transform and make Quaternion with w = 1 and x, y, z = eulerAngles???
+            //particle.Rotation = particle.transform.rotation.eulerAngles.z;
         }
     }
 }
