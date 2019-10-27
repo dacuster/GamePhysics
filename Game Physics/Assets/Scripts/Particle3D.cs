@@ -6,7 +6,7 @@ using UnityEditor;
 public class Particle3D : MonoBehaviour
 {
     // Quaternion Class
-    public class Quaternion
+    public class Custom_Quaternion
     {
         // w scalar
         private float w = 1.0f;
@@ -25,7 +25,7 @@ public class Particle3D : MonoBehaviour
         public float Y { get => y; set => y = value; }
         public float Z { get => z; set => z = value; }
 
-        public Quaternion(float _x, float _y, float _z, float _w)
+        public Custom_Quaternion(float _x, float _y, float _z, float _w)
         {
             X = _x;
             Y = _y;
@@ -33,7 +33,7 @@ public class Particle3D : MonoBehaviour
             W = _w;
         }
 
-        public Quaternion() { }
+        public Custom_Quaternion() { }
 
         public void normalize()
         {
@@ -45,11 +45,11 @@ public class Particle3D : MonoBehaviour
             return;
         }
 
-        public Quaternion normalized
+        public Custom_Quaternion normalized
         {
             get
             {
-                return new Quaternion
+                return new Custom_Quaternion
                 (
                     X / magnitude,
                     Y / magnitude,
@@ -76,11 +76,11 @@ public class Particle3D : MonoBehaviour
             }
         }
 
-        public static Quaternion identity
+        public static Custom_Quaternion identity
         {
             get
             {
-                return new Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
+                return new Custom_Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
             }
         }
 
@@ -94,9 +94,9 @@ public class Particle3D : MonoBehaviour
         }
 
         // TODO: implement scalar and quaternion multiplacation
-        public static Quaternion operator* (Quaternion left, float right)
+        public static Custom_Quaternion operator* (Custom_Quaternion left, float right)
         {
-            Quaternion quaternion = new Quaternion
+            Custom_Quaternion quaternion = new Custom_Quaternion
             {
                 W = left.W * right,
                 X = left.X * right,
@@ -107,12 +107,12 @@ public class Particle3D : MonoBehaviour
             return quaternion;
         }
 
-        public Quaternion AngleAxisRotate(float angle, Vector3 axis)
+        public Custom_Quaternion AngleAxisRotate(float angle, Vector3 axis)
         {
             float halfAngle = angle * 0.5f;
             float sinHalfAngle = Mathf.Sin(halfAngle);
 
-            Quaternion newQuaternion = new Quaternion
+            Custom_Quaternion newQuaternion = new Custom_Quaternion
             {
                 W = Mathf.Cos(halfAngle),
                 X = axis.x * sinHalfAngle,
@@ -126,7 +126,7 @@ public class Particle3D : MonoBehaviour
         }
 
         // TODO: implement vector and quaternion multiplacation
-        public static Quaternion operator* (Vector3 left, Quaternion right)
+        public static Custom_Quaternion operator* (Vector3 left, Custom_Quaternion right)
         {
             //right = right.normalized;
 
@@ -167,7 +167,7 @@ public class Particle3D : MonoBehaviour
 
             left = rotationMatrix.MultiplyPoint3x4(left);
 
-            Quaternion newQuaternion = new Quaternion
+            Custom_Quaternion newQuaternion = new Custom_Quaternion
             {
                 X = left.x,
                 Y = left.y,
@@ -179,14 +179,13 @@ public class Particle3D : MonoBehaviour
         }
 
         // Multiply two quaternions together.
-        public static Quaternion operator* (Quaternion left, Quaternion right)
+        public static Custom_Quaternion operator * (Custom_Quaternion left, Custom_Quaternion right)
         {
-            float real = left.W * right.W;
             Vector3 leftVector = new Vector3(left.X, left.Y, left.Z);
             Vector3 rightVector = new Vector3(right.X, right.Y, right.Z);
             
             // Calculate the real(W) of the new quaternion.
-            real -= Vector3.Dot(leftVector, rightVector);
+            float real = left.W * right.W - Vector3.Dot(leftVector, rightVector);
 
             Vector3 newVector = left.W * rightVector +right.W * leftVector + Vector3.Cross(leftVector, rightVector);
 
@@ -201,15 +200,15 @@ public class Particle3D : MonoBehaviour
             //    Z = left.W * right.Z + left.X * right.Y - left.Y * right.X + left.Z * right.W
             //};
 
-            Quaternion quaternion = new Quaternion(real, newVector.x, newVector.y, newVector.z);
+            Custom_Quaternion quaternion = new Custom_Quaternion(real, newVector.x, newVector.y, newVector.z);
 
             return quaternion;
         }
 
         // Add two quaternions together.
-        public static Quaternion operator+ (Quaternion left, Quaternion right)
+        public static Custom_Quaternion operator + (Custom_Quaternion left, Custom_Quaternion right)
         {
-            Quaternion quaternion = new Quaternion
+            Custom_Quaternion quaternion = new Custom_Quaternion
             {
                 W = left.W + right.W,
                 X = left.X + right.X,
@@ -279,7 +278,7 @@ public class Particle3D : MonoBehaviour
 
     [SerializeField]
     // 3D rotation of this object.
-    private Quaternion rotation = Quaternion.identity;
+    private Custom_Quaternion rotation = Custom_Quaternion.identity;
     [SerializeField]
     // Angular velocity of this object.
     private Vector3 angularVelocity = Vector3.zero;
@@ -481,8 +480,8 @@ public class Particle3D : MonoBehaviour
         // Set the mass as the starting mass.
         Mass = startingMass;
 
-        Quaternion quaternion = new Quaternion(1, 1, 1, 1);
-        quaternion = quaternion.normalized;
+       // Quaternion quaternion = new Quaternion(1, 1, 1, 1);
+       // quaternion = quaternion.normalized;
 
         return;
     }
@@ -510,7 +509,9 @@ public class Particle3D : MonoBehaviour
         transform.position = Position;
         // Apply rotation to Unity's transform component.
         //transform.eulerAngles = AngularVelocity;
-        transform.rotation = new UnityEngine.Quaternion(Rotation.X, Rotation.Y, Rotation.Z, Rotation.W);
+        
+        transform.rotation = new Quaternion(Rotation.W, Rotation.X, Rotation.Y, Rotation.Z);
+        
 
         return;
     }
@@ -658,11 +659,11 @@ public class Particle3D : MonoBehaviour
         **                   + (dF / dt)dt  **
         *************************************/
         //Rotation += AngularVelocity * deltaTime;
-        //Rotation = Rotation + (AngularVelocity * Rotation) * deltaTime * 0.5f;
 
-        Rotation = Rotation.AngleAxisRotate(10.0f, AngularVelocity);
+        Rotation += (AngularVelocity * Rotation) * deltaTime * 0.5f;
+        //Rotation = Rotation.AngleAxisRotate(10.0f, AngularVelocity);
 
-        //Rotation.normalize();
+        Rotation.normalize();
 
         // v(t + dt) = v(t) + a(t)dt
         AngularVelocity += AngularAcceleration * deltaTime;
@@ -708,7 +709,6 @@ public class Particle3D : MonoBehaviour
     {
         // TODO: Fix angular acceleration implementation.
         //AngularAcceleration = inertiaInv * Torque;
-        //AngularAcceleration = Vector3.forward * 20.0f;
     }
 
     // Calulate Inverse Cube Inertia
@@ -760,7 +760,7 @@ public class Particle3D : MonoBehaviour
     ***************************************/
 
     // Rotation Accessor.
-    public Quaternion Rotation { get => rotation; set => rotation = value; }
+    public Custom_Quaternion Rotation { get => rotation; set => rotation = value; }
 
     // Angular Velocity Accessor.
     public Vector3 AngularVelocity { get => angularVelocity; set => angularVelocity = value; }
