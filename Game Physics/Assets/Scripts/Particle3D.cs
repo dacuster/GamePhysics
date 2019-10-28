@@ -290,6 +290,7 @@ public class Particle3D : MonoBehaviour
     private enum PositionType { Euler, Kinematic };
     private enum RotationType { Euler, Kinematic };
 
+    private enum ShapeType { SolidSphere, HollowSphere, SolidCude, HollowCube, SolidCylinder, HollowCylinder };
     // Velocity option fields.
     [Header("Velocity Options")]
 
@@ -300,7 +301,10 @@ public class Particle3D : MonoBehaviour
     // Algorithm used for rotation.
     private RotationType rotationType = RotationType.Euler;
 
-    
+    [Header("Shape Options")]
+    [SerializeField]
+    // shape Types
+    private ShapeType shapeType = ShapeType.SolidSphere;
     /********************
     **  Lab 2 Step 1.  **
     ********************/
@@ -343,10 +347,9 @@ public class Particle3D : MonoBehaviour
     [Header("Torque")]
 
     [SerializeField]
-    private float torque = 0.0f;
+    private Vector3 torque = Vector3.zero;
     private float inertia = 0.0f;
     private float inertiaInv = 0.0f;
-
     /*******************************
     **  Lab 2. Spring variables.  **
     *******************************/
@@ -489,7 +492,6 @@ public class Particle3D : MonoBehaviour
     // Physics update method.
     void FixedUpdate()
     {
-        CubeInvInertiaCalc();
 
         // Check algorithm type from user selection menu items.
         GetInspectorItems();
@@ -500,7 +502,7 @@ public class Particle3D : MonoBehaviour
         if(name == "Player")
         {
             UpdateAngularAcceleration();
-            Torque = 0;
+            Torque = Vector3.zero;
 
             PlayerController.instance.PlayerControls();
         }
@@ -610,6 +612,38 @@ public class Particle3D : MonoBehaviour
             AddForce(ForceGenerator.GenerateForce_Spring_Damping(Position, springAnchor.position, springRestLength, springStiffness, springDamping, springConstant, Velocity));
         }
 
+        // Shape Types
+        if(shapeType == ShapeType.SolidSphere)
+        {
+            GetComponent<Inertia3D>().SolidSphereIneritaTensor();
+        }
+
+        if (shapeType == ShapeType.HollowSphere)
+        {
+            GetComponent<Inertia3D>().HollowSphereIneritaTensor();
+        }
+
+        if (shapeType == ShapeType.SolidCude)
+        {
+            GetComponent<Inertia3D>().SolidCubeIneritaTensor();
+        }
+
+        if (shapeType == ShapeType.HollowCube)
+        {
+            GetComponent<Inertia3D>().HollowCubeIneritaTensor();
+        }
+
+        if (shapeType == ShapeType.SolidCylinder)
+        {
+            GetComponent<Inertia3D>().SolidCylinderIneritaTensor();
+        }
+
+        if (shapeType == ShapeType.HollowCylinder)
+        {
+            GetComponent<Inertia3D>().HollowCylinderIneritaTensor();
+        }
+
+
         return;
     }
 
@@ -708,20 +742,16 @@ public class Particle3D : MonoBehaviour
     void UpdateAngularAcceleration()
     {
         // TODO: Fix angular acceleration implementation.
-        //AngularAcceleration = inertiaInv * Torque;
+        AngularAcceleration = inertiaInv * Torque;
     }
 
-    // Calulate Inverse Cube Inertia
-    void CubeInvInertiaCalc()
-    {
-        inertiaInv = 12 / Mass * (transform.localScale.x * transform.localScale.x + transform.localScale.y * transform.localScale.y);
-    }
+   
 
     // Apply torque
     public void ApplyTorque(Vector3 pos, Vector3 newForce)
     {
         // t = px*fy - py*fx
-        Torque = pos.x * newForce.y - pos.y * newForce.x;
+        Torque = Vector3.Cross(pos, newForce);
     }
 
     // get direction to move forward
@@ -798,7 +828,7 @@ public class Particle3D : MonoBehaviour
     public Vector3 Force { get => force; set => force = value; }
 
     // Torque Accessor.
-    public float Torque { get => torque; set => torque = value; }
+    public Vector3 Torque { get => torque; set => torque = value; }
 
     /************************************
     **          End Accessors          ** 
