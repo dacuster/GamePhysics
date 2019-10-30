@@ -84,6 +84,7 @@ public class Particle2D : MonoBehaviour
 
     // Gravity constant.
     private const float GRAVITY = -9.8f;
+
     [SerializeField]
     // Upward direction of the world.
     private Vector2 worldUp = Vector2.up;
@@ -106,15 +107,19 @@ public class Particle2D : MonoBehaviour
     [SerializeField]
     // Spring anchor point object.
     private Transform springAnchor = null;
+
     [SerializeField]
     // Spring resting length.
     private float springRestLength = 0.0f;
+
     [SerializeField]
     // Spring stiffness.
     private float springStiffness = 0.0f;
+
     [SerializeField]
     // Spring damping.
     private float springDamping = 0.0f;
+
     [SerializeField]
     // Spring constant.
     private float springConstant = 0.0f;

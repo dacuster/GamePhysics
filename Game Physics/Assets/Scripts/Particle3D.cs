@@ -231,7 +231,8 @@ public class Particle3D : MonoBehaviour
     private enum PositionType { Euler, Kinematic };
     private enum RotationType { Euler, Kinematic };
 
-    private enum ShapeType { SolidSphere, HollowSphere, SolidCude, HollowCube, SolidCylinder, HollowCylinder };
+    private enum ShapeType { SolidSphere, HollowSphere, SolidCube, HollowCube, SolidCylinder, HollowCylinder };
+
     // Velocity option fields.
     [Header("Velocity Options")]
 
@@ -553,37 +554,29 @@ public class Particle3D : MonoBehaviour
             AddForce(ForceGenerator.GenerateForce_Spring_Damping(Position, springAnchor.position, springRestLength, springStiffness, springDamping, springConstant, Velocity));
         }
 
-        // Shape Types
-        if(shapeType == ShapeType.SolidSphere)
+        // Apply inverse inertia tensor based on object shape type.
+        switch (shapeType)
         {
-            GetComponent<Inertia3D>().SolidSphereIneritaTensor();
+            case ShapeType.SolidSphere:
+                inertiaInv = Inertia3D.SolidSphereIneritaTensor();
+                break;
+            case ShapeType.HollowSphere:
+                inertiaInv = Inertia3D.HollowSphereIneritaTensor();
+                break;
+            case ShapeType.SolidCube:
+                inertiaInv = Inertia3D.SolidCubeIneritaTensor();
+                break;
+            case ShapeType.HollowCube:
+                inertiaInv = Inertia3D.HollowCubeIneritaTensor();
+                break;
+            case ShapeType.SolidCylinder:
+                inertiaInv = Inertia3D.SolidCylinderIneritaTensor();
+                break;
+            case ShapeType.HollowCylinder:
+                inertiaInv = Inertia3D.HollowCylinderIneritaTensor();
+                break;
+            default: break;
         }
-
-        if (shapeType == ShapeType.HollowSphere)
-        {
-            GetComponent<Inertia3D>().HollowSphereIneritaTensor();
-        }
-
-        if (shapeType == ShapeType.SolidCude)
-        {
-            GetComponent<Inertia3D>().SolidCubeIneritaTensor();
-        }
-
-        if (shapeType == ShapeType.HollowCube)
-        {
-            GetComponent<Inertia3D>().HollowCubeIneritaTensor();
-        }
-
-        if (shapeType == ShapeType.SolidCylinder)
-        {
-            GetComponent<Inertia3D>().SolidCylinderIneritaTensor();
-        }
-
-        if (shapeType == ShapeType.HollowCylinder)
-        {
-            GetComponent<Inertia3D>().HollowCylinderIneritaTensor();
-        }
-
 
         return;
     }
