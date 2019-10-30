@@ -5,42 +5,69 @@ using UnityEditor;
 
 public class Particle3D : MonoBehaviour
 {
+    [System.Serializable]
     // Quaternion Class
     public class Custom_Quaternion
     {
-        // w scalar
-        private float w = 1.0f;
-        // x rotation    
-        private float x = 0.0f;
-        // y rotation     
-        private float y = 0.0f;
-        // z rotation    
-        private float z = 0.0f;
+        [SerializeField]
+        // Quaternion in Vector4 form
+        Vector4 quaternion = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+        //[SerializeField]
+        //// w scalar
+        //private float w = 1.0f;
+        //[SerializeField]
+        //// x rotation    
+        //private float x = 0.0f;
+        //[SerializeField]
+        //// y rotation     
+        //private float y = 0.0f;
+        //[SerializeField]
+        //// z rotation    
+        //private float z = 0.0f;
 
 
 
         // variable getters and setters
-        public float W { get => w; set => w = value; }
-        public float X { get => x; set => x = value; }
-        public float Y { get => y; set => y = value; }
-        public float Z { get => z; set => z = value; }
+        public float W { get => quaternion.w; set => quaternion.w = value; }
+        public float X { get => quaternion.x; set => quaternion.x = value; }
+        public float Y { get => quaternion.y; set => quaternion.y = value; }
+        public float Z { get => quaternion.z; set => quaternion.z = value; }
 
-        public Custom_Quaternion(float _x, float _y, float _z, float _w)
+        public Custom_Quaternion(float x, float y, float z, float w)
         {
-            X = _x;
-            Y = _y;
-            Z = _z;
-            W = _w;
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
+        }
+
+        public Custom_Quaternion(float angleOfRotation, Vector3 rotationAxis)
+        {
+            // Get half angle for quicker quaternion creation.
+            float halfAngle = angleOfRotation * 0.5f;
+
+            // W = Cos(halfAngle)
+            W = Mathf.Cos(halfAngle);
+
+            // Normalize rotation axis in case it isn't already.
+            rotationAxis.Normalize();
+
+            // v = n * sin(halfAngle)
+            rotationAxis *= Mathf.Sin(halfAngle);
+
+            // Apply vector values to new quaternion.
+            X = rotationAxis.x;
+            Y = rotationAxis.y;
+            Z = rotationAxis.z;
+
+            return;
         }
 
         public Custom_Quaternion() { }
 
-        public void normalize()
+        public void Normalize()
         {
-                X /= magnitude;
-                Y /= magnitude;
-                Z /= magnitude;
-                W /= magnitude;
+            quaternion.Normalize();
 
             return;
         }
@@ -49,13 +76,9 @@ public class Particle3D : MonoBehaviour
         {
             get
             {
-                return new Custom_Quaternion
-                (
-                    X / magnitude,
-                    Y / magnitude,
-                    Z / magnitude,
-                    W / magnitude
-                );
+                Custom_Quaternion newQuaternion = new Custom_Quaternion();
+                newQuaternion.quaternion = quaternion.normalized;
+                return newQuaternion;
             }
         }
 
@@ -63,7 +86,7 @@ public class Particle3D : MonoBehaviour
         {
             get
             {
-                return x * x + y * y + z * z + w * w;
+                return quaternion.sqrMagnitude;
             }
         }
 
@@ -72,7 +95,7 @@ public class Particle3D : MonoBehaviour
         {
             get
             {
-                return Mathf.Sqrt(sqrMagnitude);
+                return quaternion.magnitude;
             }
         }
 
@@ -80,7 +103,7 @@ public class Particle3D : MonoBehaviour
         {
             get
             {
-                return new Custom_Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
+                return new Custom_Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
             }
         }
 
@@ -88,170 +111,88 @@ public class Particle3D : MonoBehaviour
         {
             get
             {
-                return new Vector3(X, Y, Z);
+                Vector3 axis = quaternion;
+                return axis.normalized;
 
+            }
+            set
+            {
+                // "Half" angle. Angle = 2 * acos(w)
+                float angle = Mathf.Acos(W);
+                
+                // Normalize new axis.
+                value.Normalize();
+                
+                // Apply rotation to new axis based on current rotation.
+                value *= Mathf.Sin(angle);
+
+                // Set the axis values of the current quaternion.
+                X = value.x;
+                Y = value.y;
+                Z = value.z;
+
+                return;
             }
         }
 
-        // TODO: implement scalar and quaternion multiplacation
-        public static Custom_Quaternion operator* (Custom_Quaternion left, float right)
+
+        public UnityEngine.Quaternion GetUnityQuaternion()
         {
-            Custom_Quaternion quaternion = new Custom_Quaternion
-            {
-                W = left.W * right,
-                X = left.X * right,
-                Y = left.Y * right,
-                Z = left.Z * right
-            };
+            UnityEngine.Quaternion result = new UnityEngine.Quaternion(X, Y, Z, W);
 
-            return quaternion;
-        }
-
-        public Custom_Quaternion AngleAxisRotate(float angle, Vector3 axis)
-        {
-            float halfAngle = angle * 0.5f;
-            float sinHalfAngle = Mathf.Sin(halfAngle);
-
-            Custom_Quaternion newQuaternion = new Custom_Quaternion
-            {
-                W = Mathf.Cos(halfAngle),
-                X = axis.x * sinHalfAngle,
-                Y = axis.y * sinHalfAngle,
-                Z = axis.z * sinHalfAngle
-            };
-
-            newQuaternion = newQuaternion * this;
-
-            return newQuaternion;
-        }
-
-        // TODO: implement vector and quaternion multiplacation
-        public static Custom_Quaternion operator* (Vector3 left, Custom_Quaternion right)
-        {
-            //right = right.normalized;
-
-            float X = right.X;
-            float Y = right.Y;
-            float Z = right.Z;
-            float W = right.W;
-
-            Matrix4x4 rotationMatrix = new Matrix4x4
-            {
-
-                // X tranformation.
-                m00 = 1.0f - 2.0f * Y * Y - 2.0f * Z * Z,
-                m01 = 2.0f * X * Y - 2.0f * W * Z,
-                m02 = 2.0f * X * Z + 2.0f * W * Y,
-                m03 = 0.0f,
-
-                // Y tranformation.
-                m10 = 2.0f * X * Y + 2.0f * W * Z,
-                m11 = 1.0f - 2.0f * X * X - 2.0f * Z * Z,
-                m12 = 2.0f * Y * Z + 2.0f * W * X,
-                m13 = 0.0f,
-
-                // Z tranformation.
-                m20 = 2.0f * X * Z - 2.0f * W * Y,
-                m21 = 2.0f * Y * Z - 2.0f * W * X,
-                m22 = 1.0f - 2.0f * X * X - 2.0f * Y * Y,
-                m23 = 0.0f,
-
-                // W tranformation.
-                m30 = 0.0f,
-                m31 = 0.0f,
-                m32 = 0.0f,
-                m33 = 1.0f
-            };
-
-            rotationMatrix = rotationMatrix.transpose;
-
-            left = rotationMatrix.MultiplyPoint3x4(left);
-
-            Custom_Quaternion newQuaternion = new Custom_Quaternion
-            {
-                X = left.x,
-                Y = left.y,
-                Z = left.z,
-                W = 1.0f
-            };
-
-            return newQuaternion;
+            return result;
         }
 
         // Multiply two quaternions together.
-        public static Custom_Quaternion operator * (Custom_Quaternion left, Custom_Quaternion right)
+        public static Custom_Quaternion operator* (Custom_Quaternion left, Custom_Quaternion right)
         {
-            Vector3 leftVector = new Vector3(left.X, left.Y, left.Z);
-            Vector3 rightVector = new Vector3(right.X, right.Y, right.Z);
+            Vector3 leftVector = left.quaternion;
+            Vector3 rightVector = right.quaternion;
             
             // Calculate the real(W) of the new quaternion.
             float real = left.W * right.W - Vector3.Dot(leftVector, rightVector);
 
-            Vector3 newVector = left.W * rightVector +right.W * leftVector + Vector3.Cross(leftVector, rightVector);
+            Vector3 newVector = left.W * rightVector + right.W * leftVector + Vector3.Cross(leftVector, rightVector);
 
-            //Quaternion quaternion = new Quaternion
-            //{
-            //    W = left.W * right.W - left.X * right.X - left.Y * right.Y - left.Z * right.Z,
+            Custom_Quaternion newQuaternion = new Custom_Quaternion(newVector.x, newVector.y, newVector.z, real);
 
-            //    X = left.W * right.X + left.X * right.W + left.Y * right.Z - left.Z * right.Y,
-
-            //    Y = left.W * right.Y - left.X * right.Z + left.Y * right.W + left.Z * right.X,
-
-            //    Z = left.W * right.Z + left.X * right.Y - left.Y * right.X + left.Z * right.W
-            //};
-
-            Custom_Quaternion quaternion = new Custom_Quaternion(real, newVector.x, newVector.y, newVector.z);
-
-            return quaternion;
+            return newQuaternion;
         }
 
-        // Add two quaternions together.
-        public static Custom_Quaternion operator + (Custom_Quaternion left, Custom_Quaternion right)
+        public void Rotate(Custom_Quaternion newRotation)
         {
-            Custom_Quaternion quaternion = new Custom_Quaternion
-            {
-                W = left.W + right.W,
-                X = left.X + right.X,
-                Y = left.Y + right.Y,
-                Z = left.Z + right.Z
-            };
+            Custom_Quaternion newQuaternion = newRotation * this;
 
-            return quaternion;
-        }
-
-        public void Rotate(ref Vector3 rotation)
-        {
-            Matrix4x4 rotationMatrix = new Matrix4x4
-            {
-
-                // X tranformation.
-                m00 = 1.0f - 2.0f * Y * Y - 2.0f * Z * Z,
-                m01 = 2.0f * X * Y - 2.0f * W * Z,
-                m02 = 2.0f * X * Z + 2.0f * W * Y,
-                m03 = 0.0f,
-
-                // Y tranformation.
-                m10 = 2.0f * X * Y + 2.0f * W * Z,
-                m11 = 1.0f - 2.0f * X * X - 2.0f * Z * Z,
-                m12 = 2.0f * Y * Z + 2.0f * W * X,
-                m13 = 0.0f,
-
-                // Z tranformation.
-                m20 = 2.0f * X * Z - 2.0f * W * Y,
-                m21 = 2.0f * Y * Z - 2.0f * W * X,
-                m22 = 1.0f - 2.0f * X * X - 2.0f * Y * Y,
-                m23 = 0.0f,
-
-                // W tranformation.
-                m30 = 0.0f,
-                m31 = 0.0f,
-                m32 = 0.0f,
-                m33 = 1.0f
-            };
-
-            rotation = rotationMatrix.MultiplyPoint3x4(rotation);
+            quaternion = newQuaternion.quaternion;
 
             return;
+        }
+
+        public Custom_Quaternion Rotate(float angle, Vector3 rotationAxis)
+        {
+            // Slides implementation.
+            // v' = v + 2r x (r x v + wv)       v = vector to rotate, r = quaternion vector, w = angle of rotationAxis
+
+            float rotationAngle = Mathf.Cos(angle * 0.5f);
+
+            // The quaternion's current axis of rotation.
+            Vector3 axis = new Vector3(X, Y, Z);
+
+            Custom_Quaternion result = new Custom_Quaternion();
+
+            Vector3 axisCross = Vector3.Cross(axis, rotationAxis);
+
+            Vector3 doubleAxis = 2.0f * axis;
+
+            Vector3 axisRotationScalar = rotationAngle * rotationAxis;
+
+            Vector3 rotation = rotationAxis + Vector3.Cross(doubleAxis, axisCross + axisRotationScalar);
+
+
+            result.W = 0.0f;
+            result.eulerAngles = rotation;
+
+            return result;
         }
 
     }
@@ -276,8 +217,8 @@ public class Particle3D : MonoBehaviour
     // Add a space in the inspector.
     [Space]
 
-    [SerializeField]
     // 3D rotation of this object.
+    [SerializeField]
     private Custom_Quaternion rotation = Custom_Quaternion.identity;
     [SerializeField]
     // Angular velocity of this object.
@@ -512,7 +453,7 @@ public class Particle3D : MonoBehaviour
         // Apply rotation to Unity's transform component.
         //transform.eulerAngles = AngularVelocity;
         
-        transform.rotation = new Quaternion(Rotation.W, Rotation.X, Rotation.Y, Rotation.Z);
+        transform.rotation = Rotation.GetUnityQuaternion();
         
 
         return;
@@ -694,13 +635,22 @@ public class Particle3D : MonoBehaviour
         *************************************/
         //Rotation += AngularVelocity * deltaTime;
 
-        Rotation += (AngularVelocity * Rotation) * deltaTime * 0.5f;
+        // Slide implementation
+        //Rotation += (AngularVelocity * Rotation) * deltaTime * 0.5f;
+
+
+        // Test for demo
+        //Rotation.Rotate(45.0f * deltaTime, Vector3.forward);
+        Custom_Quaternion newRotation = new Custom_Quaternion(1.0f * deltaTime, AngularVelocity);
+        Rotation.Rotate(newRotation);
+
+
         //Rotation = Rotation.AngleAxisRotate(10.0f, AngularVelocity);
 
-        Rotation.normalize();
+        //Rotation.normalize();
 
         // v(t + dt) = v(t) + a(t)dt
-        AngularVelocity += AngularAcceleration * deltaTime;
+        //AngularVelocity += AngularAcceleration * deltaTime;
 
         return;
     }
@@ -847,6 +797,9 @@ public class Particle3DEditor : Editor
         if (!Application.isPlaying)
         {
             particle.Position = particle.transform.position;
+            UnityEngine.Quaternion quaternion = particle.transform.rotation;
+            particle.Rotation = new Particle3D.Custom_Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+            particle.Rotation.Normalize();
 
             // TODO: Implement quaternion rotation into scene GUI.
             // Get eulerAngles from transform and make Quaternion with w = 1 and x, y, z = eulerAngles???
@@ -854,3 +807,42 @@ public class Particle3DEditor : Editor
         }
     }
 }
+
+// Quaternion inspector drawer
+[CustomPropertyDrawer(typeof(Particle3D.Custom_Quaternion))]
+[CanEditMultipleObjects]
+public class QuaternionDrawer : PropertyDrawer
+{
+    // Draw the property inside the given rect
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+    {
+
+        // Using BeginProperty / EndProperty on the parent property means that
+        // __prefab__ override logic works on the entire property.
+        EditorGUI.BeginProperty(position, label, property);
+
+        // Draw label
+        position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+
+        // Don't make child fields be indented
+        var indent = EditorGUI.indentLevel;
+        EditorGUI.indentLevel = 0;
+
+        // Calculate rects
+        Rect rect = new Rect(position.x, position.y, 312.0f, position.height);
+
+        Vector4 quaternion = property.FindPropertyRelative("quaternion").vector4Value;
+
+        quaternion = EditorGUI.Vector4Field(rect, GUIContent.none, quaternion);
+
+        //quaternion.Normalize();
+
+        //property.FindPropertyRelative("quaternion").vector4Value = quaternion;
+
+        // Set indent back to what it was
+        EditorGUI.indentLevel = indent;
+
+        EditorGUI.EndProperty();
+    }
+}
+
