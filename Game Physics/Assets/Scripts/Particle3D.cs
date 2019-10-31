@@ -112,7 +112,7 @@ public class Particle3D : MonoBehaviour
             get
             {
                 Vector3 axis = quaternion;
-                return axis.normalized;
+                return axis;
 
             }
             set
@@ -144,19 +144,73 @@ public class Particle3D : MonoBehaviour
         }
 
         // Multiply two quaternions together.
-        public static Custom_Quaternion operator* (Custom_Quaternion left, Custom_Quaternion right)
+        public static Custom_Quaternion operator* (Custom_Quaternion leftQuaternion, Custom_Quaternion rightQuaternion)
         {
-            Vector3 leftVector = left.quaternion;
-            Vector3 rightVector = right.quaternion;
+            Vector3 leftVector = leftQuaternion.quaternion;
+            Vector3 rightVector = rightQuaternion.quaternion;
             
             // Calculate the real(W) of the new quaternion.
-            float real = left.W * right.W - Vector3.Dot(leftVector, rightVector);
+            float real = leftQuaternion.W * rightQuaternion.W - Vector3.Dot(leftVector, rightVector);
 
-            Vector3 newVector = left.W * rightVector + right.W * leftVector + Vector3.Cross(leftVector, rightVector);
+            Vector3 newVector = leftQuaternion.W * rightVector + rightQuaternion.W * leftVector + Vector3.Cross(leftVector, rightVector);
 
             Custom_Quaternion newQuaternion = new Custom_Quaternion(newVector.x, newVector.y, newVector.z, real);
 
             return newQuaternion;
+        }
+
+        public static Custom_Quaternion operator* (Vector3 leftVector, Custom_Quaternion rightQuaternion)
+        {
+            // Slides implementation. PG 44
+            // v' = v + 2r x (r x v + wv)       v = vector to rotate, r = quaternion vector, w = angle of rotationAxis
+
+            float real = -(Vector3.Dot(leftVector, rightQuaternion.eulerAngles));
+
+            Vector3 newVector = rightQuaternion.W * leftVector + (Vector3.Cross(leftVector, rightQuaternion.eulerAngles));
+
+
+            Custom_Quaternion quaternion = new Custom_Quaternion(newVector.x, newVector.y, newVector.z, real);
+
+            return quaternion;
+
+
+            //// The quaternion's current axis of rotation.
+            //Vector3 axis = rightQuaternion.eulerAngles;
+
+            //Vector3 axisCross = Vector3.Cross(axis, leftVector);
+
+            //Vector3 doubleAxis = 2.0f * axis;
+
+            //Vector3 axisRotationScalar = rightQuaternion.W * leftVector;
+
+            //Vector3 rotation = leftVector + Vector3.Cross(doubleAxis, axisCross + axisRotationScalar);
+
+
+            //rightQuaternion.X = rotation.x;
+            //rightQuaternion.Y = rotation.y;
+            //rightQuaternion.Z = rotation.z;
+
+            //return rightQuaternion;
+        }
+
+        public static Custom_Quaternion operator* (Custom_Quaternion left, float right)
+        {
+            left.X *= right;
+            left.Y *= right;
+            left.Z *= right;
+            left.W *= right;
+
+            return left;
+        }
+
+        public static Custom_Quaternion operator+ (Custom_Quaternion left, Custom_Quaternion right)
+        {
+            left.X += right.X;
+            left.Y += right.Y;
+            left.Z += right.Z;
+            left.W += right.W;
+
+            return left;
         }
 
         public void Rotate(Custom_Quaternion newRotation)
@@ -603,12 +657,13 @@ public class Particle3D : MonoBehaviour
 
         // Slide implementation
         //Rotation += (AngularVelocity * Rotation) * deltaTime * 0.5f;
-
+        Rotation = Rotation + (AngularVelocity * Rotation) * deltaTime * 0.5f;
+        Rotation.Normalize();
 
         // Test for demo
         //Rotation.Rotate(45.0f * deltaTime, Vector3.forward);
-        Custom_Quaternion newRotation = new Custom_Quaternion(1.0f * deltaTime, AngularVelocity);
-        Rotation.Rotate(newRotation);
+        //Custom_Quaternion newRotation = new Custom_Quaternion(1.0f * deltaTime, AngularVelocity);
+        //Rotation.Rotate(newRotation);
 
 
         //Rotation = Rotation.AngleAxisRotate(10.0f, AngularVelocity);
@@ -616,7 +671,7 @@ public class Particle3D : MonoBehaviour
         //Rotation.normalize();
 
         // v(t + dt) = v(t) + a(t)dt
-        //AngularVelocity += AngularAcceleration * deltaTime;
+        AngularVelocity += AngularAcceleration * deltaTime;
 
         return;
     }
