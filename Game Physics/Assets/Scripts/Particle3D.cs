@@ -247,6 +247,15 @@ public class Particle3D : MonoBehaviour
     [SerializeField]
     // shape Types
     private ShapeType shapeType = ShapeType.SolidSphere;
+
+    [SerializeField]
+    private float radius = 0.0f;
+    [SerializeField]
+    private float depth = 0.0f;
+    [SerializeField]
+    private float height = 0.0f;
+    [SerializeField]
+    private float width = 0.0f;
     /********************
     **  Lab 2 Step 1.  **
     ********************/
@@ -292,6 +301,7 @@ public class Particle3D : MonoBehaviour
     private Vector3 torque = Vector3.zero;
     private float inertia = 0.0f;
     private float inertiaInv = 0.0f;
+
     /*******************************
     **  Lab 2. Spring variables.  **
     *******************************/
@@ -348,6 +358,7 @@ public class Particle3D : MonoBehaviour
     // Drag coefficient.
     private float dragCoefficient = 0.0f;
 
+    
 
     /*********************************
     **  Lab 2. Friction variables.  **
@@ -558,22 +569,22 @@ public class Particle3D : MonoBehaviour
         switch (shapeType)
         {
             case ShapeType.SolidSphere:
-                inertiaInv = Inertia3D.SolidSphereIneritaTensor();
+                inertiaInv = Inertia3D.SolidSphereIneritaTensor(radius, mass);
                 break;
             case ShapeType.HollowSphere:
-                inertiaInv = Inertia3D.HollowSphereIneritaTensor();
+                inertiaInv = Inertia3D.HollowSphereIneritaTensor(radius, mass);
                 break;
             case ShapeType.SolidCube:
-                inertiaInv = Inertia3D.SolidCubeIneritaTensor();
+                inertiaInv = Inertia3D.SolidCubeIneritaTensor(height, width,depth,mass);
                 break;
             case ShapeType.HollowCube:
-                inertiaInv = Inertia3D.HollowCubeIneritaTensor();
+                inertiaInv = Inertia3D.HollowCubeIneritaTensor(height, width, depth, mass);
                 break;
             case ShapeType.SolidCylinder:
-                inertiaInv = Inertia3D.SolidCylinderIneritaTensor();
+                inertiaInv = Inertia3D.SolidCylinderIneritaTensor(radius, height,mass);
                 break;
             case ShapeType.HollowCylinder:
-                inertiaInv = Inertia3D.HollowCylinderIneritaTensor();
+                inertiaInv = Inertia3D.SolidConeIneritaTensor(radius, height, mass);
                 break;
             default: break;
         }
