@@ -285,7 +285,7 @@ public class Particle3D : MonoBehaviour
     private enum PositionType { Euler, Kinematic };
     private enum RotationType { Euler, Kinematic };
 
-    private enum ShapeType { SolidSphere, HollowSphere, SolidCube, HollowCube, SolidCylinder, HollowCylinder };
+    private enum ShapeType { SolidSphere, HollowSphere, SolidCube, HollowCube, SolidCylinder, SolidCone };
 
     // Velocity option fields.
     [Header("Velocity Options")]
@@ -302,14 +302,6 @@ public class Particle3D : MonoBehaviour
     // shape Types
     private ShapeType shapeType = ShapeType.SolidSphere;
 
-    [SerializeField]
-    private float radius = 0.0f;
-    [SerializeField]
-    private float depth = 0.0f;
-    [SerializeField]
-    private float height = 0.0f;
-    [SerializeField]
-    private float width = 0.0f;
     /********************
     **  Lab 2 Step 1.  **
     ********************/
@@ -324,8 +316,11 @@ public class Particle3D : MonoBehaviour
     private float mass = 0.0f;
     // Current invert mass of this object.
     private float massInverse = 0.0f;
+    [SerializeField]
+    private Vector3 worldCenterOfMass = Vector3.zero;
+    [SerializeField]
+    private Vector3 localCenterOfMass = Vector3.zero;
 
-    
     /********************
     **  Lab 2 Step 2.  **
     ********************/
@@ -348,14 +343,21 @@ public class Particle3D : MonoBehaviour
     // Upward direction of the world.
     private Vector3 worldUp = Vector3.up;
 
-    // Torque Stuff
+    /*******************************
+    **  Lab 2. Torque variables.  **
+    *******************************/
     [Header("Torque")]
 
     [SerializeField]
     private Vector3 torque = Vector3.zero;
-    private float inertia = 0.0f;
-    private float inertiaInv = 0.0f;
-
+    [SerializeField]
+    private Matrix4x4 inertia = Matrix4x4.identity;
+    [SerializeField]
+    private Matrix4x4 inertiaInv;
+    [SerializeField]
+    public Vector3 torqueForce = Vector3.zero;
+    [SerializeField]
+    public Vector3 momentArm = Vector3.zero;
     /*******************************
     **  Lab 2. Spring variables.  **
     *******************************/
@@ -490,37 +492,33 @@ public class Particle3D : MonoBehaviour
         // Set the mass as the starting mass.
         Mass = startingMass;
 
-       // Quaternion quaternion = new Quaternion(1, 1, 1, 1);
-       // quaternion = quaternion.normalized;
-
         return;
     }
 
     // Physics update method.
     void FixedUpdate()
     {
+        CalculateWorldInertia();
 
+        CalculateWorldCenterOfMass();
         // Check algorithm type from user selection menu items.
         GetInspectorItems();
 
         // Update acceleration before setting transforms.
-        UpdateAcceleration();
+        //UpdateAcceleration();
 
-        if(name == "Player")
-        {
-            UpdateAngularAcceleration();
-            Torque = Vector3.zero;
+        // apply torque
+        ApplyTorque(momentArm, torqueForce);
 
-            PlayerController.instance.PlayerControls();
-        }
-
+        // update angular acceleration
+        UpdateAngularAcceleration();
+        
         // Apply position to Unity's transform component.
         transform.position = Position;
         // Apply rotation to Unity's transform component.
         //transform.eulerAngles = AngularVelocity;
         
         transform.rotation = Rotation.GetUnityQuaternion();
-        
 
         return;
     }
@@ -623,22 +621,22 @@ public class Particle3D : MonoBehaviour
         switch (shapeType)
         {
             case ShapeType.SolidSphere:
-                inertiaInv = Inertia3D.SolidSphereIneritaTensor(radius, mass);
+                inertia = Inertia3D.SolidSphereInertiaTensor(transform.localScale.x * 0.5f, mass);
                 break;
             case ShapeType.HollowSphere:
-                inertiaInv = Inertia3D.HollowSphereIneritaTensor(radius, mass);
+                inertia = Inertia3D.HollowSphereInertiaTensor(transform.localScale.x * 0.5f, mass);
                 break;
             case ShapeType.SolidCube:
-                inertiaInv = Inertia3D.SolidCubeIneritaTensor(height, width,depth,mass);
+                inertia = Inertia3D.SolidCubeInertiaTensor(transform.localScale.x, transform.localScale.y, transform.localScale.z, mass) ;
                 break;
             case ShapeType.HollowCube:
-                inertiaInv = Inertia3D.HollowCubeIneritaTensor(height, width, depth, mass);
+                inertia = Inertia3D.HollowCubeInertiaTensor(transform.localScale.x, transform.localScale.y, transform.localScale.z, mass);
                 break;
             case ShapeType.SolidCylinder:
-                inertiaInv = Inertia3D.SolidCylinderIneritaTensor(radius, height,mass);
+                inertia = Inertia3D.SolidCylinderInertiaTensor(transform.localScale.x * 0.5f, transform.localScale.y, mass);
                 break;
-            case ShapeType.HollowCylinder:
-                inertiaInv = Inertia3D.SolidConeIneritaTensor(radius, height, mass);
+            case ShapeType.SolidCone:
+                inertia = Inertia3D.SolidConeInertiaTensor(transform.localScale.x * 0.5f, transform.localScale.y, mass);
                 break;
             default: break;
         }
@@ -698,16 +696,6 @@ public class Particle3D : MonoBehaviour
         Rotation = Rotation + (AngularVelocity * Rotation) * deltaTime * 0.5f;
         Rotation.Normalize();
 
-        // Test for demo
-        //Rotation.Rotate(45.0f * deltaTime, Vector3.forward);
-        //Custom_Quaternion newRotation = new Custom_Quaternion(1.0f * deltaTime, AngularVelocity);
-        //Rotation.Rotate(newRotation);
-
-
-        //Rotation = Rotation.AngleAxisRotate(10.0f, AngularVelocity);
-
-        //Rotation.normalize();
-
         // v(t + dt) = v(t) + a(t)dt
         AngularVelocity += AngularAcceleration * deltaTime;
 
@@ -754,8 +742,6 @@ public class Particle3D : MonoBehaviour
         AngularAcceleration = inertiaInv * Torque;
     }
 
-   
-
     // Apply torque
     public void ApplyTorque(Vector3 pos, Vector3 newForce)
     {
@@ -771,6 +757,57 @@ public class Particle3D : MonoBehaviour
         //Vector3 direction = new Vector3(Mathf.Cos(radians), Mathf.Sin(radians));
         //return direction;
         return Vector3.zero;
+    }
+
+    //public Matrix4x4 WorldToLocalMatrix()
+    //{
+    //    Matrix4x4 model = Matrix4x4.TRS(position, Rotation.GetUnityQuaternion(), transform.localScale);
+
+    //    return model;
+    //}
+
+    public Matrix4x4 LocalToWorld()
+    {
+        // Translation matrix of this particle.
+        Matrix4x4 translate = Matrix4x4.Translate(Position);
+
+        // Rotation matrix of this particle.
+        Matrix4x4 rotate = Matrix4x4.Rotate(Rotation.GetUnityQuaternion());
+
+        // Model matrix to convert from local to world space.
+        Matrix4x4 model = translate * rotate;
+
+        return model;
+    }
+
+    public Matrix4x4 WorldTransormationMatrix()
+    {
+        return Matrix4x4.TRS(position, Rotation.GetUnityQuaternion(), transform.localScale);
+    }
+
+    public Matrix4x4 WorldInverseTransormationMatrix()
+    {
+        return WorldTransormationMatrix().inverse;
+    }
+
+    public void CalculateWorldCenterOfMass()
+    {
+        worldCenterOfMass = LocalToWorld().MultiplyPoint3x4(localCenterOfMass);
+    }
+
+    public void CalculateWorldInertia()
+    {
+        // Calculate the inverse inertia.
+        CalculateInverseInertia();
+
+        // Transform the inverse inertia to world space.
+        inertiaInv = LocalToWorld() * inertiaInv;
+
+    }
+
+    public void CalculateInverseInertia()
+    {
+        inertiaInv = inertia.inverse;
     }
     /**************************************
     **          Start Accessors          ** 
