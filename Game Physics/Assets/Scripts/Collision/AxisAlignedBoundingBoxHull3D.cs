@@ -136,7 +136,7 @@ public class AxisAlignedBoundingBoxHull3D : CollisionHull3D
     public void CalculateBoundingBoxAxis()
     {
         // Get the particle for use when game is not running.
-        Particle2D particle = GetComponent<Particle2D>();
+        Particle3D particle = GetComponent<Particle3D>();
         xAxisBound.x = particle.Position.x - boundingBox.x * 0.5f;
         xAxisBound.y = xAxisBound.x + boundingBox.x;
         yAxisBound.x = particle.Position.y - boundingBox.y * 0.5f;

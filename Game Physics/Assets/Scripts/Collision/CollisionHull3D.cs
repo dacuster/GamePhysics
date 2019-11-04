@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 
 // This class requires Particle2D to prevent null references.
-[RequireComponent(typeof(Particle2D))]
+[RequireComponent(typeof(Particle3D))]
 
 // Abstract prevent anything from instantiating it.
 public abstract class CollisionHull3D : MonoBehaviour
@@ -126,7 +126,7 @@ public abstract class CollisionHull3D : MonoBehaviour
 
                 float impulse = deltaVelocity / totalInverseMass;
 
-                Vector2 impulsePerInverseMass = contact.normal * impulse;
+                Vector3 impulsePerInverseMass = contact.normal * impulse;
 
                 A.Particle.Velocity += impulsePerInverseMass * A.Particle.MassInverse;
 
@@ -185,7 +185,7 @@ public abstract class CollisionHull3D : MonoBehaviour
     void Awake()
     {
         // Assign the Particle2D component.
-        Particle = gameObject.GetComponent<Particle2D>();
+        Particle = gameObject.GetComponent<Particle3D>();
 
         return;
     }
@@ -293,7 +293,7 @@ public abstract class CollisionHull3D : MonoBehaviour
     ****************/
 
     // Particle accessor.
-    public Particle2D Particle { get; set; }
+    public Particle3D Particle { get; set; }
 
     public Collision collision = new Collision();
 

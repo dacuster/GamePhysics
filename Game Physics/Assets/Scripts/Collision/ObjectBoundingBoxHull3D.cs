@@ -165,7 +165,7 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     public void CalculateBoundingBoxAxis()
     {
         // Get the particle for use when game is not running.
-        Particle2D particle = GetComponent<Particle2D>();
+        Particle3D particle = GetComponent<Particle3D>();
         xAxisBound.x = particle.Position.x - BoundingBox.x * 0.5f;
         xAxisBound.y = xAxisBound.x + BoundingBox.x;
         yAxisBound.x = particle.Position.y - BoundingBox.y * 0.5f;
@@ -177,7 +177,7 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     public void CalculateBoundingBoxAxisWorld(Particle2D _particle, ref Vector2 _xAxisBound, ref Vector2 _yAxisBound)
     {
         // Get the particle for use when game is not running.
-        Particle2D particle = GetComponent<Particle2D>();
+        Particle3D particle = GetComponent<Particle3D>();
         
         // Get the position of the particle.
         Vector2 position = _particle.Position;
@@ -448,13 +448,13 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     public Matrix4x4 LocalToWorld()
     {
         // Particle needed for scene editor when game isn't running.
-        Particle2D particle = GetComponent<Particle2D>();
+        Particle3D particle = GetComponent<Particle3D>();
 
         // Get the position of this particle.
         Vector3 position = particle.Position;
 
         // Build a quaternion based on the euler rotation of this particle.
-        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, particle.Rotation);
+        Quaternion rotation =  particle.Rotation.GetUnityQuaternion();
 
         // Translation matrix of this particle.
         Matrix4x4 translate = Matrix4x4.Translate(position);
@@ -478,13 +478,13 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     public Matrix4x4 LocalToWorldOther()
     {
         // Particle needed for scene editor when game isn't running.
-        Particle2D particle = GetComponent<Particle2D>();
+        Particle3D particle = GetComponent<Particle3D>();
 
         // Get the position of this particle.
         Vector3 position = particle.Position;
 
         // Build a quaternion based on the euler rotation of this particle.
-        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, particle.Rotation);
+        Quaternion rotation = particle.Rotation.GetUnityQuaternion();
 
         // Translation matrix of this particle.
         Matrix4x4 translate = Matrix4x4.Translate(position);
@@ -508,13 +508,13 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     public Matrix4x4 WorldToLocal()
     {
         // Particle needed for scene editor when game isn't running.
-        Particle2D particle = GetComponent<Particle2D>();
+        Particle3D particle = GetComponent<Particle3D>();
 
         // Get the position of this particle.
         Vector3 position = particle.Position;
 
         // Build a quaternion based on the euler rotation of this particle.
-        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, particle.Rotation);
+        Quaternion rotation = particle.Rotation.GetUnityQuaternion();
 
         // Translation matrix of this particle.
         Matrix4x4 translate = Matrix4x4.Translate(position);
@@ -538,13 +538,13 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     public Matrix4x4 WorldToLocalOther()
     {
         // Particle needed for scene editor when game isn't running.
-        Particle2D particle = GetComponent<Particle2D>();
+        Particle3D particle = GetComponent<Particle3D>();
 
         // Get the position of this particle.
         Vector3 position = particle.Position;
 
         // Build a quaternion based on the euler rotation of this particle.
-        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, particle.Rotation);
+        Quaternion rotation = particle.Rotation.GetUnityQuaternion();
 
         // Translation matrix of this particle.
         Matrix4x4 translate = Matrix4x4.Translate(position);
