@@ -82,13 +82,10 @@ public class CircleCollisionHull2D : CollisionHull2D
         // transform circle position by multiplying by box world matrix inverse
 
         // Get the circle position for efficient calculations.
-        Vector3 circlePosition = Particle.Position;
+        Vector2 circlePosition = Particle.Position;
 
-        // Get the local to world matrix of the other object.
-        Matrix4x4 matrix = other.LocalToWorldOther();
-
-        // Transform the circle position by the other object's local space.
-        circlePosition = matrix.MultiplyPoint3x4(circlePosition);
+        // Transform the circle position into the OBB's local space.
+        other.WorldToLocal(ref circlePosition);
 
         // Clamp the circle to the other object.
         float nearestX = Mathf.Clamp(circlePosition.x, other.X_AxisBound.x, other.X_AxisBound.y);
@@ -99,10 +96,10 @@ public class CircleCollisionHull2D : CollisionHull2D
         float deltaY = circlePosition.y - nearestY;
 
         // Create a vector of the nearest position for matrix multiplication.
-        Vector3 nearestPosition = new Vector2(nearestX, nearestY);
+        Vector2 nearestPosition = new Vector2(nearestX, nearestY);
 
-        // Bring nearest position on the other object to its local space.
-        nearestPosition = other.LocalToWorldOther().MultiplyPoint3x4(nearestPosition);
+        // Transform the nearest point from the OBB's local space into world space.
+        other.LocalToWorld(ref nearestPosition);
 
         // Debug drawing.
         Vector2 start = new Vector2(nearestPosition.x, nearestPosition.y);
