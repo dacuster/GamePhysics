@@ -16,61 +16,12 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
     private Vector2 xAxisBound;
     private Vector2 yAxisBound;
 
-    private void FixedUpdate()
+    new private void FixedUpdate()
     {
         // Update the bounding box.
         CalculateBoundingBoxAxis();
 
         base.FixedUpdate();
-
-        //// Set the mesh color of this object to white. (No collision)
-        //GetComponent<MeshRenderer>().material.color = Color.white;
-
-        //// Check for collision with all types of collision hulls currently in the game.
-        //foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
-        //{
-        //    // TODO: Properly implement.
-        //    Collision collision = new Collision();
-
-        //    // Don't check collision with itself.
-        //    if (hull == this)
-        //    {
-        //        continue;
-        //    }
-        //    // Other hull is a circle.
-        //    if (hull.Type == CollisionHullType2D.hull_circle)
-        //    {
-        //        // Check for collision vs circle.
-        //        if (TestCollisionVsCircle(hull as CircleCollisionHull2D, ref collision))
-        //        {
-        //            // Change the mesh color of both colliding objects.
-        //            GetComponent<MeshRenderer>().material.color = Color.red;
-        //            hull.GetComponent<MeshRenderer>().material.color = Color.red;
-        //        }
-        //    }
-        //    // Other hull is AABB.
-        //    else if (hull.Type == CollisionHullType2D.hull_aabb)
-        //    {
-        //        // Check collision vs AABB.
-        //        if (TestCollisionVsAABB(hull as AxisAlignedBoundingBoxHull2D, ref collision))
-        //        {
-        //            // Change the mesh color of both colliding objects.
-        //            GetComponent<MeshRenderer>().material.color = Color.red;
-        //            hull.GetComponent<MeshRenderer>().material.color = Color.red;
-        //        }
-        //    }
-        //    // Other hull is OBB.
-        //    else if (hull.Type == CollisionHullType2D.hull_obb)
-        //    {
-        //        // Check collision vs OBB.
-        //        if (TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D, ref collision))
-        //        {
-        //            // Change the mesh color of both colliding objects.
-        //            GetComponent<MeshRenderer>().material.color = Color.red;
-        //            hull.GetComponent<MeshRenderer>().material.color = Color.red;
-        //        }
-        //    }
-        //}
     }
 
     // Check for collision AABB vs circle.
@@ -103,25 +54,28 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // first, test AABB vs max extents of OBB
         // then, multiply by OBB inverse matrix, do test again
 
-        // Transform the extents to OBB world space.
-        other.CalculateBoundingBoxWorld();
-
         // OBB max extents
-        Vector2 xAxisBoundOBB = other.X_AxisMaxBound;
-        Vector2 yAxisBoundOBB = other.Y_AxisMaxBound;
+        Vector2 xAxisBoundOBB = other.X_AxisBound;
+        Vector2 yAxisBoundOBB = other.Y_AxisBound;
 
-        // Check if the extents for the AABB are colliding with the extents for the OBB in OBB world space.
-        if (X_AxisBound.x <= xAxisBoundOBB.y && X_AxisBound.y >= xAxisBoundOBB.x && Y_AxisBound.y >= yAxisBoundOBB.x && Y_AxisBound.x <= yAxisBoundOBB.y)
+        // Transform the extents to OBB world space.
+        other.CalculateBoundingBoxWorld(ref xAxisBoundOBB, ref yAxisBoundOBB);
+
+        // Get the AABB bounding axis.
+        Vector2 xAxisBoundAABB = X_AxisBound;
+        Vector2 yAxisBoundAABB = Y_AxisBound;
+
+        // Get the AABB max extents in world space.
+        WorldBoundingBoxAxis(ref xAxisBoundAABB, ref yAxisBoundAABB);
+
+        // Check if the extents for the AABB are colliding with the extents for the OBB in world space.
+        if (xAxisBoundAABB.x <= xAxisBoundOBB.y && xAxisBoundAABB.y >= xAxisBoundOBB.x && yAxisBoundAABB.y >= yAxisBoundOBB.x && yAxisBoundAABB.x <= yAxisBoundOBB.y)
         {
-            // AABB max extents
-            Vector2 _xAxisBoundAABB = X_AxisBound;
-            Vector2 _yAxisBoundAABB = Y_AxisBound;
-
-            // Transform the entents to OBB local space.
-            other.CalculateBoundingBoxWorld(ref _xAxisBoundAABB, ref _yAxisBoundAABB);
+            // Transform both object entents to OBB local space.
+            other.CalculateBoundingBoxLocal(ref xAxisBoundAABB, ref yAxisBoundAABB);
 
             // Check if the extents for the AABB in OBB local space are colliding with the extents for the OBB in OBB world space.
-            if (_xAxisBoundAABB.x <= other.X_AxisBound.y && _xAxisBoundAABB.y >= other.X_AxisBound.x && _yAxisBoundAABB.y >= other.Y_AxisBound.x && _yAxisBoundAABB.x <= other.Y_AxisBound.y)
+            if (xAxisBoundAABB.x <= other.X_AxisBound.y && xAxisBoundAABB.y >= other.X_AxisBound.x && yAxisBoundAABB.y >= other.Y_AxisBound.x && yAxisBoundAABB.x <= other.Y_AxisBound.y)
             {
                 // Collision.
                 Debug.Log("Collision!");
@@ -132,14 +86,64 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         return false;
     }
 
+    // Transform given axis into world space from local space.
+    private void LocalToWorld(ref Vector2 axis)
+    {
+        // Particle needed for scene editor when game isn't running.
+        Particle2D particle = GetComponent<Particle2D>();
+
+        // Get the position of this particle.
+        Vector2 position = particle.Position;
+
+        // Build a quaternion based on the euler rotation of this particle.
+        Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, particle.Rotation);
+
+        Vector3 localScale = particle.transform.localScale;
+
+        // Translation matrix of this particle.
+        Matrix4x4 translate = Matrix4x4.Translate(position);
+
+        // Rotation matrix of this particle.
+        Matrix4x4 rotate = Matrix4x4.Rotate(rotation);
+
+        // Scale matrix of this particle.
+        Matrix4x4 scale = Matrix4x4.Scale(localScale);
+
+        // Model matrix to convert from local to world space.
+        Matrix4x4 model = translate * rotate * scale;
+
+        // Transform the axis by the model matrix.
+        axis = model.MultiplyPoint3x4(axis);
+
+        return;
+    }
+
+    public Vector2 WorldBoundingBox
+    {
+        get
+        {
+            Vector2 box = boundingBox;
+
+            LocalToWorld(ref box);
+
+            return box;
+        }
+    }
+
+    public void WorldBoundingBoxAxis(ref Vector2 xAxis, ref Vector2 yAxis)
+    {
+        LocalToWorld(ref xAxis);
+        LocalToWorld(ref yAxis);
+
+        return;
+    }
+
     // Calculate the bounding box axis.
     public void CalculateBoundingBoxAxis()
     {
-        // Get the particle for use when game is not running.
-        Particle2D particle = GetComponent<Particle2D>();
-        xAxisBound.x = particle.Position.x - boundingBox.x * 0.5f;
+        xAxisBound.x = -boundingBox.x * 0.5f;
         xAxisBound.y = xAxisBound.x + boundingBox.x;
-        yAxisBound.x = particle.Position.y - boundingBox.y * 0.5f;
+        yAxisBound.x = -boundingBox.y * 0.5f;
         yAxisBound.y = yAxisBound.x + boundingBox.y;
 
         return;
@@ -170,11 +174,6 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         {
             return boundingBox;
         }
-
-        set
-        {
-            boundingBox = value;
-        }
     }
 }
 
@@ -194,9 +193,6 @@ public class AxisBoxEditor : Editor
 
         // Change gizmo drawing color.
         Handles.color = purple;
-
-        // Update bounding box axis.
-        boxHull.CalculateBoundingBoxAxis();
 
         // Draw a cube to represent the collider on this object.
         Handles.DrawWireCube(particle.Position, boxHull.BoundingBox);

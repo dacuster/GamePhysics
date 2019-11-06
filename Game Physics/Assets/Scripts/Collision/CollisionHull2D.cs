@@ -9,6 +9,10 @@ using UnityEditor;
 // Abstract prevent anything from instantiating it.
 public abstract class CollisionHull2D : MonoBehaviour
 {
+    // Debug mode for drawing in the scene view.
+    [SerializeField]
+    protected bool debugMode = false;
+
     // Video tutorial circle collision handler. https://www.youtube.com/watch?v=LPzyNOHY3A4
     // TODO: Comment for lab 5.
     // Collision data.
@@ -222,11 +226,11 @@ public abstract class CollisionHull2D : MonoBehaviour
                     {
                         if (hull.gameObject != null)
                         {
-                            hull.GetComponent<Asteroid>().DecrementLife();
+                            //hull.GetComponent<Asteroid>().DecrementLife();
                         }
                         if (gameObject != null)
                         {
-                            GameController.instance.PlayerHit();
+                            //GameController.instance.PlayerHit();
                         }
                     }
                     else if (projectileCollision)
