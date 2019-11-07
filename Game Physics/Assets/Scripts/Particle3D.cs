@@ -5,42 +5,76 @@ using UnityEditor;
 
 public class Particle3D : MonoBehaviour
 {
+    /// <summary>
+    /// 
+    /// Quaternions are used to represent rotations.
+    ///
+    /// </summary>
     [System.Serializable]
-    // Quaternion Class
     public class Custom_Quaternion
     {
+        /// <summary>
+        /// 
+        /// Quaternion in Vector4 form.
+        /// 
+        /// </summary>
         [SerializeField]
-        // Quaternion in Vector4 form
         Vector4 quaternion = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
-        //[SerializeField]
-        //// w scalar
-        //private float w = 1.0f;
-        //[SerializeField]
-        //// x rotation    
-        //private float x = 0.0f;
-        //[SerializeField]
-        //// y rotation     
-        //private float y = 0.0f;
-        //[SerializeField]
-        //// z rotation    
-        //private float z = 0.0f;
 
-
-
-        // variable getters and setters
+        /// <summary>
+        /// 
+        /// W component of the Quaternion. Do not directly modify quaternions.
+        /// 
+        /// </summary>
         public float W { get => quaternion.w; set => quaternion.w = value; }
+
+        /// <summary>
+        /// 
+        /// X component of the Quaternion. Don't modify this directly unless you know quaternions inside out.
+        /// 
+        /// </summary>
         public float X { get => quaternion.x; set => quaternion.x = value; }
+
+        /// <summary>
+        /// 
+        /// Y component of the Quaternion. Don't modify this directly unless you know quaternions inside out.
+        /// 
+        /// </summary>
         public float Y { get => quaternion.y; set => quaternion.y = value; }
+
+        /// <summary>
+        /// 
+        /// Z component of the Quaternion. Don't modify this directly unless you know quaternions inside out.
+        /// 
+        /// </summary>
         public float Z { get => quaternion.z; set => quaternion.z = value; }
 
+        /// <summary>
+        /// 
+        /// Constructs new Quaternion with given x, y, z, w components.
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <param name="w"></param>
         public Custom_Quaternion(float x, float y, float z, float w)
         {
             X = x;
             Y = y;
             Z = z;
             W = w;
+
+            return;
         }
 
+        /// <summary>
+        /// 
+        /// Constructs new Quaternion with given angle of rotation in degrees and axis of rotation components.
+        /// 
+        /// </summary>
+        /// <param name="angleOfRotation"></param>
+        /// <param name="rotationAxis"></param>
         public Custom_Quaternion(float angleOfRotation, Vector3 rotationAxis)
         {
             // Get half angle for quicker quaternion creation.
@@ -63,8 +97,18 @@ public class Particle3D : MonoBehaviour
             return;
         }
 
+        /// <summary>
+        /// 
+        /// Constructs a new Quaternion.
+        /// 
+        /// </summary>
         public Custom_Quaternion() { }
 
+        /// <summary>
+        /// 
+        /// Makes this quaternion have a magnitude of 1.
+        /// 
+        /// </summary>
         public void Normalize()
         {
             quaternion.Normalize();
@@ -72,16 +116,31 @@ public class Particle3D : MonoBehaviour
             return;
         }
 
+        /// <summary>
+        /// 
+        /// Returns this quaternion with a magnitude of 1 (Read Only).
+        /// 
+        /// </summary>
         public Custom_Quaternion normalized
         {
             get
             {
-                Custom_Quaternion newQuaternion = new Custom_Quaternion();
-                newQuaternion.quaternion = quaternion.normalized;
+                // Create a new quaternion with the normalized vector of this quaternion.
+                Custom_Quaternion newQuaternion = new Custom_Quaternion
+                {
+                    quaternion = quaternion.normalized
+                };
+
+                // Return the normalized quaternion.
                 return newQuaternion;
             }
         }
 
+        /// <summary>
+        /// 
+        /// Returns the squared length of this quaternion (Read Only).
+        ///     
+        /// </summary>
         public float sqrMagnitude
         {
             get
@@ -90,7 +149,11 @@ public class Particle3D : MonoBehaviour
             }
         }
 
-        // calculate magnitude
+        /// <summary>
+        /// 
+        /// Returns the length of this quaternion (Read Only).
+        /// 
+        /// </summary>
         public float magnitude
         {
             get
@@ -99,6 +162,11 @@ public class Particle3D : MonoBehaviour
             }
         }
 
+        /// <summary>
+        /// 
+        /// The identity rotation (Read Only).
+        /// 
+        /// </summary>
         public static Custom_Quaternion identity
         {
             get
@@ -107,6 +175,11 @@ public class Particle3D : MonoBehaviour
             }
         }
 
+        /// <summary>
+        /// 
+        /// Returns or sets the euler angle representation of the rotation.
+        /// 
+        /// </summary>
         public Vector3 eulerAngles
         {
             get
