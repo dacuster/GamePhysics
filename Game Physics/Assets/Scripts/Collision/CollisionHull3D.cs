@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-// This class requires Particle2D to prevent null references.
+// This class requires Particle3D to prevent null references.
 [RequireComponent(typeof(Particle3D))]
 
 // Abstract prevent anything from instantiating it.
 public abstract class CollisionHull3D : MonoBehaviour
 {
+    // Debug mode for drawing in the scene view.
+    [SerializeField]
+    protected bool debugMode = false;
+
     // Video tutorial circle collision handler. https://www.youtube.com/watch?v=LPzyNOHY3A4
     // TODO: Comment for lab 5.
     // Collision data.
@@ -18,9 +22,9 @@ public abstract class CollisionHull3D : MonoBehaviour
         public struct Contact
         {
             // Position of the contact.
-            public Vector2 position;
+            public Vector3 position;
             // Contact normal.
-            public Vector2 normal;
+            public Vector3 normal;
             // Coefficient of restitution of the contact.
             public float restitution;
         }
@@ -39,29 +43,29 @@ public abstract class CollisionHull3D : MonoBehaviour
         private bool status = false;
 
         // Closing velocity of the collision.
-        private Vector2 closingVelocity = Vector2.zero;
+        private Vector3 closingVelocity = Vector3.zero;
 
         // Calculate the closing velocity of the 2 colliding objects for the given contact normal.
         public float CalculateClosingVelocity()
         {
             // Calculate the difference in velocities.
-            Vector2 velocityDifference = A.Particle.Velocity - B.Particle.Velocity;
+            Vector3 velocityDifference = A.Particle.Velocity - B.Particle.Velocity;
 
             // Get the opposite values of the difference.
             //velocityDifference *= -1.0f;
 
             // Get the difference in positions.
-            Vector2 positionDifference = A.Particle.Position - B.Particle.Position;
+            Vector3 positionDifference = A.Particle.Position - B.Particle.Position;
 
             // Normalize the difference in positions.
             positionDifference.Normalize();
 
             // Find the scalar(dot) product of the difference in velocities and difference in positions normalized.
-            return Vector2.Dot(velocityDifference, positionDifference);
+            return Vector3.Dot(velocityDifference, positionDifference);
         }
 
         // Create a contact and add it to the contacts list.
-        public void AddContact(Vector2 _position, Vector2 _normal, float _restitution, int _id)
+        public void AddContact(Vector3 _position, Vector3 _normal, float _restitution, int _id)
         {
             // Create a new contact.
             Contact contact;
@@ -83,8 +87,8 @@ public abstract class CollisionHull3D : MonoBehaviour
 
         public void ResolveCollision()
         {
-            //Particle2D particleA = A.Particle;
-            //Particle2D particleB = B.Particle;
+            //Particle3D particleA = A.Particle;
+            //Particle3D particleB = B.Particle;
             //Vector2 newVelocity = particleA.Velocity;
 
             //for (int currentContact = 0; currentContact < contactCount; currentContact++)
@@ -105,7 +109,7 @@ public abstract class CollisionHull3D : MonoBehaviour
                 Contact contact = Contacts[currentContact];
 
                 float separatingVelocity = CalculateClosingVelocity();
-                
+
                 // Stationary or separating contact.
                 if (separatingVelocity > 0)
                 {
@@ -153,7 +157,7 @@ public abstract class CollisionHull3D : MonoBehaviour
         public Contact[] Contacts { get => contacts; set => contacts = value; }
 
         // Closing velocity of the collision.
-        public Vector2 ClosingVelocity { get => closingVelocity; set => closingVelocity = value; }
+        public Vector3 ClosingVelocity { get => closingVelocity; set => closingVelocity = value; }
     }
     // END TODO
 
@@ -184,7 +188,7 @@ public abstract class CollisionHull3D : MonoBehaviour
 
     void Awake()
     {
-        // Assign the Particle2D component.
+        // Assign the Particle3D component.
         Particle = gameObject.GetComponent<Particle3D>();
 
         return;
@@ -193,7 +197,7 @@ public abstract class CollisionHull3D : MonoBehaviour
     // Update for physics.
     public void FixedUpdate()
     {
-        // Iterate through every CollisionHull2D in the game.
+        // Iterate through every CollisionHull3D in the game.
         foreach (CollisionHull3D hull in GameObject.FindObjectsOfType<CollisionHull3D>())
         {
             // Ignore collisions with self.
@@ -222,11 +226,11 @@ public abstract class CollisionHull3D : MonoBehaviour
                     {
                         if (hull.gameObject != null)
                         {
-                            hull.GetComponent<Asteroid>().DecrementLife();
+                            //hull.GetComponent<Asteroid>().DecrementLife();
                         }
                         if (gameObject != null)
                         {
-                            GameController.instance.PlayerHit();
+                            //GameController.instance.PlayerHit();
                         }
                     }
                     else if (projectileCollision)
@@ -242,7 +246,7 @@ public abstract class CollisionHull3D : MonoBehaviour
                             Destroy(gameObject);
                         }
                     }
-                    
+
                 }
             }
         }
@@ -308,16 +312,16 @@ public abstract class CollisionHull3D : MonoBehaviour
 }
 
 
-[CustomEditor(typeof(CollisionHull2D))]
+[CustomEditor(typeof(CollisionHull3D))]
 public class CollisionEditor3D : Editor
 {
     public void OnSceneGUI()
     {
         // Get the circle hull attached to this script.
-        CollisionHull2D hull = (CollisionHull2D)target;
+        CollisionHull3D hull = (CollisionHull3D)target;
 
         // Get the particle component since it isn't loaded until runtime. (For use in scene editor at all times.)
-        Particle2D particle = hull.GetComponent<Particle2D>();
+        Particle3D particle = hull.GetComponent<Particle3D>();
 
         // Create a color.
         Color purple = CreateColor(112.0f, 0.0f, 255.0f);

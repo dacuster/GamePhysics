@@ -13,13 +13,16 @@ public class Particle3D : MonoBehaviour
     [System.Serializable]
     public class Custom_Quaternion
     {
+        [SerializeField]
+        private Vector3 rotation = Vector3.zero;
+
         /// <summary>
         /// 
         /// Quaternion in Vector4 form.
         /// 
         /// </summary>
         [SerializeField]
-        Vector4 quaternion = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+        private Vector4 quaternion = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 
         /// <summary>
         /// 
@@ -974,6 +977,12 @@ public class Particle3DEditor : Editor
             // Get eulerAngles from transform and make Quaternion with w = 1 and x, y, z = eulerAngles???
             //particle.Rotation = particle.transform.rotation.eulerAngles.z;
         }
+        else
+        {
+            UnityEngine.Quaternion quaternion = particle.transform.rotation;
+            particle.Rotation = new Particle3D.Custom_Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+            particle.Rotation.Normalize();
+        }
     }
 }
 
@@ -1004,14 +1013,9 @@ public class QuaternionDrawer : PropertyDrawer
 
         quaternion = EditorGUI.Vector4Field(rect, GUIContent.none, quaternion);
 
-        //quaternion.Normalize();
-
-        //property.FindPropertyRelative("quaternion").vector4Value = quaternion;
-
         // Set indent back to what it was
         EditorGUI.indentLevel = indent;
 
         EditorGUI.EndProperty();
     }
 }
-

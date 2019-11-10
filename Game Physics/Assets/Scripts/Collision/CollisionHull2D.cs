@@ -313,7 +313,7 @@ public abstract class CollisionHull2D : MonoBehaviour
 
 
 [CustomEditor(typeof(CollisionHull2D))]
-public class CollisionEditor : Editor
+public class CollisionEditor2D : Editor
 {
     public void OnSceneGUI()
     {

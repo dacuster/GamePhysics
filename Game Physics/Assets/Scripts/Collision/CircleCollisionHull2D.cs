@@ -58,9 +58,16 @@ public class CircleCollisionHull2D : CollisionHull2D
         float xPosition = Particle.Position.x;
         float yPosition = Particle.Position.y;
 
+        // Get the bounding box axis of the AABB.
+        Vector2 xAxisBoundAABB = other.X_AxisBound;
+        Vector2 yAxisBoundAABB = other.Y_AxisBound;
+
+        // Translate the bounding box axis to world space.
+        other.WorldBoundingBoxAxis(ref xAxisBoundAABB, ref yAxisBoundAABB);
+
         // Clamp the circle to the other object to get the nearest point on the object to the circle.
-        float nearestX = Mathf.Clamp(xPosition, other.X_AxisBound.x, other.X_AxisBound.y);
-        float nearestY = Mathf.Clamp(yPosition, other.Y_AxisBound.x, other.Y_AxisBound.y);
+        float nearestX = Mathf.Clamp(xPosition, xAxisBoundAABB.x, xAxisBoundAABB.y);
+        float nearestY = Mathf.Clamp(yPosition, yAxisBoundAABB.x, yAxisBoundAABB.y);
 
         // Calculate the distance from the circle to the nearest point on the other object.
         float deltaX = xPosition - nearestX;
@@ -153,7 +160,7 @@ public class CircleCollisionHull2D : CollisionHull2D
 
 }
 [CustomEditor(typeof(CircleCollisionHull2D))]
-public class CircleEditor : Editor
+public class CircleEditor2D : Editor
 {
     private void OnSceneGUI()
     {

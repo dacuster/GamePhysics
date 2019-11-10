@@ -10,7 +10,7 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
 
     [SerializeField]
     // Bounding box for this object.
-    private Vector2 boundingBox;
+    private Vector2 boundingBox = Vector2.one;
 
     // Bounding axis for this object.
     private Vector2 xAxisBound;
@@ -22,55 +22,6 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         CalculateBoundingBoxAxis();
 
         base.FixedUpdate();
-
-        //// Set the mesh color of this object to white. (No collision)
-        //GetComponent<MeshRenderer>().material.color = Color.white;
-
-        //// Check for collision with all types of collision hulls currently in the game.
-        //foreach (CollisionHull2D hull in GameObject.FindObjectsOfType<CollisionHull2D>())
-        //{
-        //    // TODO: Properly implement.
-        //    Collision collision = new Collision();
-
-        //    // Don't check collision with itself.
-        //    if (hull == this)
-        //    {
-        //        continue;
-        //    }
-        //    // Other hull is a circle.
-        //    if (hull.Type == CollisionHullType2D.hull_circle)
-        //    {
-        //        // Check for collision vs circle.
-        //        if (TestCollisionVsCircle(hull as CircleCollisionHull2D, ref collision))
-        //        {
-        //            // Change the mesh color of both colliding objects.
-        //            GetComponent<MeshRenderer>().material.color = Color.red;
-        //            hull.GetComponent<MeshRenderer>().material.color = Color.red;
-        //        }
-        //    }
-        //    // Other hull is AABB.
-        //    else if (hull.Type == CollisionHullType2D.hull_aabb)
-        //    {
-        //        // Check collision vs AABB.
-        //        if (TestCollisionVsAABB(hull as AxisAlignedBoundingBoxHull2D, ref collision))
-        //        {
-        //            // Change the mesh color of both colliding objects.
-        //            GetComponent<MeshRenderer>().material.color = Color.red;
-        //            hull.GetComponent<MeshRenderer>().material.color = Color.red;
-        //        }
-        //    }
-        //    // Other hull is OBB.
-        //    else if (hull.Type == CollisionHullType2D.hull_obb)
-        //    {
-        //        // Check collision vs OBB.
-        //        if (TestCollisionVsOBB(hull as ObjectBoundingBoxHull2D, ref collision))
-        //        {
-        //            // Change the mesh color of both colliding objects.
-        //            GetComponent<MeshRenderer>().material.color = Color.red;
-        //            hull.GetComponent<MeshRenderer>().material.color = Color.red;
-        //        }
-        //    }
-        //}
     }
 
     // Check for collision OBB vs circle.
@@ -96,11 +47,6 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         // first, test AABB vs max extents of OBB
         // then, multiply by OBB inverse matrix, do test again
 
-        if (name == "Cube")
-        {
-            return false;
-        }
-
         // Other OBB bounding box axis.
         Vector2 xAxisBoundOther = other.X_AxisBound;
         Vector2 yAxisBoundOther = other.Y_AxisBound;
@@ -111,7 +57,6 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         // Check if the extents of the OBBs are colliding in this OBB's local space.
         if (X_AxisBound.x <= xAxisBoundOther.y && X_AxisBound.y >= xAxisBoundOther.x && Y_AxisBound.y >= yAxisBoundOther.x && Y_AxisBound.x <= yAxisBoundOther.y)
         {
-            Debug.Log("First!");
             // This OBB bounding box axis.
             Vector2 xAxisBoundThis = X_AxisBound;
             Vector2 yAxisBoundThis = Y_AxisBound;
@@ -119,12 +64,9 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
             // Calculate the max extents of this OBB in the other OBB's local space.
             other.WorldToLocal(LocalToWorld(), ref xAxisBoundThis, ref yAxisBoundThis);
 
-            if (other.X_AxisBound.x <= xAxisBoundThis.y && other.X_AxisBound.y >= xAxisBoundThis.x && other.Y_AxisBound.y >= yAxisBoundThis.x && other.Y_AxisBound.x <= yAxisBoundThis.y)
             // Check if the extents of the OBBs are colliding in the other OBB's local space.
-            //if (xAxisBoundThis.x <= other.X_AxisBound.y && xAxisBoundThis.y >= other.X_AxisBound.x && yAxisBoundThis.y >= other.Y_AxisBound.x && yAxisBoundThis.x <= other.Y_AxisBound.y)
+            if (other.X_AxisBound.x <= xAxisBoundThis.y && other.X_AxisBound.y >= xAxisBoundThis.x && other.Y_AxisBound.y >= yAxisBoundThis.x && other.Y_AxisBound.x <= yAxisBoundThis.y)
             {
-                // Collision.
-                Debug.Log("Collision!!!");
                 return true;
             }
         }
@@ -152,50 +94,35 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         // return min and max extents into ref variables.
 
         // Get the bounds position for each box corner.
-        Vector2 corner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
-        Vector2 corner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
-        Vector2 corner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
-        Vector2 corner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
+        Vector2 vertex0 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+        Vector2 vertex1 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+        Vector2 vertex2 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+        Vector2 vertex3 = new Vector2(_xAxisBound.y, _yAxisBound.x);
 
         // Transform the corners from local to world space.
-        corner1 = WorldToLocal().MultiplyPoint3x4(corner1);
-        corner2 = WorldToLocal().MultiplyPoint3x4(corner2);
-        corner3 = WorldToLocal().MultiplyPoint3x4(corner3);
-        corner4 = WorldToLocal().MultiplyPoint3x4(corner4);
+        vertex0 = WorldToLocal().MultiplyPoint3x4(vertex0);
+        vertex1 = WorldToLocal().MultiplyPoint3x4(vertex1);
+        vertex2 = WorldToLocal().MultiplyPoint3x4(vertex2);
+        vertex3 = WorldToLocal().MultiplyPoint3x4(vertex3);
 
         if (debugMode)
         {
             // Draw the extents in world space.
-            Debug.DrawLine(corner1, corner2, Color.white);
-            Debug.DrawLine(corner2, corner3, Color.white);
-            Debug.DrawLine(corner3, corner4, Color.white);
-            Debug.DrawLine(corner4, corner1, Color.white);
+            Debug.DrawLine(vertex0, vertex1, Color.white);
+            Debug.DrawLine(vertex1, vertex2, Color.white);
+            Debug.DrawLine(vertex2, vertex3, Color.white);
+            Debug.DrawLine(vertex3, vertex0, Color.white);
         }
 
         // Determine the minimum and maximum extents for each axis.
-        float minimumX = Mathf.Min(corner1.x, corner2.x, corner3.x, corner4.x);
-        float maximumX = Mathf.Max(corner1.x, corner2.x, corner3.x, corner4.x);
-        float minimumY = Mathf.Min(corner1.y, corner2.y, corner3.y, corner4.y);
-        float maximumY = Mathf.Max(corner1.y, corner2.y, corner3.y, corner4.y);
+        float minimumX = Mathf.Min(vertex0.x, vertex1.x, vertex2.x, vertex3.x);
+        float maximumX = Mathf.Max(vertex0.x, vertex1.x, vertex2.x, vertex3.x);
+        float minimumY = Mathf.Min(vertex0.y, vertex1.y, vertex2.y, vertex3.y);
+        float maximumY = Mathf.Max(vertex0.y, vertex1.y, vertex2.y, vertex3.y);
 
         // Set new max extents.
         _xAxisBound = new Vector2(minimumX, maximumX);
         _yAxisBound = new Vector2(minimumY, maximumY);
-
-        if (debugMode)
-        {
-            //// Debug drawing data for extents in world space.
-            //Vector2 drawCorner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
-            //Vector2 drawCorner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
-            //Vector2 drawCorner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
-            //Vector2 drawCorner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
-
-            //// Draw the extents in world space.
-            //Debug.DrawLine(drawCorner1, drawCorner2, Color.white);
-            //Debug.DrawLine(drawCorner2, drawCorner3, Color.white);
-            //Debug.DrawLine(drawCorner3, drawCorner4, Color.white);
-            //Debug.DrawLine(drawCorner4, drawCorner1, Color.white);
-        }
 
         return;
     }
@@ -208,22 +135,22 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         // return min and max extents into ref variables.
 
         // Get the bounds position for each box corner .
-        Vector2 corner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
-        Vector2 corner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
-        Vector2 corner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
-        Vector2 corner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
+        Vector2 vertex0 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+        Vector2 vertex1 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+        Vector2 vertex2 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+        Vector2 vertex3 = new Vector2(_xAxisBound.y, _yAxisBound.x);
 
         // Transform the corners from local to world space.
-        corner1 = LocalToWorld().MultiplyPoint3x4(corner1);
-        corner2 = LocalToWorld().MultiplyPoint3x4(corner2);
-        corner3 = LocalToWorld().MultiplyPoint3x4(corner3);
-        corner4 = LocalToWorld().MultiplyPoint3x4(corner4);
+        vertex0 = LocalToWorld().MultiplyPoint3x4(vertex0);
+        vertex1 = LocalToWorld().MultiplyPoint3x4(vertex1);
+        vertex2 = LocalToWorld().MultiplyPoint3x4(vertex2);
+        vertex3 = LocalToWorld().MultiplyPoint3x4(vertex3);
 
         // Determine the minimum and maximum extents for each axis.
-        float minimumX = Mathf.Min(corner1.x, corner2.x, corner3.x, corner4.x);
-        float maximumX = Mathf.Max(corner1.x, corner2.x, corner3.x, corner4.x);
-        float minimumY = Mathf.Min(corner1.y, corner2.y, corner3.y, corner4.y);
-        float maximumY = Mathf.Max(corner1.y, corner2.y, corner3.y, corner4.y);
+        float minimumX = Mathf.Min(vertex0.x, vertex1.x, vertex2.x, vertex3.x);
+        float maximumX = Mathf.Max(vertex0.x, vertex1.x, vertex2.x, vertex3.x);
+        float minimumY = Mathf.Min(vertex0.y, vertex1.y, vertex2.y, vertex3.y);
+        float maximumY = Mathf.Max(vertex0.y, vertex1.y, vertex2.y, vertex3.y);
 
         // Create vector2 of new extents.
         _xAxisBound = new Vector2(minimumX, maximumX);
@@ -232,16 +159,16 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         if (debugMode)
         {
             // Debug drawing data for extents in world space.
-            Vector2 drawCorner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
-            Vector2 drawCorner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
-            Vector2 drawCorner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
-            Vector2 drawCorner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
+            Vector2 drawVertex0 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+            Vector2 drawVertex1 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+            Vector2 drawVertex2 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+            Vector2 drawVertex3 = new Vector2(_xAxisBound.y, _yAxisBound.x);
 
             // Draw the extents in world space.
-            Debug.DrawLine(drawCorner1, drawCorner2, Color.magenta);
-            Debug.DrawLine(drawCorner2, drawCorner3, Color.magenta);
-            Debug.DrawLine(drawCorner3, drawCorner4, Color.magenta);
-            Debug.DrawLine(drawCorner4, drawCorner1, Color.magenta);
+            Debug.DrawLine(drawVertex0, drawVertex1, Color.magenta);
+            Debug.DrawLine(drawVertex1, drawVertex2, Color.magenta);
+            Debug.DrawLine(drawVertex2, drawVertex3, Color.magenta);
+            Debug.DrawLine(drawVertex3, drawVertex0, Color.magenta);
         }
 
         return;
@@ -348,21 +275,6 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
         _xAxisBound = new Vector2(minimumX, maximumX);
         _yAxisBound = new Vector2(minimumY, maximumY);
 
-        if (debugMode)
-        {
-            //// Debug drawing data for extents in world space.
-            //Vector2 drawCorner1 = new Vector2(_xAxisBound.x, _yAxisBound.x);
-            //Vector2 drawCorner2 = new Vector2(_xAxisBound.x, _yAxisBound.y);
-            //Vector2 drawCorner3 = new Vector2(_xAxisBound.y, _yAxisBound.y);
-            //Vector2 drawCorner4 = new Vector2(_xAxisBound.y, _yAxisBound.x);
-
-            //// Draw the extents in world space.
-            //Debug.DrawLine(drawCorner1, drawCorner2, Color.white);
-            //Debug.DrawLine(drawCorner2, drawCorner3, Color.white);
-            //Debug.DrawLine(drawCorner3, drawCorner4, Color.white);
-            //Debug.DrawLine(drawCorner4, drawCorner1, Color.white);
-        }
-
         return;
     }
 
@@ -415,7 +327,7 @@ public class ObjectBoundingBoxHull2D : CollisionHull2D
 }
 
 [CustomEditor(typeof(ObjectBoundingBoxHull2D))]
-public class ObjectBoxEditor : Editor
+public class ObjectBoxEditor2D : Editor
 {
     private void OnSceneGUI()
     {
@@ -434,21 +346,6 @@ public class ObjectBoxEditor : Editor
 
         // Translate the bounding box into world space.
         boxHull.CalculateBoundingBoxWorld(ref xAxisBound, ref yAxisBound);
-
-        //DrawVertices(xAxisBound, yAxisBound, Color.green);
-        
-
-        //// Create a color.
-        //Color purple = CreateColor(112.0f, 0.0f, 255.0f);
-
-        //// Change gizmo drawing color.
-        //Handles.color = purple;
-
-        //// Change the gizmo drawing matrix.
-        //Handles.matrix = boxHull.LocalToWorld();
-
-        //// Draw a cube to represent the collider on this object.
-        //Handles.DrawWireCube(Vector3.zero, boxHull.BoundingBox);
     }
 
     // Create colors from 0-255 values.

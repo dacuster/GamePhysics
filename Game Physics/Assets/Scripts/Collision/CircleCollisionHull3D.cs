@@ -11,7 +11,7 @@ public class CircleCollisionHull3D : CollisionHull3D
     // Apply range as positive value.
     [SerializeField]
     [Range(0.0f, 100.0f)]
-    private float radius;
+    private float radius = 0.5f;
 
     // Check for collision circle vs circle.
     public override bool TestCollisionVsCircle(CircleCollisionHull3D other, ref Collision c)
@@ -20,7 +20,7 @@ public class CircleCollisionHull3D : CollisionHull3D
         // optimized collision passes if (distance between centers) squared <= (sum of radii) squared
 
         // Get the centers of each circle. Calculate the difference in centers.
-        Vector2 differenceCenters = Particle.Position - other.Particle.Position;
+        Vector3 differenceCenters = Particle.Position - other.Particle.Position;
 
         // Square the distance in centers.
         float distanceSquared = differenceCenters.sqrMagnitude;
@@ -40,7 +40,7 @@ public class CircleCollisionHull3D : CollisionHull3D
             c.ContactCount = 1;
             c.A = this;
             c.B = other;
-            Vector2 normal = differenceCenters.normalized;
+            Vector3 normal = differenceCenters.normalized;
             c.AddContact(normal * Radius, normal, 0.9f, 0);
         }
 
@@ -57,22 +57,33 @@ public class CircleCollisionHull3D : CollisionHull3D
         // Store the particle's position locally.
         float xPosition = Particle.Position.x;
         float yPosition = Particle.Position.y;
+        float zPosition = Particle.Position.z;
+
+        // Get the AABB bounding box axis.
+        Vector2 xAxisBoundAABB = other.X_AxisBound;
+        Vector2 yAxisBoundAABB = other.Y_AxisBound;
+        Vector2 zAxisBoundAABB = other.Z_AxisBound;
+
+        // Transform the AABB bouding box into world space.
+        other.WorldBoundingBoxAxis(ref xAxisBoundAABB, ref yAxisBoundAABB, ref zAxisBoundAABB);
 
         // Clamp the circle to the other object to get the nearest point on the object to the circle.
-        float nearestX = Mathf.Clamp(xPosition, other.X_AxisBound.x, other.X_AxisBound.y);
-        float nearestY = Mathf.Clamp(yPosition, other.Y_AxisBound.x, other.Y_AxisBound.y);
+        float nearestX = Mathf.Clamp(xPosition, xAxisBoundAABB.x, xAxisBoundAABB.y);
+        float nearestY = Mathf.Clamp(yPosition, yAxisBoundAABB.x, yAxisBoundAABB.y);
+        float nearestZ = Mathf.Clamp(zPosition, zAxisBoundAABB.x, zAxisBoundAABB.y);
 
         // Calculate the distance from the circle to the nearest point on the other object.
         float deltaX = xPosition - nearestX;
         float deltaY = yPosition - nearestY;
+        float deltaZ = zPosition - nearestZ;
 
         // Draw a debug line from the circle center to the nearest point on the other object.
-        Vector2 start = new Vector2(nearestX, nearestY);
-        Vector2 end = new Vector2(xPosition, yPosition);
+        Vector3 start = new Vector3(nearestX, nearestY, nearestZ);
+        Vector3 end = Particle.Position;
         Debug.DrawLine(start, end, Color.red);
 
         // Check if the sum squared of the difference from the nearest point is less than or equal to the radius squared.
-        return (deltaX * deltaX + deltaY * deltaY) <= (Radius * Radius);
+        return (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) <= (Radius * Radius);
     }
 
     // Check for collision circle vs OBB.
@@ -84,33 +95,32 @@ public class CircleCollisionHull3D : CollisionHull3D
         // Get the circle position for efficient calculations.
         Vector3 circlePosition = Particle.Position;
 
-        // Get the local to world matrix of the other object.
-        Matrix4x4 matrix = other.LocalToWorldOther();
-
-        // Transform the circle position by the other object's local space.
-        circlePosition = matrix.MultiplyPoint3x4(circlePosition);
+        // Transform the circle position into the OBB's local space.
+        other.WorldToLocal(ref circlePosition);
 
         // Clamp the circle to the other object.
         float nearestX = Mathf.Clamp(circlePosition.x, other.X_AxisBound.x, other.X_AxisBound.y);
         float nearestY = Mathf.Clamp(circlePosition.y, other.Y_AxisBound.x, other.Y_AxisBound.y);
+        float nearestZ = Mathf.Clamp(circlePosition.z, other.Z_AxisBound.x, other.Z_AxisBound.y);
 
         // Calculate the distance from the nearest point on the other object to the circle center.
         float deltaX = circlePosition.x - nearestX;
         float deltaY = circlePosition.y - nearestY;
+        float deltaZ = circlePosition.z - nearestZ;
 
         // Create a vector of the nearest position for matrix multiplication.
-        Vector3 nearestPosition = new Vector2(nearestX, nearestY);
+        Vector3 nearestPosition = new Vector3(nearestX, nearestY, nearestZ);
 
-        // Bring nearest position on the other object to its local space.
-        nearestPosition = other.LocalToWorldOther().MultiplyPoint3x4(nearestPosition);
+        // Transform the nearest point from the OBB's local space into world space.
+        other.LocalToWorld(ref nearestPosition);
 
         // Debug drawing.
-        Vector2 start = new Vector2(nearestPosition.x, nearestPosition.y);
-        Vector2 end = new Vector2(Particle.Position.x, Particle.Position.y);
+        Vector3 start = new Vector3(nearestPosition.x, nearestPosition.y, nearestPosition.z);
+        Vector3 end = Particle.Position;
         Debug.DrawLine(start, end, Color.red);
 
         // Check if the distance from centers is less than or equal to sum of the radii.
-        c.Status = (deltaX * deltaX + deltaY * deltaY) <= (Radius * Radius);
+        c.Status = (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) <= (Radius * Radius);
 
         // Set the collsion data.
         if (c.Status)
@@ -130,7 +140,7 @@ public class CircleCollisionHull3D : CollisionHull3D
             c.ContactCount = 1;
             c.A = this;
             c.B = other;
-            Vector2 normal = (Particle.Position - other.Particle.Position).normalized;
+            Vector3 normal = (Particle.Position - other.Particle.Position).normalized;
             c.AddContact(normal * Radius, normal, 0.9f, 0);
         }
 

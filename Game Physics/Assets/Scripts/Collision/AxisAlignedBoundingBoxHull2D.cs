@@ -10,7 +10,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
 
     [SerializeField]
     // Bounding box for this object.
-    private Vector2 boundingBox;
+    private Vector2 boundingBox = Vector2.one;
 
     // Bounding axis for this object.
     private Vector2 xAxisBound;
@@ -78,7 +78,6 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
             if (xAxisBoundAABB.x <= other.X_AxisBound.y && xAxisBoundAABB.y >= other.X_AxisBound.x && yAxisBoundAABB.y >= other.Y_AxisBound.x && yAxisBoundAABB.x <= other.Y_AxisBound.y)
             {
                 // Collision.
-                Debug.Log("Collision!");
                 return true;
             }
         }
@@ -87,7 +86,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
     }
 
     // Transform given axis into world space from local space.
-    private void LocalToWorld(ref Vector2 axis)
+    private Matrix4x4 LocalToWorld()
     {
         // Particle needed for scene editor when game isn't running.
         Particle2D particle = GetComponent<Particle2D>();
@@ -112,28 +111,54 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
         // Model matrix to convert from local to world space.
         Matrix4x4 model = translate * rotate * scale;
 
-        // Transform the axis by the model matrix.
-        axis = model.MultiplyPoint3x4(axis);
-
-        return;
+        // Return the model transformation matrix.
+        return model;
     }
 
-    public Vector2 WorldBoundingBox
+    // Calculate the bounding box limits in local to world space.
+    public void WorldBoundingBoxAxis(ref Vector2 _xAxisBound, ref Vector2 _yAxisBound)
     {
-        get
+        // Rotate bound vertices.
+        // Find min/max extents for x and y.
+        // return min and max extents into ref variables.
+
+        // TODO: Create function to calculate vertices. Pass in array of vertices and x, y, z axis.
+        // Get the bounds position for each box corner .
+        Vector2 vertex0 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+        Vector2 vertex1 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+        Vector2 vertex2 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+        Vector2 vertex3 = new Vector2(_xAxisBound.y, _yAxisBound.x);
+
+        // Transform the corners from local to world space.
+        vertex0 = LocalToWorld().MultiplyPoint3x4(vertex0);
+        vertex1 = LocalToWorld().MultiplyPoint3x4(vertex1);
+        vertex2 = LocalToWorld().MultiplyPoint3x4(vertex2);
+        vertex3 = LocalToWorld().MultiplyPoint3x4(vertex3);
+
+        // Determine the minimum and maximum extents for each axis.
+        float minimumX = Mathf.Min(vertex0.x, vertex1.x, vertex2.x, vertex3.x);
+        float maximumX = Mathf.Max(vertex0.x, vertex1.x, vertex2.x, vertex3.x);
+        float minimumY = Mathf.Min(vertex0.y, vertex1.y, vertex2.y, vertex3.y);
+        float maximumY = Mathf.Max(vertex0.y, vertex1.y, vertex2.y, vertex3.y);
+
+        // Create Vector3 of new extents.
+        _xAxisBound = new Vector2(minimumX, maximumX);
+        _yAxisBound = new Vector2(minimumY, maximumY);
+
+        if (debugMode)
         {
-            Vector2 box = boundingBox;
+            // Debug drawing data for extents in world space.
+            Vector2 drawVertex0 = new Vector2(_xAxisBound.x, _yAxisBound.x);
+            Vector2 drawVertex1 = new Vector2(_xAxisBound.x, _yAxisBound.y);
+            Vector2 drawVertex2 = new Vector2(_xAxisBound.y, _yAxisBound.y);
+            Vector2 drawVertex3 = new Vector2(_xAxisBound.y, _yAxisBound.x);
 
-            LocalToWorld(ref box);
-
-            return box;
+            // Draw the extents in world space.
+            Debug.DrawLine(drawVertex0, drawVertex1, Color.magenta);
+            Debug.DrawLine(drawVertex1, drawVertex2, Color.magenta);
+            Debug.DrawLine(drawVertex2, drawVertex3, Color.magenta);
+            Debug.DrawLine(drawVertex3, drawVertex0, Color.magenta);
         }
-    }
-
-    public void WorldBoundingBoxAxis(ref Vector2 xAxis, ref Vector2 yAxis)
-    {
-        LocalToWorld(ref xAxis);
-        LocalToWorld(ref yAxis);
 
         return;
     }
@@ -178,7 +203,7 @@ public class AxisAlignedBoundingBoxHull2D : CollisionHull2D
 }
 
 [CustomEditor(typeof(AxisAlignedBoundingBoxHull2D))]
-public class AxisBoxEditor : Editor
+public class AxisBoxEditor2D : Editor
 {
     private void OnSceneGUI()
     {
