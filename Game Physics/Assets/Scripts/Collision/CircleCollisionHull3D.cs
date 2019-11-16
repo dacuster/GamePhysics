@@ -13,12 +13,17 @@ public class CircleCollisionHull3D : CollisionHull3D
     [Range(0.0f, 100.0f)]
     private float radius = 0.5f;
 
+    // TODO: Return bool from DLL.
+    // Pass in (Vector3(3 floats))this.position, (float)this.radius, (Vector3(3 float))other.position, (float)other.radius
+    // bool testCollisionVsCircle(float thisX, float thisY, float thisZ, float thisRadius, float otherX, float otherY, float otherZ, float otherRadius);
+
     // Check for collision circle vs circle.
     public override bool TestCollisionVsCircle(CircleCollisionHull3D other, ref Collision c)
     {
         // collision passes if distance between centers <= sum of radii
         // optimized collision passes if (distance between centers) squared <= (sum of radii) squared
 
+        // START DLL OPERATIONS
         // Get the centers of each circle. Calculate the difference in centers.
         Vector3 differenceCenters = Particle.Position - other.Particle.Position;
 
@@ -33,6 +38,7 @@ public class CircleCollisionHull3D : CollisionHull3D
 
         // Check if the distance from centers is less than or equal to sum of the radii.
         c.Status = distanceSquared <= radiiSumSquared;
+        // END DLL OPERATIONS (c.Status = testCollisionVsCircle(float thisX, float thisY, float thisZ, float thisRadius, float otherX, float otherY, float otherZ, float otherRadius);)
 
         // Set the collsion data.
         if (c.Status)
@@ -48,12 +54,15 @@ public class CircleCollisionHull3D : CollisionHull3D
         return c.Status;
     }
 
+    // TODO: Return bool from DLL.
+    // testCollisionVsAABB(
     // Check for collision circle vs AABB.
     public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull3D other, ref Collision c)
     {
         // Calculate closest point by clamping circle centers on each dimension
         // passes if closest point vs circle passes
 
+        // TODO: Vector3D.Init(Particle.Position.x, Particle.Position.y, Particle.Position.z);
         // Store the particle's position locally.
         float xPosition = Particle.Position.x;
         float yPosition = Particle.Position.y;

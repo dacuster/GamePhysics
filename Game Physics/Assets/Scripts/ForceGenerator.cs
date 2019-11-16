@@ -7,6 +7,19 @@ public class ForceGenerator
     public static Vector3 GenerateForce_Gravity(float particleMass, float gravitationalConstant, Vector3 worldUp)
     {
         // f = mg
+        // TODO: Create DLL
+        // "init function" void generateForceGravity(float mass, float constant, float worldX, float worldY, float worldZ);
+
+        // FUNCTION CALLS
+        // ForceGeneratorDLL.generateForceGravity(float mass, float constant, float worldX, float worldY, float worldZ);
+        // Vector3 force = new Vector3(ForceGeneratorDLL.getX(), ForceGeneratorDLL.getY(), ForceGeneratorDLL.getZ());
+        // return force;
+
+
+        // DLL integration:
+        // x = (float1 * float2) * x;
+        // y = (float1 * float2) * y;
+        // z = (float1 * float2) * z;
         return (particleMass * gravitationalConstant * worldUp);
     }
 
