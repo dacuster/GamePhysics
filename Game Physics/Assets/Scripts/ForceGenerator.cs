@@ -15,14 +15,14 @@ public class ForceGenerator
         // Vector3 force = new Vector3(ForceGeneratorDLL.getX(), ForceGeneratorDLL.getY(), ForceGeneratorDLL.getZ());
         // return force;
 
-        Game_Physics_DLL.generateForce_Gravity(particleMass, gravitationalConstant, worldUp.x, worldUp.y, worldUp.z);
         float* gPtr = Game_Physics_DLL.generateForce_Gravity(particleMass, gravitationalConstant, worldUp.x, worldUp.y, worldUp.z);
+        
         // DLL integration:
         float x = *gPtr;
         float y = *(gPtr + 1);
         float z = *(gPtr + 2);
+
         Vector3 gravity = new Vector3(x,y,z);
-        Debug.Log(gravity);
         return gravity;
         //return (particleMass * gravitationalConstant * worldUp);
     }
@@ -33,7 +33,6 @@ public class ForceGenerator
         // proj = (norm(x) * grav(x) + norm(y) * grav(y)) / grav(x)^2 + grav(y)^2
         // finalProj = proj * grav
 
-        Game_Physics_DLL.generateForce_Normal(forceGravity.x, forceGravity.y, forceGravity.z, surfaceNormalUnit.x, surfaceNormalUnit.y, surfaceNormalUnit.z);
         float* nPtr = Game_Physics_DLL.generateForce_Normal(forceGravity.x, forceGravity.y, forceGravity.z, surfaceNormalUnit.x, surfaceNormalUnit.y, surfaceNormalUnit.z); 
         // Calculate the projection of surface normal onto gravity.
         //float projection = (surfaceNormalUnit.x * forceGravity.x + surfaceNormalUnit.y * forceGravity.y) / (forceGravity.x * forceGravity.x + forceGravity.y * forceGravity.y);
@@ -58,34 +57,43 @@ public class ForceGenerator
     {
         // f_friction_s = -f_opposing if less than max, else -coeff*f_normal (max amount is coeff*|f_normal|)
 
-        //Game_Physics_DLL.generateForce_Static_Friction(forceNormal.x, forceNormal.y, forceNormal.z, forceOpposing.x, forceOpposing.y, forceOpposing.z, frictionCoefficientStatic);
+        float* sfPtr = Game_Physics_DLL.generateForce_Static_Friction(forceNormal.x, forceNormal.y, forceNormal.z, forceOpposing.x, forceOpposing.y, forceOpposing.z, frictionCoefficientStatic);
 
-        float max = frictionCoefficientStatic * forceNormal.magnitude;
+        float x = *sfPtr;
+        float y = *(sfPtr + 1);
+        float z = *(sfPtr + 2);
+        //float max = frictionCoefficientStatic * forceNormal.magnitude;
 
-        Vector3 force = frictionCoefficientStatic * forceNormal;
+        //Vector3 force = frictionCoefficientStatic * forceNormal;
 
-        if (forceOpposing.magnitude > max)
-        {
-            force -= forceOpposing;
-        }
-        else
-        {
-            force = -frictionCoefficientStatic * forceNormal;
-        }
+        Vector3 force = new Vector3(x, y, z);
+        //if (forceOpposing.magnitude > max)
+        //{
+        //    force -= forceOpposing;
+        //}
+        //else
+        //{
+        //    force = -frictionCoefficientStatic * forceNormal;
+        //}
 
         return force;
     }
 
-    public static Vector3 GenerateForce_Friction_Kinetic(Vector3 forceNormal, Vector3 particleVelocity, float frictionCoefficientKinetic)
+    public static unsafe Vector3 GenerateForce_Friction_Kinetic(Vector3 forceNormal, Vector3 particleVelocity, float frictionCoefficientKinetic)
     {
         // f_friction_k = -coeff*|f_normal| * unit(vel)
-        //Game_Physics_DLL.generateForce_Kinetic_Friction(forceNormal.x, forceNormal.y, forceNormal.z, particleVelocity.x, particleVelocity.y, particleVelocity.z, frictionCoefficientKinetic);
-        Vector3 force = -frictionCoefficientKinetic * forceNormal.magnitude * particleVelocity;
+        float* kfPtr = Game_Physics_DLL.generateForce_Kinetic_Friction(forceNormal.x, forceNormal.y, forceNormal.z, particleVelocity.x, particleVelocity.y, particleVelocity.z, frictionCoefficientKinetic);
 
+        float x = *kfPtr;
+        float y = *(kfPtr + 1);
+        float z = *(kfPtr + 2);
+        //Vector3 force = -frictionCoefficientKinetic * forceNormal.magnitude * particleVelocity;
+
+        Vector3 force = new Vector3(x, y, z);
         return force;
     }
 
-    public static Vector3 GenerateForce_Drag(Vector3 particleVelocity, Vector3 fluidVelocity, float fluidDensity, float objectAreaCrossSection, float objectDragCoefficient)
+    public static unsafe Vector3 GenerateForce_Drag(Vector3 particleVelocity, Vector3 fluidVelocity, float fluidDensity, float objectAreaCrossSection, float objectDragCoefficient)
     {
         // f_drag = (p * u^2 * area * coeff)/2
 
@@ -94,7 +102,7 @@ public class ForceGenerator
         return force;
     }
 
-    public static Vector3 GenerateForce_Spring(Vector3 particlePosition, Vector3 anchorPosition, float springRestingLength, float springStiffnessCoefficient)
+    public static unsafe Vector3 GenerateForce_Spring(Vector3 particlePosition, Vector3 anchorPosition, float springRestingLength, float springStiffnessCoefficient)
     {
         // Page 107
         // f_spring = -coeff*(spring length - spring resting length)

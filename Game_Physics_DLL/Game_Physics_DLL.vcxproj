@@ -156,7 +156,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Foo.h" />
-    <ClInclude Include="ForceGenerator.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game_Physics_DLL.h" />
     <ClInclude Include="Lib.h" />
@@ -165,7 +164,6 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Foo.cpp" />
-    <ClCompile Include="ForceGenerator.cpp" />
     <ClCompile Include="Game_Physics_DLL.cpp" />
     <ClCompile Include="pch.cpp" />
   </ItemGroup>

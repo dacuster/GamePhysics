@@ -49,15 +49,15 @@ float* generateForce_Gravity(float mass, float gravitationalConstant, float worl
 	return gArray;
 }
 
-float* generateForce_Normal(float gravityForceX, float gravityForceY, float gravityForceZ, float surfaceNormalX, float surfaceNormalY, float surfaceNormalZ)
+float* generateForce_Normal(float forceGravityX, float forceGravityY, float forceGravityZ, float surfaceNormalX, float surfaceNormalY, float surfaceNormalZ)
 {
 	float nArray[3];
-	float projection = (surfaceNormalX * gravityForceX + surfaceNormalY * gravityForceY + surfaceNormalZ * gravityForceZ) /
-					   (gravityForceX * gravityForceX + gravityForceY * gravityForceY + gravityForceZ * gravityForceZ);
+	float projection = (surfaceNormalX * forceGravityX + surfaceNormalY * forceGravityY + surfaceNormalZ * forceGravityZ) /
+					   (forceGravityX * forceGravityX + forceGravityY * forceGravityY + forceGravityZ * forceGravityZ);
 
-	nArray[0] = projection * gravityForceX;
-	nArray[1] = projection * gravityForceY;
-	nArray[2] = projection * gravityForceZ;
+	nArray[0] = projection * forceGravityX;
+	nArray[1] = projection * forceGravityY;
+	nArray[2] = projection * forceGravityZ;
 
 	return nArray;
 }
@@ -101,9 +101,6 @@ float* generateForce_Kinetic_Friction(float forceNormalX, float forceNormalY, fl
 	float pvelocityNormalizedZ = forceNormalZ / forceNormalMagnitude;
 
 	float kfArray[3];
-	float kineticFrictionX;
-	float kineticFrictionY;
-	float kineticFrictionZ;
 
 	kfArray[0] = fabs(forceNormalX);
 	kfArray[1] = fabs(forceNormalY);
