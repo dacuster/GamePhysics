@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ForceGenerator
 {
-    public static Vector3 GenerateForce_Gravity(float particleMass, float gravitationalConstant, Vector3 worldUp)
+    public static unsafe Vector3 GenerateForce_Gravity(float particleMass, float gravitationalConstant, Vector3 worldUp)
     {
         // f = mg
         // TODO: Create DLL
@@ -15,38 +15,50 @@ public class ForceGenerator
         // Vector3 force = new Vector3(ForceGeneratorDLL.getX(), ForceGeneratorDLL.getY(), ForceGeneratorDLL.getZ());
         // return force;
 
-
+        Game_Physics_DLL.generateForce_Gravity(particleMass, gravitationalConstant, worldUp.x, worldUp.y, worldUp.z);
+        float* gPtr = Game_Physics_DLL.generateForce_Gravity(particleMass, gravitationalConstant, worldUp.x, worldUp.y, worldUp.z);
         // DLL integration:
-        // x = (float1 * float2) * x;
-        // y = (float1 * float2) * y;
-        // z = (float1 * float2) * z;
-        return (particleMass * gravitationalConstant * worldUp);
+        float x = *gPtr;
+        float y = *(gPtr + 1);
+        float z = *(gPtr + 2);
+        Vector3 gravity = new Vector3(x,y,z);
+        Debug.Log(gravity);
+        return gravity;
+        //return (particleMass * gravitationalConstant * worldUp);
     }
 
-    public static Vector3 GenerateForce_Normal(Vector3 forceGravity, Vector3 surfaceNormalUnit)
+    public static unsafe Vector3 GenerateForce_Normal(Vector3 forceGravity, Vector3 surfaceNormalUnit)
     {
         // f_normal = proj(f_gravity, surfaceNormal_unit)
         // proj = (norm(x) * grav(x) + norm(y) * grav(y)) / grav(x)^2 + grav(y)^2
         // finalProj = proj * grav
 
+        Game_Physics_DLL.generateForce_Normal(forceGravity.x, forceGravity.y, forceGravity.z, surfaceNormalUnit.x, surfaceNormalUnit.y, surfaceNormalUnit.z);
+        float* nPtr = Game_Physics_DLL.generateForce_Normal(forceGravity.x, forceGravity.y, forceGravity.z, surfaceNormalUnit.x, surfaceNormalUnit.y, surfaceNormalUnit.z); 
         // Calculate the projection of surface normal onto gravity.
-        float projection = (surfaceNormalUnit.x * forceGravity.x + surfaceNormalUnit.y * forceGravity.y) / (forceGravity.x * forceGravity.x + forceGravity.y * forceGravity.y);
+        //float projection = (surfaceNormalUnit.x * forceGravity.x + surfaceNormalUnit.y * forceGravity.y) / (forceGravity.x * forceGravity.x + forceGravity.y * forceGravity.y);
 
+        float x = *nPtr;
+        float y = *(nPtr + 1);
+        float z = *(nPtr + 2);
+       
         // Apply projection onto gravity.
-        Vector3 force = projection * forceGravity;
-
+        Vector3 force = new Vector3 (x,y,z);
+        Debug.Log(force);
         return force;
     }
 
-    public static Vector3 GenerateForce_Sliding(Vector3 forceGravity, Vector3 forceNormal)
+    public static  Vector3 GenerateForce_Sliding(Vector3 forceGravity, Vector3 forceNormal)
     {
         // f_sliding = f_gravity + f_normal
         return (forceGravity + forceNormal);
     }
 
-    public static Vector3 GenerateForce_Friction_Static(Vector3 forceNormal, Vector3 forceOpposing, float frictionCoefficientStatic)
+    public static unsafe Vector3 GenerateForce_Friction_Static(Vector3 forceNormal, Vector3 forceOpposing, float frictionCoefficientStatic)
     {
         // f_friction_s = -f_opposing if less than max, else -coeff*f_normal (max amount is coeff*|f_normal|)
+
+        //Game_Physics_DLL.generateForce_Static_Friction(forceNormal.x, forceNormal.y, forceNormal.z, forceOpposing.x, forceOpposing.y, forceOpposing.z, frictionCoefficientStatic);
 
         float max = frictionCoefficientStatic * forceNormal.magnitude;
 
@@ -67,7 +79,7 @@ public class ForceGenerator
     public static Vector3 GenerateForce_Friction_Kinetic(Vector3 forceNormal, Vector3 particleVelocity, float frictionCoefficientKinetic)
     {
         // f_friction_k = -coeff*|f_normal| * unit(vel)
-
+        //Game_Physics_DLL.generateForce_Kinetic_Friction(forceNormal.x, forceNormal.y, forceNormal.z, particleVelocity.x, particleVelocity.y, particleVelocity.z, frictionCoefficientKinetic);
         Vector3 force = -frictionCoefficientKinetic * forceNormal.magnitude * particleVelocity;
 
         return force;

@@ -387,7 +387,7 @@ public class Particle3D : MonoBehaviour
 
     [SerializeField]
     // Starting mass of this object.
-    private float startingMass = 0.0f;
+    private float startingMass = 1.0f;
     // Current mass of this object.
     private float mass = 0.0f;
     // Current invert mass of this object.
@@ -581,7 +581,7 @@ public class Particle3D : MonoBehaviour
         GetInspectorItems();
 
         // Update acceleration before setting transforms.
-        //UpdateAcceleration();
+        UpdateAcceleration();
 
         // apply torque
         ApplyTorque(momentArm, torqueForce);
