@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class ForceGenerator
 {
     public static unsafe Vector3 GenerateForce_Gravity(float particleMass, float gravitationalConstant, Vector3 worldUp)

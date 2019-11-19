@@ -568,6 +568,12 @@ public class Particle3D : MonoBehaviour
         // Set the mass as the starting mass.
         Mass = startingMass;
 
+        CppClass CppTest;
+        CppTest = Game_Physics_DLL.CreateCppClass(5);
+        int test = Game_Physics_DLL.CppAdd(CppTest, 3);
+        Debug.Log(test);
+        Game_Physics_DLL.DeleteCppClass(CppTest);
+
         return;
     }
 

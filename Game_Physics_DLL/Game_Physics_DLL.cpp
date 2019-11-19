@@ -1,8 +1,10 @@
-#include "Game_Physics_DLL.h"
 #include <math.h>
 #include "Foo.h"
+#include "Game_Physics_DLL.h"
+
 // Turn into singleton if wanted.
 Foo* instance = 0;
+
 int InitFoo(int newFoo)
 {
 	if (!instance)
@@ -115,4 +117,25 @@ float* generateForce_Kinetic_Friction(float forceNormalX, float forceNormalY, fl
 	kfArray[2] *= pvelocityNormalizedZ;
 
 	return kfArray;
+}
+
+CppClass* CreateCppClass(int newInt)
+{
+	return new CppClass(newInt);
+}
+
+void DeleteCppClass(CppClass* pObject)
+{
+	if (pObject != NULL)
+	{
+		delete pObject;
+		pObject = NULL;
+	}
+
+	return;
+}
+
+int CppAdd(CppClass* pObject, int newInt)
+{
+	return pObject->add(newInt);
 }

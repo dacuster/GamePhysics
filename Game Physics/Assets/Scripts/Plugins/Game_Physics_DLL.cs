@@ -1,8 +1,21 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-//using UnityEngine;
-
+﻿using System;
 using System.Runtime.InteropServices;
+
+// Create struct to implement "typedef" for custom C++ pointer as System.IntPtr
+public struct CppClass
+{
+    private IntPtr Value;
+
+    public static implicit operator IntPtr(CppClass _cppClass)
+    {
+        return ((_cppClass == IntPtr.Zero) ? IntPtr.Zero : _cppClass.Value);
+    }
+
+    public static implicit operator CppClass(IntPtr _intPtr)
+    {
+        return new CppClass { Value = _intPtr } ;
+    }
+}
 
 // ForceGeneratorDLL
 public class Game_Physics_DLL
@@ -15,6 +28,15 @@ public class Game_Physics_DLL
 
     [DllImport("Game_Physics_DLL")]
     public static extern int TermFoo();
+
+    [DllImport("Game_Physics_DLL")]
+    public static extern CppClass CreateCppClass(int newInt);
+
+    [DllImport("Game_Physics_DLL")]
+    public static extern void DeleteCppClass(CppClass pObject);
+
+    [DllImport("Game_Physics_DLL")]
+    public static extern int CppAdd(CppClass pObject, int newInt);
 
     [DllImport("Game_Physics_DLL")]
     public static unsafe extern float* generateForce_Gravity(float mass, float gravitationalConstant, float worldX, float worldY, float worldZ);
