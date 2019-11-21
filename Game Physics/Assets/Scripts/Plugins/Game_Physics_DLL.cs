@@ -18,6 +18,7 @@ public struct CppClass
 }
 
 // ForceGeneratorDLL
+/*
 public class Game_Physics_DLL
 {
     [DllImport("Game_Physics_DLL")]
@@ -56,3 +57,4 @@ public class Game_Physics_DLL
     [DllImport("Game_Physics_DLL")]
     public static unsafe extern float* generateForce_Spring();
 }
+*/

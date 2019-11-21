@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using ForceGeneratorDLL;
 
 public class Particle3D : MonoBehaviour
 {
@@ -568,11 +569,12 @@ public class Particle3D : MonoBehaviour
         // Set the mass as the starting mass.
         Mass = startingMass;
 
-        CppClass CppTest;
-        CppTest = Game_Physics_DLL.CreateCppClass(5);
-        int test = Game_Physics_DLL.CppAdd(CppTest, 3);
-        Debug.Log(test);
-        Game_Physics_DLL.DeleteCppClass(CppTest);
+        //CppClass CppTest;
+        //CppTest = Game_Physics_DLL.CreateCppClass(5);
+        //int test = Game_Physics_DLL.CppAdd(CppTest, 3);
+        //Debug.Log(test);
+        //Game_Physics_DLL.DeleteCppClass(CppTest);
+
 
         return;
     }
@@ -647,56 +649,60 @@ public class Particle3D : MonoBehaviour
         if (gravityActive)
         {
             // Gravitational force.
-            AddForce(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, Vector3.up));
+            //AddForce(ForceGenerator.GenerateForce_Gravity(Mass, GRAVITY, Vector3.up));
+            AddForce(GenerateForce.Gravity(Mass, GRAVITY, Vector3.up));
         }
 
         // Apply spring force if it is active.
         if (springActive)
         {
             // Spring force.
-            AddForce(ForceGenerator.GenerateForce_Spring(Position, springAnchor.position, springRestLength, springStiffness));
+            //AddForce(ForceGenerator.GenerateForce_Spring(Position, springAnchor.position, springRestLength, springStiffness));
         }
 
         // Apply static friction force if it is active.
         if (staticFrictionActive)
         {
             // Static friction force.
-            AddForce(ForceGenerator.GenerateForce_Friction_Static(staticFrictionNormal, staticFrictionOpposingForce, staticFrictionCoefficient));
+            //AddForce(ForceGenerator.GenerateForce_Friction_Static(staticFrictionNormal, staticFrictionOpposingForce, staticFrictionCoefficient));
+            AddForce(GenerateForce.StaticFriction(staticFrictionNormal, staticFrictionOpposingForce, staticFrictionCoefficient));
         }
 
         // Apply kinematic friction force if it is active.
         if (kinematicFrictionActive)
         {
             // Kinematic friction force.
-            AddForce(ForceGenerator.GenerateForce_Friction_Kinetic(kinematicNormalForce, Velocity, kinematicFrictionCoefficient));
+            //AddForce(ForceGenerator.GenerateForce_Friction_Kinetic(kinematicNormalForce, Velocity, kinematicFrictionCoefficient));
+            AddForce(GenerateForce.KineticFriction(kinematicNormalForce, Velocity, kinematicFrictionCoefficient));
         }
 
         // Apply sliding force if it is active.
         if (slidingActive)
         {
             // Sliding force.
-            AddForce(ForceGenerator.GenerateForce_Sliding(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, worldUp), slidingNormalForce));
+            //AddForce(ForceGenerator.GenerateForce_Sliding(ForceGenerator.GenerateForce_Gravity(Mass, GRAVITY, worldUp), slidingNormalForce));
         }
 
         // Apply drag force if it is active.
         if (dragActive)
         {
             // Drag force.
-            AddForce(ForceGenerator.GenerateForce_Drag(Velocity, fluidVelocity, fluidDensity, objectCrossSection, dragCoefficient));
+            //AddForce(ForceGenerator.GenerateForce_Drag(Velocity, fluidVelocity, fluidDensity, objectCrossSection, dragCoefficient));
         }
 
         // Apply normal force if it is active.
         if (normalActive)
         {
             // Normal force.
-            AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, worldUp), surfaceNormal));
+            //AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, worldUp), surfaceNormal));
+            AddForce(GenerateForce.Normal(GenerateForce.Gravity(Mass, GRAVITY, worldUp), surfaceNormal));
         }
 
         // Apply damping spring force if it is active.
         if (dampingSpringActive)
         {
             // Damping spring force.
-            AddForce(ForceGenerator.GenerateForce_Spring_Damping(Position, springAnchor.position, springRestLength, springStiffness, springDamping, springConstant, Velocity));
+            //AddForce(ForceGenerator.GenerateForce_Spring_Damping(Position, springAnchor.position, springRestLength, springStiffness, springDamping, springConstant, Velocity));
         }
 
         // Apply inverse inertia tensor based on object shape type.

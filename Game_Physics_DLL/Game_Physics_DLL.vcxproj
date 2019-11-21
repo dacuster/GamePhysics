@@ -155,17 +155,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Foo.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game_Physics_DLL.h" />
     <ClInclude Include="Lib.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Vector3D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="Foo.cpp" />
     <ClCompile Include="Game_Physics_DLL.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Vector3D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

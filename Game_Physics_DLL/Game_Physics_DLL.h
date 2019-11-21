@@ -3,7 +3,6 @@
 
 // Marshaling C++ classes https://www.youtube.com/watch?v=w3jGgTHJoCY
 
-
 #include "Lib.h"
 
 #ifdef __cplusplus
@@ -13,26 +12,40 @@ extern "C"
 
 #endif	// __cplusplus
 
-GAME_PHYSICS_DLL_SYMBOL int InitFoo(int newFoo);
-GAME_PHYSICS_DLL_SYMBOL int DoFoo(int bar);
-GAME_PHYSICS_DLL_SYMBOL int TermFoo();
+// Create a Vector3D.
+GAME_PHYSICS_DLL_SYMBOL Vector3D* CreateVector3D(float x, float y, float z);
 
-GAME_PHYSICS_DLL_SYMBOL CppClass* CreateCppClass(int newInt);
-GAME_PHYSICS_DLL_SYMBOL void DeleteCppClass(CppClass* pObject);
-GAME_PHYSICS_DLL_SYMBOL int CppAdd(CppClass* pObject, int newInt);
+// Set referenced parameters of Vector3D.
+GAME_PHYSICS_DLL_SYMBOL void GetVector3(Vector3D* pVector, float& x, float& y, float& z);
 
-GAME_PHYSICS_DLL_SYMBOL float* generateForce_Gravity(float mass, float gravitationalConstant, float worldX, float worldY, float worldZ);
-GAME_PHYSICS_DLL_SYMBOL float* generateForce_Normal(float gravityForceX, float gravityForceY, float gravityForceZ, float surfaceNormalX, float surfaceNormalY, float surfaceNormalZ);
-GAME_PHYSICS_DLL_SYMBOL float* generateForce_Static_Friction(float forceNormalX, float forceNormalY, float forceNormalZ, float forceOpposingX, float forceOpposingY, float forceOpposingZ, float staticCoeff);
-GAME_PHYSICS_DLL_SYMBOL float* generateForce_Kinetic_Friction(float forceNormalX, float forceNormalY, float forceNormalZ, float pVelocityX, float pVelocityY, float pVelocityZ, float kineticCoeff);
-GAME_PHYSICS_DLL_SYMBOL float* generateForce_Drag();
-GAME_PHYSICS_DLL_SYMBOL float* generateForce_Spring();
+// Destroy the Vector3D.
+GAME_PHYSICS_DLL_SYMBOL void DestroyVector3D(Vector3D* pVector);
+
+namespace ForceGenerator
+{
+	// Calculate a gravity force.
+	GAME_PHYSICS_DLL_SYMBOL Vector3D* Gravity(float mass, float gravitationalConstant, Vector3D* worldUp);
+
+	// Calculate a normal force.
+	GAME_PHYSICS_DLL_SYMBOL Vector3D* Normal(Vector3D* gravity, Vector3D* surfaceNormal);
+
+	// Calculate a static friction force.
+	GAME_PHYSICS_DLL_SYMBOL Vector3D* StaticFriction(Vector3D* normalForce, Vector3D* opposingForce, float staticCoefficient);
+
+	// Calculate a kinetic friction force.
+	GAME_PHYSICS_DLL_SYMBOL Vector3D* KineticFriction(Vector3D* normalForce, Vector3D* particleVelocity, float kineticCoefficient);
+
+	// Calculate a drag force.
+	GAME_PHYSICS_DLL_SYMBOL Vector3D* Drag();
+
+	// Calculate a spring force.
+	GAME_PHYSICS_DLL_SYMBOL Vector3D* Spring();
+}
 
 #ifdef __cplusplus
 }
 #else	// !__cplusplus
 
 #endif	// __cplusplus
-
 
 #endif	// !GAME_PHYSICS_DLL_H
