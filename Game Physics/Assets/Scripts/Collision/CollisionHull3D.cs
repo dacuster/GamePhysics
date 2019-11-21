@@ -212,6 +212,7 @@ public abstract class CollisionHull3D : MonoBehaviour
             bool enemyCollision = Layer == CollisionLayer.enemy;
             bool projectileCollision = Layer == CollisionLayer.projectile && hull.Layer == CollisionLayer.enemy;
 
+            gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
             // Check if collision can happen.
             if (true || playerCollision || enemyCollision || projectileCollision)
             {
@@ -220,7 +221,8 @@ public abstract class CollisionHull3D : MonoBehaviour
                 {
                     // Resolve the collision.
                     //collision.ResolveCollision();
-
+                    gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
+                    
 
                     if (playerCollision)
                     {
