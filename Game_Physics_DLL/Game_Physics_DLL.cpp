@@ -112,3 +112,12 @@ Vector3D* ForceGenerator::Spring()
 {
 	return nullptr;
 }
+
+void ForceIntegration::UpdatePositionEulerExplicit(Vector3D* pPosition, Vector3D* pVelocity, Vector3D* pAcceleration, float deltaTime)
+{
+	*pPosition = *pPosition + *pVelocity * deltaTime;
+
+	*pVelocity = *pVelocity + *pAcceleration * deltaTime;
+
+	return;
+}

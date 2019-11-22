@@ -13,6 +13,8 @@ public abstract class CollisionHull3D : MonoBehaviour
     [SerializeField]
     protected bool debugMode = false;
 
+    private bool collided = false;
+
     // Video tutorial circle collision handler. https://www.youtube.com/watch?v=LPzyNOHY3A4
     // TODO: Comment for lab 5.
     // Collision data.
@@ -196,7 +198,8 @@ public abstract class CollisionHull3D : MonoBehaviour
 
     // Update for physics.
     public void FixedUpdate()
-    {
+    { 
+
         // Iterate through every CollisionHull3D in the game.
         foreach (CollisionHull3D hull in GameObject.FindObjectsOfType<CollisionHull3D>())
         {
@@ -212,7 +215,6 @@ public abstract class CollisionHull3D : MonoBehaviour
             bool enemyCollision = Layer == CollisionLayer.enemy;
             bool projectileCollision = Layer == CollisionLayer.projectile && hull.Layer == CollisionLayer.enemy;
 
-            gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
             // Check if collision can happen.
             if (true || playerCollision || enemyCollision || projectileCollision)
             {
@@ -221,8 +223,7 @@ public abstract class CollisionHull3D : MonoBehaviour
                 {
                     // Resolve the collision.
                     //collision.ResolveCollision();
-                    gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
-                    
+                    collided = true;
 
                     if (playerCollision)
                     {
@@ -251,6 +252,16 @@ public abstract class CollisionHull3D : MonoBehaviour
 
                 }
             }
+        }
+
+        if (collided)
+        {
+            collided = false;
+            GetComponent<MeshRenderer>().material.color = Color.red;
+        }
+        else
+        {
+            gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
         }
 
         return;

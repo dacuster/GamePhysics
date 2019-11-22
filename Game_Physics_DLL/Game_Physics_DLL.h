@@ -21,6 +21,11 @@ GAME_PHYSICS_DLL_SYMBOL void GetVector3(Vector3D* pVector, float& x, float& y, f
 // Destroy the Vector3D.
 GAME_PHYSICS_DLL_SYMBOL void DestroyVector3D(Vector3D* pVector);
 
+namespace ForceIntegration
+{
+	GAME_PHYSICS_DLL_SYMBOL void UpdatePositionEulerExplicit(Vector3D* pPosition, Vector3D* pVelocity, Vector3D* pAcceleration, float deltaTime);
+}
+
 namespace ForceGenerator
 {
 	// Calculate a gravity force.
