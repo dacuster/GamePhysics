@@ -31,6 +31,12 @@ public class Game_Physics_DLL
     public static extern Vector3D KineticFriction(Vector3D normalForce, Vector3D particleVelocity, float kineticCoefficient);
 
     [DllImport("Game_Physics_DLL")]
+    public static extern Vector3D Drag(Vector3D particleVelocity, Vector3D fluidVelocity, float fluidDensity, float areaCrossSection, float dragCoefficient);
+
+    [DllImport("Game_Physics_DLL")]
+    public static extern Vector3D Spring(Vector3D particlePosition, Vector3D anchorPosition, float restingLength, float stiffnessCoefficient);
+
+    [DllImport("Game_Physics_DLL")]
     public static extern void UpdatePositionEulerExplicit(Vector3D position, Vector3D velocity, Vector3D acceleration, float deltaTime);
 }
 
@@ -58,19 +64,32 @@ public class DllConversion
 
 namespace PhysicsIntegrationDLL
 {
+    // Using static will allow class integration into namespaces.
     using static DllConversion;
     public class PhysicsIntegration
     {
         public static void UpdatePositionEulerExplicit(ref Vector3 position, ref Vector3 velocity, Vector3 acceleration, float deltaTime)
         {
-
+            // Convert position to a Vector3D pointer.
             Vector3D pPosition = ConvertToVector3D(position);
+
+            // Convert velocity to a Vector3D pointer.
             Vector3D pVelocity = ConvertToVector3D(velocity);
 
-            Game_Physics_DLL.UpdatePositionEulerExplicit(pPosition, pVelocity, ConvertToVector3D(acceleration), deltaTime);
+            // Convert acceleration to a Vector3D pointer.
+            Vector3D pAcceleration = ConvertToVector3D(acceleration);
 
+            // Calculate the position integration in the DLL.
+            Game_Physics_DLL.UpdatePositionEulerExplicit(pPosition, pVelocity, pAcceleration, deltaTime);
+
+            // Assign the calculated value back to position.
             position = ConvertToVector3(pPosition);
+
+            // Assign the calculated value back to velocity.
             velocity = ConvertToVector3(pVelocity);
+
+            // Prevent memory leaks of the acceleration Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pAcceleration);
 
             return;
         }
@@ -100,17 +119,107 @@ namespace ForceGeneratorDLL
         }
         public static Vector3 Normal(Vector3 gravity, Vector3 surfaceNormal)
         {
-            return ConvertToVector3(Game_Physics_DLL.Normal(ConvertToVector3D(gravity), ConvertToVector3D(surfaceNormal)));
+            // Convert gravity to Vector3D pointer.
+            Vector3D pGravity = ConvertToVector3D(gravity);
+
+            // Convert surfaceNormal to Vector3D pointer.
+            Vector3D pSurafaceNormal = ConvertToVector3D(surfaceNormal);
+
+            // Calculate the force in the DLL and convert it to a Unity Vector3.
+            Vector3 force = ConvertToVector3(Game_Physics_DLL.Normal(pGravity, pSurafaceNormal));
+
+            // Prevent memory leaks of the gravity Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pGravity);
+
+            // Prevent memory leaks of the surfaceNormal Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pSurafaceNormal);
+
+            // Return the calculated force.
+            return force;
         }
 
         public static Vector3 StaticFriction(Vector3 normalForce, Vector3 opposingForce, float staticCoefficient)
         {
-            return ConvertToVector3(Game_Physics_DLL.StaticFriction(ConvertToVector3D(normalForce), ConvertToVector3D(opposingForce), staticCoefficient));
+            // Convert normalForce to Vector3D pointer.
+            Vector3D pNormalForce = ConvertToVector3D(normalForce);
+
+            // Convert opposingForce to Vector3D pointer.
+            Vector3D pOpposingForce = ConvertToVector3D(opposingForce);
+
+            // Calculate the force in the DLL and convert it to a Unity Vector3.
+            Vector3 force = ConvertToVector3(Game_Physics_DLL.StaticFriction(pNormalForce, pOpposingForce, staticCoefficient));
+
+            // Prevent memory leaks of the normalForce Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pNormalForce);
+
+            // Prevent memory leaks of the opposingForce Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pOpposingForce);
+
+            // Return the calculated force.
+            return force;
         }
 
         public static Vector3 KineticFriction(Vector3 normalForce, Vector3 particleVelocity, float kineticCoefficient)
         {
-            return ConvertToVector3(Game_Physics_DLL.KineticFriction(ConvertToVector3D(normalForce), ConvertToVector3D(particleVelocity), kineticCoefficient));
+            // Convert normalForce to Vector3D pointer.
+            Vector3D pNormalForce = ConvertToVector3D(normalForce);
+
+            // Convert particleVelocity to Vector3D pointer.
+            Vector3D pParticleVelocity = ConvertToVector3D(particleVelocity);
+
+            // Calculate the force in the DLL and convert it to a Unity Vector3.
+            Vector3 force = ConvertToVector3(Game_Physics_DLL.KineticFriction(pNormalForce, pParticleVelocity, kineticCoefficient));
+
+            // Prevent memory leaks of the normalForce Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pNormalForce);
+
+            // Prevent memory leaks of the particleVelocity Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pParticleVelocity);
+
+            // Return the calculated force.
+            return force;
+        }
+
+        public static Vector3 Spring(Vector3 particlePosition, Vector3 anchorPosition, float restingLength, float stiffnessCoefficient)
+        {
+            // Convert particlePosition to Vector3D pointer.
+            Vector3D pParticlePosition = ConvertToVector3D(particlePosition);
+
+            // Convert anchorPosition to Vector3D pointer.
+            Vector3D pAnchorPosition = ConvertToVector3D(anchorPosition);
+
+            // Calculate the force in the DLL and convert it to a Unity Vector3.
+            Vector3 force = ConvertToVector3(Game_Physics_DLL.Spring(pParticlePosition, pAnchorPosition, restingLength, stiffnessCoefficient));
+
+            // Prevent memory leaks of the particlePosition Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pParticlePosition);
+
+            // Prevent memory leaks of the anchorPosition Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pAnchorPosition);
+
+            // Return the calculated force.
+            return force;
+        }
+
+        public static Vector3 Drag(Vector3 particleVelocity, Vector3 fluidVelocity, float fluidDensity, float areaCrossSection, float dragCoefficient)
+        {
+            // Convert particleVelocity to Vector3D pointer.
+            Vector3D pParticleVelocity = ConvertToVector3D(particleVelocity);
+
+            // Convert particleVelocity to Vector3D pointer.
+            Vector3D pFluidVelocity = ConvertToVector3D(fluidVelocity);
+
+            // Calculate the force in the DLL and convert it to a Unity Vector3.
+            Vector3 force = ConvertToVector3(Game_Physics_DLL.Drag(pParticleVelocity, pFluidVelocity, fluidDensity, areaCrossSection, dragCoefficient));
+
+            // Prevent memory leaks of the particleVelocity Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pParticleVelocity);
+
+            // Prevent memory leaks of the particleVelocity Vector3D.
+            Game_Physics_DLL.DestroyVector3D(pFluidVelocity);
+
+            // Return the calculated force.
+            return force;
         }
     }
 }

@@ -32,6 +32,9 @@ public:
 	// Overload the addition operator.
 	Vector3D operator+(Vector3D const other);
 
+	// Overload the subtraction operator.
+	Vector3D operator-(Vector3D const other);
+
 	// Overload the negation operator.
 	Vector3D operator-() const;
 

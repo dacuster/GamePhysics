@@ -10,7 +10,10 @@ Vector3D* CreateVector3D(float x, float y, float z)
 // Set the given coordinates to the coordinates of the given Vector3D.
 void GetVector3(Vector3D* pVector, float& x, float& y, float& z)
 {
-	pVector->getCoordinates(x, y, z);
+	if (pVector != nullptr)
+	{
+		pVector->getCoordinates(x, y, z);
+	}
 
 	return;
 }
@@ -23,6 +26,15 @@ void DestroyVector3D(Vector3D* pVector)
 		delete pVector;
 		pVector = nullptr;
 	}
+
+	return;
+}
+
+void ForceIntegration::UpdatePositionEulerExplicit(Vector3D* pPosition, Vector3D* pVelocity, Vector3D* pAcceleration, float deltaTime)
+{
+	*pPosition = *pPosition + *pVelocity * deltaTime;
+
+	*pVelocity = *pVelocity + *pAcceleration * deltaTime;
 
 	return;
 }
@@ -80,7 +92,7 @@ Vector3D* ForceGenerator::StaticFriction(Vector3D* normalForce, Vector3D* opposi
 	// Opposing force can overcome the friction.
 	else
 	{
-		*pForce = (*normalForce)  * (-staticCoefficient);
+		*pForce = (*normalForce) * (-staticCoefficient);
 	}
 
 	// Return the calculated force.
@@ -102,22 +114,27 @@ Vector3D* ForceGenerator::KineticFriction(Vector3D* normalForce, Vector3D* parti
 }
 
 // Calculate a drag force.
-Vector3D* ForceGenerator::Drag()
+Vector3D* ForceGenerator::Drag(Vector3D* particleVelocity, Vector3D* fluidVelocity, float fluidDensity, float areaCrossSection, float dragCoefficient)
 {
 	return nullptr;
 }
 
+// f_spring = -coeff*(spring length - spring resting length)		(Page 107)
 // Calculate a spring force.
-Vector3D* ForceGenerator::Spring()
+Vector3D* ForceGenerator::Spring(Vector3D* particlePosition, Vector3D* anchorPosition, float restingLength, float stiffnessCoefficient)
 {
-	return nullptr;
-}
+	// Create a new force to return.
+	Vector3D* pForce = new Vector3D();
 
-void ForceIntegration::UpdatePositionEulerExplicit(Vector3D* pPosition, Vector3D* pVelocity, Vector3D* pAcceleration, float deltaTime)
-{
-	*pPosition = *pPosition + *pVelocity * deltaTime;
+	// Calculate relative position of the particle to the anchor.
+	Vector3D position = (*particlePosition) - (*anchorPosition);
 
-	*pVelocity = *pVelocity + *pAcceleration * deltaTime;
+	// Generate the force.
+	float forceScalar = -stiffnessCoefficient * (position.magnitude() - restingLength);
 
-	return;
+	// Calculate the force at the current position.
+	*pForce = position * forceScalar;
+
+	// Return the force.
+	return pForce;
 }

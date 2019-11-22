@@ -57,6 +57,12 @@ Vector3D Vector3D::operator+(Vector3D const other)
 	return Vector3D(mX + other.mX, mY + other.mY, mZ + other.mZ);
 }
 
+// Overload the subtraction operator.
+Vector3D Vector3D::operator-(Vector3D const other)
+{
+	return Vector3D(mX - other.mX, mY - other.mY, mZ - other.mZ);
+}
+
 Vector3D Vector3D::operator-() const
 {
 	return Vector3D(-mX, -mY, -mZ);

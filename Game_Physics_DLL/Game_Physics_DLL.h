@@ -41,10 +41,10 @@ namespace ForceGenerator
 	GAME_PHYSICS_DLL_SYMBOL Vector3D* KineticFriction(Vector3D* normalForce, Vector3D* particleVelocity, float kineticCoefficient);
 
 	// Calculate a drag force.
-	GAME_PHYSICS_DLL_SYMBOL Vector3D* Drag();
+	GAME_PHYSICS_DLL_SYMBOL Vector3D* Drag(Vector3D* particleVelocity, Vector3D* fluidVelocity, float fluidDensity, float areaCrossSection, float dragCoefficient);
 
 	// Calculate a spring force.
-	GAME_PHYSICS_DLL_SYMBOL Vector3D* Spring();
+	GAME_PHYSICS_DLL_SYMBOL Vector3D* Spring(Vector3D* particlePosition, Vector3D* anchorPosition, float restingLength, float stiffnessCoefficient);
 }
 
 #ifdef __cplusplus

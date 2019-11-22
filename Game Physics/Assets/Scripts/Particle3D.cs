@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using ForceGeneratorDLL;
+using PhysicsIntegrationDLL;
 
 public class Particle3D : MonoBehaviour
 {
@@ -658,6 +659,8 @@ public class Particle3D : MonoBehaviour
         {
             // Spring force.
             //AddForce(ForceGenerator.GenerateForce_Spring(Position, springAnchor.position, springRestLength, springStiffness));
+            // If spring anchor is null send world origin instead.
+            AddForce(GenerateForce.Spring(Position, (springAnchor ? springAnchor.position : Vector3.zero), springRestLength, springStiffness));
         }
 
         // Apply static friction force if it is active.
@@ -688,6 +691,7 @@ public class Particle3D : MonoBehaviour
         {
             // Drag force.
             //AddForce(ForceGenerator.GenerateForce_Drag(Velocity, fluidVelocity, fluidDensity, objectCrossSection, dragCoefficient));
+            AddForce(GenerateForce.Drag(Velocity, fluidVelocity, fluidDensity, objectCrossSection, dragCoefficient));
         }
 
         // Apply normal force if it is active.
@@ -746,10 +750,11 @@ public class Particle3D : MonoBehaviour
         **  F(t + dt) = F(t) + f(t)dt       **
         **                   + (dF / dt)dt  **
         *************************************/
-        Position += Velocity * deltaTime;
+        PhysicsIntegration.UpdatePositionEulerExplicit(ref position, ref velocity, Acceleration, deltaTime);
+        //Position += Velocity * deltaTime;
 
-        // v(t + dt) = v(t) + a(t)dt
-        Velocity += Acceleration * deltaTime;
+        //// v(t + dt) = v(t) + a(t)dt
+        //Velocity += Acceleration * deltaTime;
 
         Debug.DrawRay(Position, Velocity.normalized * 3.0f, Color.white);
 
