@@ -114,10 +114,16 @@ Vector3D* ForceGenerator::KineticFriction(Vector3D* normalForce, Vector3D* parti
 }
 
 // Calculate a drag force.
-Vector3D* ForceGenerator::Drag(Vector3D* particleVelocity, Vector3D* fluidVelocity, float fluidDensity, float areaCrossSection, float dragCoefficient)
+Vector3D* ForceGenerator::Drag(Vector3D* particleVelocity, Vector3D* fluidVelocity, float fluidDensity, float objectArea_crossSection, float objectDragCoefficient)
 {
-	return nullptr;
+	Vector3D* pForce = new Vector3D();
+
+	*pForce = (((*particleVelocity) * (*particleVelocity)) * fluidDensity * objectArea_crossSection * objectDragCoefficient) * 0.5f;
+	*pForce = *pForce - *fluidVelocity;
+
+	return pForce;
 }
+
 
 // f_spring = -coeff*(spring length - spring resting length)		(Page 107)
 // Calculate a spring force.
