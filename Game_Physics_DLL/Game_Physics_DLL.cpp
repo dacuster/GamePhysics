@@ -120,10 +120,10 @@ Vector3D* ForceGenerator::Drag(Vector3D* particleVelocity, Vector3D* fluidVeloci
 	Vector3D* pForce = new Vector3D();
 
 	// Calculate drag.
-	float drag = particleVelocity->dot(particleVelocity) * fluidDensity * areaCrossSection * dragCoefficient * 0.5f;
+	*pForce  = *particleVelocity * particleVelocity->magnitude() * fluidDensity * areaCrossSection * dragCoefficient * 0.5f;
 
-	// Apply the drag in the right dirction.
-	*pForce = *fluidVelocity * drag;
+	// Go in the opposite direction of the force.
+	*pForce = -(*pForce);
 
 	// Return the calculated force.
 	return pForce;
