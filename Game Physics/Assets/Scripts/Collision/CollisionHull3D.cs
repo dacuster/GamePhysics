@@ -238,11 +238,11 @@ public abstract class CollisionHull3D : MonoBehaviour
                     }
                     else if (projectileCollision)
                     {
-                        GameController.instance.IncreaseScore();
+                       // GameController.instance.IncreaseScore();
 
                         if (hull.gameObject != null)
                         {
-                            hull.GetComponent<Asteroid>().DecrementLife();
+                            //hull.GetComponent<Asteroid>().DecrementLife();
                         }
                         if (gameObject != null)
                         {

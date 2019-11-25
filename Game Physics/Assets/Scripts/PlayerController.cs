@@ -33,63 +33,36 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.UpArrow))
         {
-            particle.AddForce(particle.CalculateDirection() * 4);
+
         }
 
         if (Input.GetKey(KeyCode.DownArrow))
         {
-            particle.AddForce(particle.CalculateDirection() * -4);
+
         }
 
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            particle.ApplyTorque(new Vector2(0, 1), new Vector2(-5.0f, 0.0f));
-            movingRight = false;
-            movingLeft = true;
-            if(movingLeft == true)
-            {
-                particle.ApplyTorque(new Vector2(0, 1), new Vector2(-10.0f, 0.0f));
-            }
+            
         }
 
         if (Input.GetKey(KeyCode.RightArrow))
         {
-            particle.ApplyTorque(new Vector2(0, 1), new Vector2(5.0f, 0.0f));
-
-            movingRight = true;
-            movingLeft = false;
-            if (movingRight == true)
-            {
-                particle.ApplyTorque(new Vector2(0, 1), new Vector2(10.0f, 0.0f));
-            }
+            
         }
 
         if (Input.GetKey(KeyCode.R))
         {
-            particle.GetComponent<Particle2D>().AngularVelocity = 0;
-            particle.GetComponent<Particle2D>().AngularAcceleration = 0;
-            particle.GetComponent<Particle2D>().Acceleration =  Vector2.zero;
-            particle.GetComponent<Particle2D>().Velocity = Vector2.zero;
+
         }
 
         if(Input.GetKeyDown(KeyCode.E))
         {
-            GameController.instance.PlayExplosion();
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            SpawnProjectile.instance.Fire();
-        }
-
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            GameController.instance.IncreaseScore();
-        }
-
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            GameController.instance.PlayerHit();
+            
         }
     }
 }
