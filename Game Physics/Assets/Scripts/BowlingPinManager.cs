@@ -5,24 +5,19 @@ using UnityEngine;
 public class BowlingPinManager : MonoBehaviour
 {
     [SerializeField]
-    private GameObject[] pins;
+    private List <GameObject> pins = new List<GameObject>();
     private int pinLength = 10;
     // Start is called before the first frame update
     void Start()
     {
-
+        
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        //OnMouseDown();
         Controls();
-
-        //foreach (GameObject pin in pins)
-        //{
-        //    Destroy(pin);
-        //    pinLength--;
-        //}
 
         if (pinLength == 0)
         {
@@ -34,13 +29,10 @@ public class BowlingPinManager : MonoBehaviour
     {
         if(Input.GetKey(KeyCode.Mouse0))
         {
-            Destroy(gameObject);
-            Debug.Log("Left Mouse");
-        }
-
-        if (Input.GetKey(KeyCode.Mouse1))
-        {
-            Debug.Log("Right Mouse");
+            foreach (GameObject pin in  pins)
+            {
+                pins.Remove(pin);
+            }
         }
     }
 
