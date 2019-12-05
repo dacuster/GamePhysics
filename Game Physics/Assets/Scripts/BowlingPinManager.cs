@@ -5,18 +5,22 @@ using UnityEngine;
 public class BowlingPinManager : MonoBehaviour
 {
     public static BowlingPinManager instance = null;
-    [SerializeField]
-    private List <GameObject> openPinsList = new List<GameObject>();
+    
+    public List <GameObject> openPinsList = new List<GameObject>();
 
     [SerializeField]
     private List<bool> closedPinsList = new List<bool>();
-    private int pinLength = 10;
+    public int pinLength = 10;
     // Start is called before the first frame update
     void Start()
     {
         
     }
 
+    public void Awake()
+    {
+        instance = this;
+    }
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -30,7 +34,7 @@ public class BowlingPinManager : MonoBehaviour
 
     private void Controls()
     {
-        if(Input.GetKey(KeyCode.Mouse0))
+        if(Input.GetKey(KeyCode.D))
         {
             foreach (GameObject pin in openPinsList)
             {

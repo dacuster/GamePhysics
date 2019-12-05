@@ -253,7 +253,7 @@ public class Particle2D : MonoBehaviour
             UpdateAngularAcceleration();
             Torque = 0;
 
-            PlayerController.instance.PlayerControls();
+            //PlayerController.instance.PlayerControls();
         }
 
         // Apply position to Unity's transform component.
