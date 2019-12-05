@@ -132,6 +132,9 @@ public abstract class CollisionHull3D : MonoBehaviour
 
                 float impulse = deltaVelocity / totalInverseMass;
 
+                // reflection formula
+                // r = v - 2(v dot n^)n^
+
                 Vector3 impulsePerInverseMass = contact.normal * impulse;
 
                 A.Particle.Velocity += impulsePerInverseMass * A.Particle.MassInverse;

@@ -113,23 +113,26 @@ public class CircleCollisionHull3D : CollisionHull3D
         float nearestZ = Mathf.Clamp(circlePosition.z, other.Z_AxisBound.x, other.Z_AxisBound.y);
 
         // Calculate the distance from the nearest point on the other object to the circle center.
-        float deltaX = circlePosition.x - nearestX;
-        float deltaY = circlePosition.y - nearestY;
-        float deltaZ = circlePosition.z - nearestZ;
+        //float deltaX = circlePosition.x - nearestX;
+        //float deltaY = circlePosition.y - nearestY;
+        //float deltaZ = circlePosition.z - nearestZ;
+
+        // Create a vector with the delta position
 
         // Create a vector of the nearest position for matrix multiplication.
         Vector3 nearestPosition = new Vector3(nearestX, nearestY, nearestZ);
+
+        // Calculate the collision penetration position.
+        Vector3 penetrationPosition = circlePosition - nearestPosition;
 
         // Transform the nearest point from the OBB's local space into world space.
         other.LocalToWorld(ref nearestPosition);
 
         // Debug drawing.
-        Vector3 start = new Vector3(nearestPosition.x, nearestPosition.y, nearestPosition.z);
-        Vector3 end = Particle.Position;
-        Debug.DrawLine(start, end, Color.red);
+        Debug.DrawLine(nearestPosition, Particle.Position, Color.red);
 
         // Check if the distance from centers is less than or equal to sum of the radii.
-        c.Status = (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) <= (Radius * Radius);
+        c.Status = penetrationPosition.sqrMagnitude <= (Radius * Radius);
 
         // Set the collsion data.
         if (c.Status)
@@ -149,8 +152,8 @@ public class CircleCollisionHull3D : CollisionHull3D
             c.ContactCount = 1;
             c.A = this;
             c.B = other;
-            Vector3 normal = (Particle.Position - other.Particle.Position).normalized;
-            c.AddContact(normal * Radius, normal, 0.9f, 0);
+            Vector3 normal = penetrationPosition.normalized;
+            c.AddContact(nearestPosition, normal, 0.9f, 0);
         }
 
         // Return the collision status.
