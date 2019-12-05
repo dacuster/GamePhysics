@@ -47,7 +47,7 @@ public class CircleCollisionHull3D : CollisionHull3D
             c.A = this;
             c.B = other;
             Vector3 normal = differenceCenters.normalized;
-            c.AddContact(normal * Radius, normal, 0.9f, 0);
+            c.AddContact(Particle.Position + differenceCenters * 0.5f, normal, 0.9f, 0);
         }
 
         // Return the collision status.

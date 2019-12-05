@@ -222,7 +222,7 @@ public abstract class CollisionHull3D : MonoBehaviour
                 if (TestCollision(this, hull, ref collision))
                 {
                     // Resolve the collision.
-                    //collision.ResolveCollision();
+                    collision.ResolveCollision();
                     collided = true;
 
                     if (playerCollision)

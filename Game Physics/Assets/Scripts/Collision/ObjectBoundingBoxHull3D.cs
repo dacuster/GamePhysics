@@ -36,8 +36,7 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull3D other, ref Collision c)
     {
         // Perform check with AABB. (Algorithm implemented there already).
-        //return other.TestCollisionVsOBB(this, ref c);
-        return false;
+        return other.TestCollisionVsOBB(this, ref c);
     }
 
     // Check for collision OBB vs OBB.
@@ -71,7 +70,6 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
             if (other.X_AxisBound.x <= xAxisBoundThis.y && other.X_AxisBound.y >= xAxisBoundThis.x && other.Y_AxisBound.y >= yAxisBoundThis.x && other.Y_AxisBound.x <= yAxisBoundThis.y && other.Z_AxisBound.x <= zAxisBoundThis.y && other.Z_AxisBound.y >= zAxisBoundThis.x)
             {
                 // Collision.
-                Debug.Log("Collision!!!");
                 return true;
             }
         }
