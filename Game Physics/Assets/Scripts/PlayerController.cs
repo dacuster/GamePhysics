@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     public float shotPower = 0.0f;
     public Plane lane = new Plane(Vector3.up, Vector3.zero);
 
+    bool hasShot = false;
     public void Awake()
     {
         instance = this;
@@ -22,69 +23,44 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        PlayerControls();
-        DrawLine();
+        if (!hasShot)
+        {
+            PlayerControls();
+            DrawLine();
+            Debug.Log("Hasnt Shot");
+        }
+        else
+            Debug.Log("Has Shot");
+        
     }
 
     public void PlayerControls()
     {
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
-           float width = Screen.width * 0.5f;
-           float height = 0.0f;
+			Particle3D particle = GetComponent<Particle3D>();
+			float width = Screen.width * 0.5f;
+			float height = 0.0f;
 
-           Vector2 mousePosition = Input.mousePosition;
+			Vector2 mousePosition = Input.mousePosition;
 
-           Vector2 direction = mousePosition - new Vector2(width, height);
+			Vector2 direction = mousePosition - new Vector2(width, height);
 
-           float distance = direction.magnitude;
+			Vector2 unitDirection = direction.normalized;
 
-           shotPower = distance;
+			float distance = direction.magnitude;
+			float radius = GetComponent<CircleCollisionHull3D>().Radius;
+			unitDirection *= radius;
 
-           GetComponent<Particle3D>().AddForce(new Vector3(direction.x, 0, direction.y) * 5.44311f);
+			shotPower = distance;
 
+			Vector3 force = new Vector3(direction.x, 0, direction.y) * particle.Mass;
+			particle.AddForce(force);
 
-
-
-
-
-
-
-
-
-
-            //var rayCast = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            //float enter;
-
-            //if(lane.Raycast(rayCast, out enter))
-            //{
-            //    // Set hitPoint using raycast
-            //    Vector3 hitPoint = rayCast.GetPoint(enter);
-
-            //    // Calsulate mouseDirection
-            //    Vector3 mouseDirection = hitPoint - GetComponent<Particle3D>().Position;
-
-            //    // Normalize mouseDirection
-            //    mouseDirection = mouseDirection.normalized;
-
-            //    Vector3 mousePos = Input.mousePosition;
-            //    mousePos.z = 15.0f;
-            //    mousePos = Camera.main.ScreenToWorldPoint(mousePos);
-
-            //    Vector3 particlePosition = GetComponent<Particle3D>().Position;
-
-            //    particlePosition.z = 15.0f;
-
-            //    shotPower = mousePos - particlePosition;
-
-            //    shotPower *= shotPower.magnitude * 5.0f;
-            //    //shotPower = shotPower.normalized;
-
-            //    // Add for based off mouse direction
-            //    GetComponent<Particle3D>().AddForce(new Vector3(shotPower.x, 0, shotPower.y));
-            //}
-
+			particle.ApplyTorque(new Vector3(particle.Position.x, particle.Position.y + radius, particle.Position.z), force / 1000.0f);
+			Debug.Log(particle.Torque);
+			hasShot = true;
+			Destroy(GetComponent<LineRenderer>());
         }
     }
 
@@ -94,14 +70,6 @@ public class PlayerController : MonoBehaviour
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = 15;
         mousePos = Camera.main.ScreenToWorldPoint(mousePos);
-        //Ray ray = Camera.main.ScreenPointToRay(mousePos);
-
-        //Vector3 mousePos = Vector3.zero;
-        //if (hasHit)
-        //{
-        //    mousePos = hit.point;
-        //    //mousePos.z = 0;
-        //}
 
         LineRenderer lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.SetPosition(0, GetComponent<Particle3D>().Position);

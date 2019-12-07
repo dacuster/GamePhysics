@@ -593,7 +593,7 @@ public class Particle3D : MonoBehaviour
         UpdateAcceleration();
 
         // apply torque
-        ApplyTorque(momentArm, torqueForce);
+        //ApplyTorque(momentArm, torqueForce);
 
         // update angular acceleration
         UpdateAngularAcceleration();
@@ -695,7 +695,7 @@ public class Particle3D : MonoBehaviour
         }
 
         // Apply normal force if it is active.
-        if (normalActive)
+        if (NormalActive)
         {
             // Normal force.
             //AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, worldUp), surfaceNormal));
@@ -968,8 +968,9 @@ public class Particle3D : MonoBehaviour
 
     // Torque Accessor.
     public Vector3 Torque { get => torque; set => torque = value; }
+	public bool NormalActive { get => normalActive; set => normalActive = value; }
 
-    /************************************
+	/************************************
     **          End Accessors          ** 
     ************************************/
 }

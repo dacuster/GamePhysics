@@ -107,11 +107,15 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     // Calculate the bounding box limits in local to world space.
     public void CalculateBoundingBoxWorld(ref Vector2 _xAxisBound, ref Vector2 _yAxisBound, ref Vector2 _zAxisBound)
     {
-        // Rotate bound corners.
-        // Find min/max extents for x and y.
-        // return min and max extents into ref variables.
+		// Rotate bound corners.
+		// Find min/max extents for x and y.
+		// return min and max extents into ref variables.
 
-        TransformBoundingBoxAxis(LocalToWorld(), ref _xAxisBound, ref _yAxisBound, ref _zAxisBound);
+		if (debugMode)
+		{
+			//DrawCube(_xAxisBound, _yAxisBound, _zAxisBound, Color.magenta);
+		}
+		TransformBoundingBoxAxis(LocalToWorld(), ref _xAxisBound, ref _yAxisBound, ref _zAxisBound);
 
         if (debugMode)
         {
@@ -144,7 +148,7 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     {
         get
         {
-            return xAxisBound;
+            return zAxisBound;
         }
     }
 

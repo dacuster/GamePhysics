@@ -225,7 +225,29 @@ public abstract class CollisionHull3D : MonoBehaviour
                 if (TestCollision(this, hull, ref collision))
                 {
                     // Resolve the collision.
-                    collision.ResolveCollision();
+
+					if (hull.Layer == CollisionLayer.projectile && this.Layer == CollisionLayer.player)
+					{
+						Debug.Log("lane");
+						this.GetComponent<Particle3D>().NormalActive = true;
+						Vector3 velocity = GetComponent<Particle3D>().Velocity;
+						velocity.y = 0.0f;
+						GetComponent<Particle3D>().Velocity = velocity;
+					}
+					else if (hull.Layer == CollisionLayer.player && this.Layer == CollisionLayer.projectile)
+					{
+						Debug.Log("ball");
+						hull.GetComponent<Particle3D>().NormalActive = true;
+						Vector3 velocity = hull.GetComponent<Particle3D>().Velocity;
+						velocity.y = 0.0f;
+						hull.GetComponent<Particle3D>().Velocity = velocity;
+					}
+					else
+					{
+						Debug.Log("other");
+						collision.ResolveCollision();
+					}
+
                     collided = true;
 
                     if (playerCollision)
@@ -249,7 +271,7 @@ public abstract class CollisionHull3D : MonoBehaviour
                         }
                         if (gameObject != null)
                         {
-                            Destroy(gameObject);
+                            //Destroy(gameObject);
                         }
                     }
 
@@ -260,11 +282,11 @@ public abstract class CollisionHull3D : MonoBehaviour
         if (collided)
         {
             collided = false;
-            GetComponent<MeshRenderer>().material.color = Color.red;
+           // GetComponent<MeshRenderer>().material.color = Color.red;
         }
         else
         {
-            gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
+            //gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
         }
 
         return;

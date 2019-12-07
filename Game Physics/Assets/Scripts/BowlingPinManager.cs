@@ -8,8 +8,6 @@ public class BowlingPinManager : MonoBehaviour
     
     public List <GameObject> openPinsList = new List<GameObject>();
 
-    [SerializeField]
-    private List<bool> closedPinsList = new List<bool>();
     public int pinLength = 10;
     // Start is called before the first frame update
     void Start()
@@ -39,8 +37,8 @@ public class BowlingPinManager : MonoBehaviour
             foreach (GameObject pin in openPinsList)
             {
                 openPinsList.Remove(pin);
-                closedPinsList.Add(pin);
             }
         }
     }
+
 }

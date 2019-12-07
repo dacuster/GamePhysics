@@ -20,7 +20,6 @@ public class GameController : MonoBehaviour
 
         pins.text = "Pins: " + BowlingPinManager.instance.openPinsList.Count;
         shotPower.text = "Shot Power: " + power;
-        
     }
 
 }

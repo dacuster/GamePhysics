@@ -150,7 +150,7 @@ public class AxisAlignedBoundingBoxHull3D : CollisionHull3D
 
         if (debugMode)
         {
-            DrawCube(_xAxisBound, _yAxisBound, zAxisBound, Color.magenta);
+            DrawCube(_xAxisBound, _yAxisBound, _zAxisBound, Color.magenta);
         }
 
         return;
