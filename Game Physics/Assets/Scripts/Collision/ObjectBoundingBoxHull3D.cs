@@ -85,7 +85,7 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
         xAxisBound.y = xAxisBound.x + BoundingBox.x;
         yAxisBound.x = -BoundingBox.y * 0.5f;
         yAxisBound.y = yAxisBound.x + BoundingBox.y;
-        zAxisBound.x = BoundingBox.z * 0.5f;
+        zAxisBound.x = -BoundingBox.z * 0.5f;
         zAxisBound.y = zAxisBound.x + BoundingBox.z;
 
         return;

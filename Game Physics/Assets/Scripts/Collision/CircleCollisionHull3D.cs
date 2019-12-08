@@ -47,7 +47,8 @@ public class CircleCollisionHull3D : CollisionHull3D
             c.A = this;
             c.B = other;
             Vector3 normal = differenceCenters.normalized;
-            c.AddContact(Particle.Position + differenceCenters * 0.5f, normal, 0.9f, 0);
+            float penetration = radiiSum - Mathf.Sqrt(distanceSquared);
+            c.AddContact(Particle.Position + differenceCenters * 0.5f, normal, 0.9f, penetration * 0.5f, 0);
         }
 
         // Return the collision status.
@@ -119,20 +120,25 @@ public class CircleCollisionHull3D : CollisionHull3D
 
         // Create a vector with the delta position
 
+
+
         // Create a vector of the nearest position for matrix multiplication.
         Vector3 nearestPosition = new Vector3(nearestX, nearestY, nearestZ);
 
-        // Calculate the collision penetration position.
-        Vector3 penetrationPosition = circlePosition - nearestPosition;
+        // Calculate the distance from sphere position to the closest point on the OBB.
+        Vector3 distance = nearestPosition - circlePosition;
 
         // Transform the nearest point from the OBB's local space into world space.
         other.LocalToWorld(ref nearestPosition);
 
         // Debug drawing.
-        Debug.DrawLine(nearestPosition, Particle.Position, Color.red);
+        if (debugMode)
+        {
+            Debug.DrawLine(nearestPosition, Particle.Position, Color.red);
+        }
 
         // Check if the distance from centers is less than or equal to sum of the radii.
-        c.Status = penetrationPosition.sqrMagnitude <= (Radius * Radius);
+        c.Status = distance.sqrMagnitude <= (Radius * Radius);
 
         // Set the collsion data.
         if (c.Status)
@@ -152,8 +158,10 @@ public class CircleCollisionHull3D : CollisionHull3D
             c.ContactCount = 1;
             c.A = this;
             c.B = other;
-            Vector3 normal = penetrationPosition.normalized;
-            c.AddContact(nearestPosition, normal, 0.9f, 0);
+            // Normalized vector from the nearest point on the OBB to the position in world space of the sphere.
+            Vector3 normal = (Particle.Position - nearestPosition).normalized;
+            float penetration = Radius - distance.magnitude;
+            c.AddContact(nearestPosition, normal, 0.9f, penetration * 0.5f, 0);
         }
 
         // Return the collision status.

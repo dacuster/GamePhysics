@@ -29,6 +29,8 @@ public abstract class CollisionHull3D : MonoBehaviour
             public Vector3 normal;
             // Coefficient of restitution of the contact.
             public float restitution;
+            // Penetration amount.
+            public float penetration;
         }
 
         // The 2 hulls which are colliding.
@@ -48,7 +50,7 @@ public abstract class CollisionHull3D : MonoBehaviour
         private Vector3 closingVelocity = Vector3.zero;
 
         // Calculate the closing velocity of the 2 colliding objects for the given contact normal.
-        public float CalculateClosingVelocity()
+        public float CalculateClosingVelocity(Vector3 normal)
         {
             // Calculate the difference in velocities.
             Vector3 velocityDifference = A.Particle.Velocity - B.Particle.Velocity;
@@ -63,11 +65,11 @@ public abstract class CollisionHull3D : MonoBehaviour
             positionDifference.Normalize();
 
             // Find the scalar(dot) product of the difference in velocities and difference in positions normalized.
-            return Vector3.Dot(velocityDifference, positionDifference);
+            return Vector3.Dot(velocityDifference, normal);
         }
 
         // Create a contact and add it to the contacts list.
-        public void AddContact(Vector3 _position, Vector3 _normal, float _restitution, int _id)
+        public void AddContact(Vector3 _position, Vector3 _normal, float _restitution, float _penetration, int _id)
         {
             // Create a new contact.
             Contact contact;
@@ -80,6 +82,9 @@ public abstract class CollisionHull3D : MonoBehaviour
 
             // Set the restitution of the contact.
             contact.restitution = _restitution;
+
+            // Set the penetration of the contact.
+            contact.penetration = _penetration;
 
             // Add this contact to the list of contacts based on the current contact id.
             Contacts[_id] = contact;
@@ -110,7 +115,7 @@ public abstract class CollisionHull3D : MonoBehaviour
             {
                 Contact contact = Contacts[currentContact];
 
-                float separatingVelocity = CalculateClosingVelocity();
+                float separatingVelocity = CalculateClosingVelocity(contact.normal);
 
                 // Stationary or separating contact.
                 if (separatingVelocity > 0)
@@ -182,11 +187,17 @@ public abstract class CollisionHull3D : MonoBehaviour
         projectile
     }
 
+    public enum CollisionType
+    {
+        dynamicCollision,
+        staticCollision
+    }
+
     // Constructor.
     protected CollisionHull3D(CollisionHullType3D type)
     {
         // Set the type to the given type.
-        Type = type;
+        HullType = type;
 
         return;
     }
@@ -296,19 +307,19 @@ public abstract class CollisionHull3D : MonoBehaviour
     public static bool TestCollision(CollisionHull3D left, CollisionHull3D right, ref Collision collision)
     {
         // Other hull is a circle.
-        if (right.Type == CollisionHullType3D.hull_circle)
+        if (right.HullType == CollisionHullType3D.hull_circle)
         {
             // Test for collision with a circle and collect collision data.
             return left.TestCollisionVsCircle(right as CircleCollisionHull3D, ref collision);
         }
         // Other hull is an AABB.
-        else if (right.Type == CollisionHullType3D.hull_aabb)
+        else if (right.HullType == CollisionHullType3D.hull_aabb)
         {
             // Test for collision with an AABB and collect collision data.
             return left.TestCollisionVsAABB(right as AxisAlignedBoundingBoxHull3D, ref collision);
         }
         // Other hull is an OBB.
-        else if (right.Type == CollisionHullType3D.hull_obb)
+        else if (right.HullType == CollisionHullType3D.hull_obb)
         {
             // Test for collision with an OBB and collect collision data.
             return left.TestCollisionVsOBB(right as ObjectBoundingBoxHull3D, ref collision);
@@ -340,7 +351,13 @@ public abstract class CollisionHull3D : MonoBehaviour
     public Collision collision = new Collision();
 
     // Accessor for collision hull type.
-    public CollisionHullType3D Type { get; }
+    public CollisionHullType3D HullType { get; }
+
+    // Type of collision.
+    [SerializeField]
+    private CollisionType type;
+
+    public CollisionType Type { get { return type; } set { type = value; } }
 
     // Layer of collision.
     [SerializeField]
