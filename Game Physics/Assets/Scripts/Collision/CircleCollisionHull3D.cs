@@ -160,6 +160,8 @@ public class CircleCollisionHull3D : CollisionHull3D
             c.B = other;
             // Normalized vector from the nearest point on the OBB to the position in world space of the sphere.
             Vector3 normal = (Particle.Position - nearestPosition).normalized;
+
+            Debug.DrawLine(nearestPosition - normal,nearestPosition + normal, Color.yellow);
             float penetration = Radius - distance.magnitude;
             c.AddContact(nearestPosition, normal, 0.9f, penetration * 0.5f, 0);
         }

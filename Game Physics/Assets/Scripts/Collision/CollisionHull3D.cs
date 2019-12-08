@@ -142,9 +142,60 @@ public abstract class CollisionHull3D : MonoBehaviour
 
                 Vector3 impulsePerInverseMass = contact.normal * impulse;
 
-                A.Particle.Velocity += impulsePerInverseMass * A.Particle.MassInverse;
+                //Vector3 displacementA = A.Particle.Velocity.normalized * contact.penetration * -0.5f;
+                //Vector3 displacementB = B.Particle.Velocity.normalized * contact.penetration * -0.5f;
 
-                B.Particle.Velocity += impulsePerInverseMass * -B.Particle.MassInverse;
+                if (A.Particle.Velocity.sqrMagnitude == 0)
+                {
+                    //displacementA = -displacementB;
+                }
+
+                if (B.Particle.Velocity.sqrMagnitude == 0)
+                {
+                    //displacementB = -displacementA;
+                }
+
+                if (A.Type == CollisionType.dynamicCollision)
+                {
+                    // Apply displacement in opposite direction.
+                    //A.Particle.Position += displacementA;
+
+                    // Collision against static object. Move object backwards by displacement.
+                    if (B.Type == CollisionType.staticCollision)
+                    {
+                        // Apply displacement in opposite direction.
+                        //A.Particle.Position += displacementA;
+
+                        // Calculate reflection velocity along normal.
+                        impulsePerInverseMass = A.Particle.Velocity - 2.0f * Vector3.Dot(A.Particle.Velocity, contact.normal) * contact.normal;
+                        Debug.Log(impulsePerInverseMass);
+                        // Scale reflection velocity normalized by impulse.
+                        impulsePerInverseMass = impulsePerInverseMass.normalized * impulse;
+                        Debug.Log(impulsePerInverseMass);
+
+                        A.Particle.Velocity = impulsePerInverseMass * A.Particle.MassInverse;
+                    }
+                    else
+                    {
+                        A.Particle.Velocity += impulsePerInverseMass * A.Particle.MassInverse;
+                    }
+                }
+
+                if (B.Type == CollisionType.dynamicCollision)
+                {
+                    // Collision against static object. Move object backwards by displacement.
+                    if (A.Type == CollisionType.staticCollision)
+                    {
+                        // Apply displacement in opposite direction.
+                        //B.Particle.Position += displacementB;
+                        //impulsePerInverseMass = B.Particle.Velocity - 2.0f * Vector3.Dot(B.Particle.Velocity, -contact.normal) * -contact.normal;
+                    }
+
+                    // Apply displacement in opposite direction.
+                    //B.Particle.Position += displacementB;
+
+                    B.Particle.Velocity += impulsePerInverseMass * -B.Particle.MassInverse;
+                }
             }
 
 
