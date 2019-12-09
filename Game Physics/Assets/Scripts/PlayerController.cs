@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     public float shotPower = 0.0f;
     public Plane lane = new Plane(Vector3.up, Vector3.zero);
 
-    bool hasShot = false;
+    public bool hasShot = false;
     public void Awake()
     {
         instance = this;
@@ -23,15 +23,16 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!hasShot)
+        if(GameController.instance.gameStarted == true)
         {
-            PlayerControls();
-            DrawLine();
-            Debug.Log("Hasnt Shot");
+            if (!hasShot)
+            {
+                PlayerControls();
+                DrawLine();
+            }
+            else
+                Debug.Log("Has Shot");
         }
-        else
-            Debug.Log("Has Shot");
-        
     }
 
     public void PlayerControls()
@@ -46,11 +47,9 @@ public class PlayerController : MonoBehaviour
 
 			Vector2 direction = mousePosition - new Vector2(width, height);
 
-			Vector2 unitDirection = direction.normalized;
 
 			float distance = direction.magnitude;
 			float radius = GetComponent<CircleCollisionHull3D>().Radius;
-			unitDirection *= radius;
 
 			shotPower = distance;
 
@@ -58,9 +57,8 @@ public class PlayerController : MonoBehaviour
 			particle.AddForce(force);
 
 			particle.ApplyTorque(new Vector3(particle.Position.x, particle.Position.y + radius, particle.Position.z), force / 1000.0f);
-			Debug.Log(particle.Torque);
 			hasShot = true;
-			Destroy(GetComponent<LineRenderer>());
+            GetComponent<LineRenderer>().enabled = false;
         }
     }
 
