@@ -23,6 +23,7 @@ public abstract class CollisionHull3D : MonoBehaviour
         // Point of contact in collision.
         public struct Contact
         {
+            //dos line endings
             // Position of the contact.
             public Vector3 position;
             // Contact normal.
@@ -46,25 +47,13 @@ public abstract class CollisionHull3D : MonoBehaviour
         // Was there a collision.
         private bool status = false;
 
-        // Closing velocity of the collision.
-        private Vector3 closingVelocity = Vector3.zero;
-
-        // Calculate the closing velocity of the 2 colliding objects for the given contact normal.
-        public float CalculateClosingVelocity(Vector3 normal)
+        // Calculate the separating speed of the 2 colliding objects for the given contact normal.
+        public float CalculateSeparatingSpeed(Vector3 normal)
         {
             // Calculate the difference in velocities.
             Vector3 velocityDifference = A.Particle.Velocity - B.Particle.Velocity;
 
-            // Get the opposite values of the difference.
-            //velocityDifference *= -1.0f;
-
-            // Get the difference in positions.
-            Vector3 positionDifference = A.Particle.Position - B.Particle.Position;
-
-            // Normalize the difference in positions.
-            positionDifference.Normalize();
-
-            // Find the scalar(dot) product of the difference in velocities and difference in positions normalized.
+            // Find the scalar(dot) product of the difference in velocities and the contact normal.
             return Vector3.Dot(velocityDifference, normal);
         }
 
@@ -94,112 +83,169 @@ public abstract class CollisionHull3D : MonoBehaviour
 
         public void ResolveCollision()
         {
-            //Particle3D particleA = A.Particle;
-            //Particle3D particleB = B.Particle;
-            //Vector2 newVelocity = particleA.Velocity;
-
-            //for (int currentContact = 0; currentContact < contactCount; currentContact++)
-            //{
-            //    // TODO: Closing velocity is overlap of both objects?
-            //    ClosingVelocity = CalculateClosingVelocity(Contacts[currentContact].normal);
-            //    Debug.DrawRay(Contacts[currentContact].position, Contacts[currentContact].position + Contacts[currentContact].normal, Color.yellow);
-            //    newVelocity = ClosingVelocity.normalized * Contacts[currentContact].restitution;
-
-            //    //particleA.AddForce(ClosingVelocity.normalized * Contacts[currentContact].restitution);
-            //    //particleB.AddForce(ClosingVelocity * Contacts[currentContact].restitution);
-            //}
-
-            //particleA.Velocity = -newVelocity;
-            ////particleB.Velocity = -newVelocity;
+            // Loop through each point of contact in the collision.
             for (int currentContact = 0; currentContact < ContactCount; currentContact++)
             {
+                // Get the current point of contact.
                 Contact contact = Contacts[currentContact];
 
-                float separatingVelocity = CalculateClosingVelocity(contact.normal);
+                // Calculate the separating velocity
+                float separatingSpeed = CalculateSeparatingSpeed(contact.normal);
 
                 // Stationary or separating contact.
-                if (separatingVelocity > 0)
+                if (separatingSpeed > 0)
                 {
                     return;
                 }
 
-                // Calculate new separating velocity.
-                float newSeparatingVelocity = -separatingVelocity * contact.restitution;
+                // Calculate closing speed.
+                float closingSpeed = -separatingSpeed * contact.restitution;
 
-                float deltaVelocity = newSeparatingVelocity - separatingVelocity;
+                // Calculate the change in speed.
+                float deltaSpeed = closingSpeed - separatingSpeed;
 
+                // Calculate sum of inverse masses of both hulls.
                 float totalInverseMass = A.Particle.MassInverse + B.Particle.MassInverse;
 
+                // Can't have negative or zero mass.
                 if (totalInverseMass <= 0)
                 {
                     return;
                 }
 
-                float impulse = deltaVelocity / totalInverseMass;
+                // Calculate linear impulse.
+                float impulse = deltaSpeed / totalInverseMass;
 
-                // reflection formula
-                // r = v - 2(v dot n^)n^
-
+                // Calculate impulse per inverse mass about the contact normal.
                 Vector3 impulsePerInverseMass = contact.normal * impulse;
 
-                //Vector3 displacementA = A.Particle.Velocity.normalized * contact.penetration * -0.5f;
-                //Vector3 displacementB = B.Particle.Velocity.normalized * contact.penetration * -0.5f;
+                // Calculate displacement for each particle.
+                Vector3 displacementA = A.Particle.Velocity.normalized * contact.penetration * -0.5f;
+                Vector3 displacementB = B.Particle.Velocity.normalized * contact.penetration * -0.5f;
 
-                if (A.Particle.Velocity.sqrMagnitude == 0)
-                {
-                    //displacementA = -displacementB;
-                }
-
-                if (B.Particle.Velocity.sqrMagnitude == 0)
-                {
-                    //displacementB = -displacementA;
-                }
-
+                // Dynamic collision response.
                 if (A.Type == CollisionType.dynamicCollision)
                 {
                     // Apply displacement in opposite direction.
-                    //A.Particle.Position += displacementA;
+                    A.Particle.Position += displacementA;
 
-                    // Collision against static object. Move object backwards by displacement.
+                    // Collision against static object.
                     if (B.Type == CollisionType.staticCollision)
                     {
-                        // Apply displacement in opposite direction.
-                        //A.Particle.Position += displacementA;
+                        // Apply displacement in opposite direction again since the other object isn't moving.
+                        A.Particle.Position += displacementA;
 
                         // Calculate reflection velocity along normal.
                         impulsePerInverseMass = A.Particle.Velocity - 2.0f * Vector3.Dot(A.Particle.Velocity, contact.normal) * contact.normal;
-                        Debug.Log(impulsePerInverseMass);
+
                         // Scale reflection velocity normalized by impulse.
                         impulsePerInverseMass = impulsePerInverseMass.normalized * impulse;
-                        Debug.Log(impulsePerInverseMass);
 
+                        // Directly change the velocity to be the reflection since we are "bouncing" off the collision.
                         A.Particle.Velocity = impulsePerInverseMass * A.Particle.MassInverse;
                     }
                     else
                     {
+                        //A.Particle.AddForce(impulsePerInverseMass);
                         A.Particle.Velocity += impulsePerInverseMass * A.Particle.MassInverse;
                     }
                 }
 
+                // Dynamic collision response.
                 if (B.Type == CollisionType.dynamicCollision)
                 {
-                    // Collision against static object. Move object backwards by displacement.
+                    // Apply displacement in opposite direction.
+                    B.Particle.Position += displacementB;
+
+                    // Collision against static object.
                     if (A.Type == CollisionType.staticCollision)
                     {
-                        // Apply displacement in opposite direction.
-                        //B.Particle.Position += displacementB;
-                        //impulsePerInverseMass = B.Particle.Velocity - 2.0f * Vector3.Dot(B.Particle.Velocity, -contact.normal) * -contact.normal;
+                        // Apply displacement in opposite direction again since the other object isn't moving.
+                        B.Particle.Position += displacementB;
+
+                        // reflection formula    r = v - 2(v dot n^)n^
+                        // Calculate reflection velocity along normal.
+                        impulsePerInverseMass = B.Particle.Velocity - 2.0f * Vector3.Dot(B.Particle.Velocity, contact.normal) * contact.normal;
+
+                        // Scale reflection velocity normalized by impulse.
+                        impulsePerInverseMass = impulsePerInverseMass.normalized * impulse;
+
+                        // Directly change the velocity to be the reflection since we are "bouncing" off the collision.
+                        B.Particle.Velocity = impulsePerInverseMass * B.Particle.MassInverse;
                     }
-
-                    // Apply displacement in opposite direction.
-                    //B.Particle.Position += displacementB;
-
-                    B.Particle.Velocity += impulsePerInverseMass * -B.Particle.MassInverse;
+                    else
+                    {
+                        //B.Particle.AddForce(-impulsePerInverseMass);
+                        B.Particle.Velocity += impulsePerInverseMass * -A.Particle.MassInverse;
+                    }
                 }
+
+
+
+
+                //// Rotation Attempt
+                //Vector3 contactRelativeA = contact.position - A.Particle.Position;
+                //Vector3 contactRelativeB = contact.position - B.Particle.Position;
+
+                //Vector3 torquePerUnitImpulseA = Vector3.Cross(contactRelativeA, contact.normal);
+                //Vector3 torquePerUnitImpulseB = Vector3.Cross(contactRelativeB, contact.normal);
+
+                //Vector3 rotationPerUnitImpulseA = A.Particle.InertiaInv.MultiplyPoint3x4(torquePerUnitImpulseA);
+                //Vector3 rotationPerUnitImpulseB = B.Particle.InertiaInv.MultiplyPoint3x4(torquePerUnitImpulseB);
+
+                //Vector3 velocityPerUnitImpulseA = Vector3.Cross(rotationPerUnitImpulseA, contactRelativeA);
+                //Vector3 velocityPerUnitImpulseB = Vector3.Cross(rotationPerUnitImpulseB, contactRelativeB);
+
+                //float deltaAngularVelocity = Vector3.Dot(velocityPerUnitImpulseA, contact.normal);
+
+                //deltaAngularVelocity += Vector3.Dot(velocityPerUnitImpulseB, contact.normal);
+
+                ////Matrix4x4 contactBasisTranspose = CalculateContactBasis(contact.normal).transpose;
+
+                ////velocityPerUnitImpulseA = contactBasisTranspose.MultiplyPoint3x4(velocityPerUnitImpulseA);
+                ////velocityPerUnitImpulseB = contactBasisTranspose.MultiplyPoint3x4(velocityPerUnitImpulseB);
+
+                //Vector3 angularVelocityA = Vector3.Cross(A.Particle.AngularVelocity, contactRelativeA) + A.Particle.AngularVelocity;
+                //Vector3 angularVelocityB = Vector3.Cross(B.Particle.AngularVelocity, contactRelativeB) + B.Particle.AngularVelocity;
+
+
+                //A.Particle.ApplyTorque(contact.position, velocityPerUnitImpulseA);
+                ////B.Particle.ApplyTorque(contact.position, velocityPerUnitImpulseB);
             }
-
-
             return;
+        }
+
+        public void CollisionResolver()
+        {
+            for (int currentContact = 0; currentContact < ContactCount; currentContact++)
+            {
+                Contact contact = Contacts[currentContact];
+
+                // Rotation
+                Vector3 contactRelativeA = contact.position - A.Particle.Position;
+                Vector3 contactRelativeB = contact.position - B.Particle.Position;
+
+                Vector3 torquePerUnitImpulseA = Vector3.Cross(contactRelativeA, contact.normal);
+                Vector3 torquePerUnitImpulseB = Vector3.Cross(contactRelativeB, contact.normal);
+
+                Vector3 rotationPerUnitImpulseA = A.Particle.InertiaInv.MultiplyPoint3x4(torquePerUnitImpulseA);
+                Vector3 rotationPerUnitImpulseB = B.Particle.InertiaInv.MultiplyPoint3x4(torquePerUnitImpulseB);
+
+                Vector3 velocityPerUnitImpulseA = Vector3.Cross(rotationPerUnitImpulseA, contactRelativeA);
+                Vector3 velocityPerUnitImpulseB = Vector3.Cross(rotationPerUnitImpulseB, contactRelativeB);
+
+                float deltaAngularVelocity = Vector3.Dot(velocityPerUnitImpulseA, contact.normal);
+
+                deltaAngularVelocity += Vector3.Dot(velocityPerUnitImpulseB, contact.normal);
+
+                //Matrix4x4 contactBasisTranspose = CalculateContactBasis(contact.normal).transpose;
+
+                //velocityPerUnitImpulseA = contactBasisTranspose.MultiplyPoint3x4(velocityPerUnitImpulseA);
+                //velocityPerUnitImpulseB = contactBasisTranspose.MultiplyPoint3x4(velocityPerUnitImpulseB);
+
+                Vector3 angularVelocityA = Vector3.Cross(A.Particle.AngularVelocity, contactRelativeA) + A.Particle.AngularVelocity;
+                Vector3 angularVelocityB = Vector3.Cross(B.Particle.AngularVelocity, contactRelativeB) + B.Particle.AngularVelocity;
+            }
         }
 
         // Collision hull a accessor.
@@ -216,9 +262,6 @@ public abstract class CollisionHull3D : MonoBehaviour
 
         // Contacts of the collision.
         public Contact[] Contacts { get => contacts; set => contacts = value; }
-
-        // Closing velocity of the collision.
-        public Vector3 ClosingVelocity { get => closingVelocity; set => closingVelocity = value; }
     }
     // END TODO
 
@@ -424,24 +467,24 @@ public class CollisionEditor3D : Editor
     public void OnSceneGUI()
     {
         // Get the circle hull attached to this script.
-        CollisionHull3D hull = (CollisionHull3D)target;
+        //CollisionHull3D hull = (CollisionHull3D)target;
 
         // Get the particle component since it isn't loaded until runtime. (For use in scene editor at all times.)
-        Particle3D particle = hull.GetComponent<Particle3D>();
+        //Particle3D particle = hull.GetComponent<Particle3D>();
 
         // Create a color.
-        Color purple = CreateColor(112.0f, 0.0f, 255.0f);
+        //Color purple = CreateColor(112.0f, 0.0f, 255.0f);
 
         // Change gizmo drawing color.
         //Handles.color = purple;
 
-        if (hull.collision.Status)
-        {
-            float angle = Mathf.Atan2(hull.collision.ClosingVelocity.y, hull.collision.ClosingVelocity.x);
-            Quaternion rot = new Quaternion();
-            rot.eulerAngles = new Vector3(0.0f, 0.0f, angle);
-            Handles.ArrowHandleCap(0, hull.collision.A.Particle.Position, rot, 2.0f, EventType.Repaint);
-        }
+        //if (hull.collision.Status)
+        //{
+        //    float angle = Mathf.Atan2(hull.collision.ClosingVelocity.y, hull.collision.ClosingVelocity.x);
+        //    Quaternion rot = new Quaternion();
+        //    rot.eulerAngles = new Vector3(0.0f, 0.0f, angle);
+        //    Handles.ArrowHandleCap(0, hull.collision.A.Particle.Position, rot, 2.0f, EventType.Repaint);
+        //}
     }
 
     // Create colors from 0-255 values.

@@ -730,7 +730,8 @@ public class Particle3D : MonoBehaviour
             case ShapeType.SolidCone:
                 inertia = Inertia3D.SolidConeInertiaTensor(transform.localScale.x * 0.5f, transform.localScale.y, mass);
                 break;
-            default: break;
+            default:
+                break;
         }
 
         return;
@@ -832,7 +833,7 @@ public class Particle3D : MonoBehaviour
     void UpdateAngularAcceleration()
     {
         // TODO: Fix angular acceleration implementation.
-        AngularAcceleration = inertiaInv * Torque;
+        AngularAcceleration = InertiaInv * Torque;
     }
 
     // Apply torque
@@ -894,13 +895,13 @@ public class Particle3D : MonoBehaviour
         CalculateInverseInertia();
 
         // Transform the inverse inertia to world space.
-        inertiaInv = LocalToWorld() * inertiaInv;
+        InertiaInv = LocalToWorld() * InertiaInv;
 
     }
 
     public void CalculateInverseInertia()
     {
-        inertiaInv = inertia.inverse;
+        InertiaInv = inertia.inverse;
     }
     /**************************************
     **          Start Accessors          ** 
@@ -969,8 +970,9 @@ public class Particle3D : MonoBehaviour
     // Torque Accessor.
     public Vector3 Torque { get => torque; set => torque = value; }
 	public bool NormalActive { get => normalActive; set => normalActive = value; }
+    public Matrix4x4 InertiaInv { get => inertiaInv; set => inertiaInv = value; }
 
-	/************************************
+    /************************************
     **          End Accessors          ** 
     ************************************/
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -22,7 +22,6 @@ public class CircleCollisionHull3D : CollisionHull3D
     {
         // collision passes if distance between centers <= sum of radii
         // optimized collision passes if (distance between centers) squared <= (sum of radii) squared
-
         // START DLL OPERATIONS
         // Get the centers of each circle. Calculate the difference in centers.
         Vector3 differenceCenters = Particle.Position - other.Particle.Position;
