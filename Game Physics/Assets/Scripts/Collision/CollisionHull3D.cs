@@ -43,7 +43,7 @@ public abstract class CollisionHull3D : MonoBehaviour
         private CollisionHull3D b = null;
 
         // All the contacts involved in the collision.
-        private Contact[] contacts = new Contact[4];
+        private Contact[] contacts = new Contact[8];
 
         // Number of contacts involved in the collision.
         private int contactCount = 0;
@@ -87,6 +87,25 @@ public abstract class CollisionHull3D : MonoBehaviour
 
         public void ResolveCollision()
         {
+            // Local variables to enable and disable forces after all points of contacts have been evaluated.
+            bool normalActive = false;
+            Vector3 combinedNormalForce = Vector3.zero;
+
+            bool staticFrictionActive = false;
+            Vector3 combinedStaticFrictionNormalForce = Vector3.zero;
+
+            bool kineticFrictionActive = false;
+            Vector3 combinedKineticFrictionForce = Vector3.zero;
+
+            // Calculate sum of inverse masses of both hulls.
+            float totalInverseMass = A.Particle.MassInverse + B.Particle.MassInverse;
+
+            // Can't have negative or zero mass.
+            if (totalInverseMass <= 0)
+            {
+                return;
+            }
+
             // Loop through each point of contact in the collision.
             for (int currentContact = 0; currentContact < ContactCount; currentContact++)
             {
@@ -107,15 +126,6 @@ public abstract class CollisionHull3D : MonoBehaviour
 
                 // Calculate the change in speed.
                 float deltaSpeed = closingSpeed - separatingSpeed;
-
-                // Calculate sum of inverse masses of both hulls.
-                float totalInverseMass = A.Particle.MassInverse + B.Particle.MassInverse;
-
-                // Can't have negative or zero mass.
-                if (totalInverseMass <= 0)
-                {
-                    return;
-                }
 
                 // Calculate linear impulse.
                 float impulse = deltaSpeed / totalInverseMass;
@@ -141,13 +151,43 @@ public abstract class CollisionHull3D : MonoBehaviour
 
                         if (B.Collider == ColliderType.ground)
                         {
-                            A.Particle.NormalActive = true;
+                            // Enable surface normal after all the contacts have been checked.
+                            normalActive = true;
+
+                            // Get the normal force of the ground object.
+                            Vector3 normalForce = contact.normal * A.Particle.GravitationalForce.magnitude;
+
+                            // Add the normal force to a storage vector for later.
+                            combinedNormalForce += normalForce;
+
+                            // Not moving and colliding with the ground.
+                            if (A.Particle.Velocity.sqrMagnitude <= 0.1f)
+                            {
+                                A.Particle.Velocity = Vector3.zero;
+
+                                // Enable static friction.
+                                staticFrictionActive = true;
+
+                                // Disable kinetic friction.
+                                kineticFrictionActive = false;
+
+                                // The static friction normal is the opposing force of gravity.
+                                combinedStaticFrictionNormalForce = normalForce;
+                            }
+                            // Moving and colliding with the ground.
+                            else
+                            {
+                                // Enable kinetic friction.
+                                kineticFrictionActive = true;
+
+                                // Disable static friction.
+                                staticFrictionActive = false;
+
+                                // The kinetic friction normal is the opposing force of gravity.
+                                combinedKineticFrictionForce = normalForce;
+                            }
                         }
                         else if (B.Collider == ColliderType.wall)
-                        {
-
-                        }
-                        else
                         {
                             // Calculate reflection velocity along normal.
                             impulsePerInverseMass = A.Particle.Velocity - 2.0f * Vector3.Dot(A.Particle.Velocity, contact.normal) * contact.normal;
@@ -161,8 +201,8 @@ public abstract class CollisionHull3D : MonoBehaviour
                     }
                     else
                     {
-                        //A.Particle.AddForce(impulsePerInverseMass);
-                        A.Particle.Velocity += impulsePerInverseMass * A.Particle.MassInverse;
+                        A.Particle.AddForce(impulsePerInverseMass);
+                        //A.Particle.Velocity += impulsePerInverseMass * A.Particle.MassInverse;
                     }
                 }
 
@@ -191,10 +231,40 @@ public abstract class CollisionHull3D : MonoBehaviour
                     else
                     {
                         //B.Particle.AddForce(-impulsePerInverseMass);
-                        B.Particle.Velocity += impulsePerInverseMass * -A.Particle.MassInverse;
+                        B.Particle.Velocity += impulsePerInverseMass * -B.Particle.MassInverse;
                     }
                 }
 
+                // Enable or disable forces after points of contact have been evaluated.
+                if (normalActive)
+                {
+                    A.Particle.NormalActive = true;
+                    A.Particle.SurfaceNormal = combinedNormalForce;
+                }
+                else
+                {
+                    A.Particle.NormalActive = false;
+                }
+
+                if (staticFrictionActive)
+                {
+                    A.Particle.StaticFrictionActive = true;
+                    A.Particle.StaticFrictionNormal = combinedStaticFrictionNormalForce;
+                }
+                else
+                {
+                    A.Particle.StaticFrictionActive = false;
+                }
+
+                if (kineticFrictionActive)
+                {
+                    A.Particle.KineticFrictionActive = true;
+                    A.Particle.KineticNormalForce = combinedKineticFrictionForce;
+                }
+                else
+                {
+                    A.Particle.KineticFrictionActive = false;
+                }
 
 
 
@@ -321,27 +391,29 @@ public abstract class CollisionHull3D : MonoBehaviour
                 {
                     // Resolve the collision.
 
-					//if (hull.Layer == CollisionLayer.projectile && this.Layer == CollisionLayer.player)
-					//{
-					//	Debug.Log("lane");
-					//	this.GetComponent<Particle3D>().NormalActive = true;
-					//	Vector3 velocity = GetComponent<Particle3D>().Velocity;
-					//	velocity.y = 0.0f;
-					//	GetComponent<Particle3D>().Velocity = velocity;
-					//}
-					//else if (hull.Layer == CollisionLayer.player && this.Layer == CollisionLayer.projectile)
-					//{
-					//	Debug.Log("ball");
-					//	hull.GetComponent<Particle3D>().NormalActive = true;
-					//	Vector3 velocity = hull.GetComponent<Particle3D>().Velocity;
-					//	velocity.y = 0.0f;
-					//	hull.GetComponent<Particle3D>().Velocity = velocity;
-					//}
-					//else
-					//{
-					//	Debug.Log("other");
-					//	collision.ResolveCollision();
-					//}
+                    //if (hull.Layer == CollisionLayer.projectile && this.Layer == CollisionLayer.player)
+                    //{
+                    //	Debug.Log("lane");
+                    //	this.GetComponent<Particle3D>().NormalActive = true;
+                    //	Vector3 velocity = GetComponent<Particle3D>().Velocity;
+                    //	velocity.y = 0.0f;
+                    //	GetComponent<Particle3D>().Velocity = velocity;
+                    //}
+                    //else if (hull.Layer == CollisionLayer.player && this.Layer == CollisionLayer.projectile)
+                    //{
+                    //	Debug.Log("ball");
+                    //	hull.GetComponent<Particle3D>().NormalActive = true;
+                    //	Vector3 velocity = hull.GetComponent<Particle3D>().Velocity;
+                    //	velocity.y = 0.0f;
+                    //	hull.GetComponent<Particle3D>().Velocity = velocity;
+                    //}
+                    //else
+                    //{
+                    //	Debug.Log("other");
+                    //	collision.ResolveCollision();
+                    //}
+
+                    collision.ResolveCollision();
 
                     collided = true;
 

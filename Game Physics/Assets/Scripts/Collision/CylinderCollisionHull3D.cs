@@ -89,10 +89,13 @@ public class CylinderCollisionHull3D : CollisionHull3D
         float deltaY = yPosition - nearestY;
         float deltaZ = zPosition - nearestZ;
 
-        // Draw a debug line from the circle center to the nearest point on the other object.
-        Vector3 start = new Vector3(nearestX, nearestY, nearestZ);
-        Vector3 end = Particle.Position;
-        Debug.DrawLine(start, end, Color.red);
+        if (debugMode)
+        {
+            // Draw a debug line from the circle center to the nearest point on the other object.
+            Vector3 start = new Vector3(nearestX, nearestY, nearestZ);
+            Vector3 end = Particle.Position;
+            Debug.DrawLine(start, end, Color.red);
+        }
 
         // Check if the sum squared of the difference from the nearest point is less than or equal to the radius squared.
         return (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) <= (Radius * Radius);
@@ -163,7 +166,11 @@ public class CylinderCollisionHull3D : CollisionHull3D
             // Normalized vector from the nearest point on the OBB to the position in world space of the sphere.
             Vector3 normal = (Particle.Position - nearestPosition).normalized;
 
-            Debug.DrawLine(nearestPosition - normal, nearestPosition + normal, Color.yellow);
+            if (debugMode)
+            {
+                Debug.DrawLine(nearestPosition - normal, nearestPosition + normal, Color.yellow);
+            }
+
             float penetration = Radius - distance.magnitude;
             c.AddContact(nearestPosition, normal, restitutionCoefficient, penetration * 0.5f, 0);
         }

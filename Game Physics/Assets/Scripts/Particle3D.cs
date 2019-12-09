@@ -493,7 +493,6 @@ public class Particle3D : MonoBehaviour
     private float dragCoefficient = 0.0f;
 
     
-
     /*********************************
     **  Lab 2. Friction variables.  **
     *********************************/
@@ -570,13 +569,6 @@ public class Particle3D : MonoBehaviour
         // Set the mass as the starting mass.
         Mass = startingMass;
 
-        //CppClass CppTest;
-        //CppTest = Game_Physics_DLL.CreateCppClass(5);
-        //int test = Game_Physics_DLL.CppAdd(CppTest, 3);
-        //Debug.Log(test);
-        //Game_Physics_DLL.DeleteCppClass(CppTest);
-
-
         return;
     }
 
@@ -604,28 +596,6 @@ public class Particle3D : MonoBehaviour
         //transform.eulerAngles = AngularVelocity;
         
         transform.rotation = Rotation.GetUnityQuaternion();
-
-        return;
-    }
-
-    private void ApplyFriction()
-    {
-        Vector3 opposingForce = -Velocity;
-        // Check if particle is moving or not.
-        if (Velocity.sqrMagnitude == 0)
-        {
-            // Turn on static friction.
-            staticFrictionActive = true;
-            // Turn off kinetic friction.
-            kineticFrictionActive = false;
-        }
-        else
-        {
-            // Turn off static friction.
-            staticFrictionActive = false;
-            // Turn on kinetic friction.
-            kineticFrictionActive = true;
-        }
 
         return;
     }
@@ -686,19 +656,19 @@ public class Particle3D : MonoBehaviour
         }
 
         // Apply static friction force if it is active.
-        if (staticFrictionActive)
+        if (StaticFrictionActive)
         {
             // Static friction force.
             //AddForce(ForceGenerator.GenerateForce_Friction_Static(staticFrictionNormal, staticFrictionOpposingForce, staticFrictionCoefficient));
-            AddForce(GenerateForce.StaticFriction(staticFrictionNormal, staticFrictionOpposingForce, staticFrictionCoefficient));
+            //AddForce(GenerateForce.StaticFriction(StaticFrictionNormal, StaticFrictionOpposingForce, staticFrictionCoefficient));
         }
 
         // Apply kinetic friction force if it is active.
-        if (kineticFrictionActive)
+        if (KineticFrictionActive)
         {
             // Kinetic friction force.
             //AddForce(ForceGenerator.GenerateForce_Friction_Kinetic(kineticNormalForce, Velocity, kineticFrictionCoefficient));
-            AddForce(GenerateForce.KineticFriction(kineticNormalForce, Velocity, kineticFrictionCoefficient));
+            //AddForce(GenerateForce.KineticFriction(KineticNormalForce, Velocity, kineticFrictionCoefficient));
         }
 
         // Apply sliding force if it is active.
@@ -721,7 +691,7 @@ public class Particle3D : MonoBehaviour
         {
             // Normal force.
             //AddForce(ForceGenerator.GenerateForce_Normal(ForceGenerator.GenerateForce_Gravity(mass, GRAVITY, worldUp), surfaceNormal));
-            AddForce(GenerateForce.Normal(GenerateForce.Gravity(Mass, GRAVITY, worldUp), surfaceNormal));
+            AddForce(GenerateForce.Normal(GenerateForce.Gravity(Mass, GRAVITY, worldUp), SurfaceNormal));
         }
 
         // Apply damping spring force if it is active.
@@ -833,6 +803,16 @@ public class Particle3D : MonoBehaviour
     // Add a new force to the current force.
     public void AddForce(Vector3 newForce)
     {
+        if (staticFrictionActive)
+        {
+            StaticFrictionActive = false;
+            AddForce(ForceGeneratorDLL.GenerateForce.StaticFriction(StaticFrictionNormal, newForce, staticFrictionCoefficient));
+        }
+        else if (kineticFrictionActive)
+        {
+            Force += ForceGeneratorDLL.GenerateForce.KineticFriction(KineticNormalForce, Velocity, kineticFrictionCoefficient);
+        }
+
         // D'Alembert's law.
         Force += newForce;
 
@@ -856,6 +836,10 @@ public class Particle3D : MonoBehaviour
     {
         // TODO: Fix angular acceleration implementation.
         AngularAcceleration = InertiaInv * Torque;
+
+        Torque = Vector3.zero;
+
+        return;
     }
 
     // Apply torque
@@ -993,6 +977,13 @@ public class Particle3D : MonoBehaviour
     public Vector3 Torque { get => torque; set => torque = value; }
 	public bool NormalActive { get => normalActive; set => normalActive = value; }
     public Matrix4x4 InertiaInv { get => inertiaInv; set => inertiaInv = value; }
+    public bool KineticFrictionActive { get => kineticFrictionActive; set => kineticFrictionActive = value; }
+    public bool StaticFrictionActive { get => staticFrictionActive; set => staticFrictionActive = value; }
+    public Vector3 KineticNormalForce { get => kineticNormalForce; set => kineticNormalForce = value; }
+    public Vector3 StaticFrictionNormal { get => staticFrictionNormal; set => staticFrictionNormal = value; }
+    public Vector3 StaticFrictionOpposingForce { get => staticFrictionOpposingForce; set => staticFrictionOpposingForce = value; }
+    public Vector3 SurfaceNormal { get => surfaceNormal; set => surfaceNormal = value; }
+    public Vector3 GravitationalForce { get => ForceGeneratorDLL.GenerateForce.Gravity(Mass, GRAVITY, worldUp); }
 
     /************************************
     **          End Accessors          ** 

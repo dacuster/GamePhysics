@@ -5,7 +5,6 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public static PlayerController instance = null;
-    Particle2D particle;
     public float shotPower = 0.0f;
     public Plane lane = new Plane(Vector3.up, Vector3.zero);
 
@@ -18,10 +17,10 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        particle = GetComponent<Particle2D>();
+
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         if(GameController.instance.gameStarted == true)
         {
@@ -30,8 +29,6 @@ public class PlayerController : MonoBehaviour
                 PlayerControls();
                 DrawLine();
             }
-            else
-                Debug.Log("Has Shot");
         }
     }
 
@@ -54,10 +51,10 @@ public class PlayerController : MonoBehaviour
 			shotPower = distance;
 
 			Vector3 force = new Vector3(direction.x, 0, direction.y) * particle.Mass;
-			particle.AddForce(force);
 
-			particle.ApplyTorque(new Vector3(particle.Position.x, particle.Position.y + radius, particle.Position.z), force / 1000.0f);
-			hasShot = true;
+			particle.AddForce(force);
+            particle.ApplyTorque(new Vector3(particle.Position.x, particle.Position.y + radius, particle.Position.z), force);
+            hasShot = true;
             GetComponent<LineRenderer>().enabled = false;
         }
     }

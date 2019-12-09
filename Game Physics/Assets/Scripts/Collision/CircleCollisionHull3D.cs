@@ -18,7 +18,7 @@ public class CircleCollisionHull3D : CollisionHull3D
     // bool testCollisionVsCircle(float thisX, float thisY, float thisZ, float thisRadius, float otherX, float otherY, float otherZ, float otherRadius);
 
     // Check for collision circle vs circle.
-    public override bool TestCollisionVsCircle(CircleCollisionHull3D other, ref Collision c)
+    public override bool TestCollisionVsCircle(CircleCollisionHull3D other, ref Collision collision)
     {
         // collision passes if distance between centers <= sum of radii
         // optimized collision passes if (distance between centers) squared <= (sum of radii) squared
@@ -36,28 +36,28 @@ public class CircleCollisionHull3D : CollisionHull3D
         float radiiSumSquared = radiiSum * radiiSum;
 
         // Check if the distance from centers is less than or equal to sum of the radii.
-        c.Status = distanceSquared <= radiiSumSquared;
+        collision.Status = distanceSquared <= radiiSumSquared;
         // END DLL OPERATIONS (c.Status = testCollisionVsCircle(float thisX, float thisY, float thisZ, float thisRadius, float otherX, float otherY, float otherZ, float otherRadius);)
 
         // Set the collsion data.
-        if (c.Status)
+        if (collision.Status)
         {
-            c.ContactCount = 1;
-            c.A = this;
-            c.B = other;
+            collision.ContactCount = 1;
+            collision.A = this;
+            collision.B = other;
             Vector3 normal = differenceCenters.normalized;
             float penetration = radiiSum - Mathf.Sqrt(distanceSquared);
-            c.AddContact(Particle.Position + differenceCenters * 0.5f, normal, restitutionCoefficient, penetration * 0.5f, 0);
+            collision.AddContact(Particle.Position + differenceCenters * 0.5f, normal, restitutionCoefficient, penetration, 0);
         }
 
         // Return the collision status.
-        return c.Status;
+        return collision.Status;
     }
 
     // TODO: Return bool from DLL.
     // testCollisionVsAABB(
     // Check for collision circle vs AABB.
-    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull3D other, ref Collision c)
+    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull3D other, ref Collision collision)
     {
         // Calculate closest point by clamping circle centers on each dimension
         // passes if closest point vs circle passes
@@ -86,17 +86,29 @@ public class CircleCollisionHull3D : CollisionHull3D
         float deltaY = yPosition - nearestY;
         float deltaZ = zPosition - nearestZ;
 
-        // Draw a debug line from the circle center to the nearest point on the other object.
-        Vector3 start = new Vector3(nearestX, nearestY, nearestZ);
-        Vector3 end = Particle.Position;
-        Debug.DrawLine(start, end, Color.red);
+        if (collision.Status)
+        {
+            collision.ContactCount = 1;
+            collision.A = this;
+            collision.B = other;
+            // Normalized vector from the nearest point on the OBB to the position in world space of the sphere.
+            //Vector3 normal = (Particle.Position - nearestPosition).normalized;
+
+            if (debugMode)
+            {
+                //Debug.DrawLine(nearestPosition - normal, nearestPosition + normal, Color.yellow);
+            }
+
+            //float penetration = Radius - distance.magnitude;
+            //collision.AddContact(nearestPosition, normal, restitutionCoefficient, penetration, 0);
+        }
 
         // Check if the sum squared of the difference from the nearest point is less than or equal to the radius squared.
         return (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) <= (Radius * Radius);
     }
 
     // Check for collision circle vs OBB.
-    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull3D other, ref Collision c)
+    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull3D other, ref Collision collision)
     {
         // same as above, but first...
         // transform circle position by multiplying by box world matrix inverse
@@ -111,15 +123,6 @@ public class CircleCollisionHull3D : CollisionHull3D
         float nearestX = Mathf.Clamp(circlePosition.x, other.X_AxisBound.x, other.X_AxisBound.y);
         float nearestY = Mathf.Clamp(circlePosition.y, other.Y_AxisBound.x, other.Y_AxisBound.y);
         float nearestZ = Mathf.Clamp(circlePosition.z, other.Z_AxisBound.x, other.Z_AxisBound.y);
-
-        // Calculate the distance from the nearest point on the other object to the circle center.
-        //float deltaX = circlePosition.x - nearestX;
-        //float deltaY = circlePosition.y - nearestY;
-        //float deltaZ = circlePosition.z - nearestZ;
-
-        // Create a vector with the delta position
-
-
 
         // Create a vector of the nearest position for matrix multiplication.
         Vector3 nearestPosition = new Vector3(nearestX, nearestY, nearestZ);
@@ -137,36 +140,28 @@ public class CircleCollisionHull3D : CollisionHull3D
         }
 
         // Check if the distance from centers is less than or equal to sum of the radii.
-        c.Status = distance.sqrMagnitude <= (Radius * Radius);
+        collision.Status = distance.sqrMagnitude <= (Radius * Radius);
 
         // Set the collsion data.
-        if (c.Status)
+        if (collision.Status)
         {
-            //// Calculate the max extents of the OBB.
-            //other.CalculateBoundingBoxWorld();
-
-            //// Tracker for points of contact count.
-            //int numberOfContacts = 0;
-
-            //// Add each point of contact that is colliding with the circle.
-            //for (int currentExtent = 0; currentExtent < 4; currentExtent++)
-            //{
-            //    if ()
-            //}
-
-            c.ContactCount = 1;
-            c.A = this;
-            c.B = other;
+            collision.ContactCount = 1;
+            collision.A = this;
+            collision.B = other;
             // Normalized vector from the nearest point on the OBB to the position in world space of the sphere.
             Vector3 normal = (Particle.Position - nearestPosition).normalized;
 
-            Debug.DrawLine(nearestPosition - normal,nearestPosition + normal, Color.yellow);
+            if (debugMode)
+            {
+                Debug.DrawLine(nearestPosition - normal, nearestPosition + normal, Color.yellow);
+            }
+
             float penetration = Radius - distance.magnitude;
-            c.AddContact(nearestPosition, normal, restitutionCoefficient, penetration * 0.5f, 0);
+            collision.AddContact(nearestPosition, normal, restitutionCoefficient, penetration, 0);
         }
 
         // Return the collision status.
-        return c.Status;
+        return collision.Status;
     }
 
     // Radius Accessor

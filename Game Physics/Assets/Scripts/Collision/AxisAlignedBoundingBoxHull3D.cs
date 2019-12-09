@@ -26,14 +26,14 @@ public class AxisAlignedBoundingBoxHull3D : CollisionHull3D
     }
 
     // Check for collision AABB vs circle.
-    public override bool TestCollisionVsCircle(CircleCollisionHull3D other, ref Collision c)
+    public override bool TestCollisionVsCircle(CircleCollisionHull3D other, ref Collision collision)
     {
         // Perform check with circle. (Algorithm implemented there already).
-        return other.TestCollisionVsAABB(this, ref c);
+        return other.TestCollisionVsAABB(this, ref collision);
     }
 
     // Check for collision AABB vs AABB.
-    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull3D other, ref Collision c)
+    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull3D other, ref Collision collision)
     {
         // for each dimension, max extent of A >= min extent of B
 
@@ -55,18 +55,63 @@ public class AxisAlignedBoundingBoxHull3D : CollisionHull3D
 
 
         // Compare the minimum and maximum extents of the bounding box for this object and the other object.
-        if (xAxisBoundThis.x <= xAxisBoundOther.y && xAxisBoundThis.y >= xAxisBoundOther.x && yAxisBoundThis.y >= yAxisBoundOther.x && yAxisBoundThis.x <= yAxisBoundOther.y && zAxisBoundThis.x <= zAxisBoundOther.y && zAxisBoundThis.y >= zAxisBoundOther.x)
+        collision.Status = xAxisBoundThis.x <= xAxisBoundOther.y
+                        && xAxisBoundThis.y >= xAxisBoundOther.x
+                        && yAxisBoundThis.y >= yAxisBoundOther.x
+                        && yAxisBoundThis.x <= yAxisBoundOther.y
+                        && zAxisBoundThis.x <= zAxisBoundOther.y
+                        && zAxisBoundThis.y >= zAxisBoundOther.x;
+
+        // Collision.
+        if (collision.Status)
         {
-            // Collision.
-            return true;
+            // Add the hulls to the collision.
+            collision.A = this;
+            collision.B = other;
+
+            // Create empty array for vertices of other AABB.
+            Vector3[] vertex = new Vector3[8];
+
+            // Calculate the vertices' locations.
+            other.CalculateVertices(ref vertex, xAxisBoundOther, yAxisBoundOther, zAxisBoundOther);
+
+            // Keep track of current vertex contact index.
+            int contactIndex = 0;
+
+            // Loop through each vertex and test if it is within this AABB's bounds.
+            for (int currentVertex = 0; currentVertex < vertex.Length; currentVertex++)
+            {
+                if (TestPointInBounds(vertex[currentVertex]))
+                {
+                    // Get the position of the vertex clamped to the bounding box.
+                    Vector3 contactPosition = ClampPointToBoundingBox(vertex[currentVertex]);
+
+                    if (debugMode)
+                    {
+                        Debug.DrawLine(vertex[currentVertex], contactPosition, Color.red);
+                        Debug.Log(contactPosition);
+                    }
+
+                    // Get the vector of the penetration.
+                    Vector3 penetrationVector = vertex[currentVertex] - contactPosition;
+
+                    // Normalize the penetration to get the contact normal.
+                    Vector3 normal = (penetrationVector).normalized;
+
+                    // Add the new contact data.
+                    collision.AddContact(contactPosition, normal, restitutionCoefficient, penetrationVector.magnitude, contactIndex);
+
+                    // Increment the conatct index.
+                    contactIndex++;
+                }
+            }
         }
 
-        // No collision.
-        return false;
+        return collision.Status;
     }
 
     // Check for collision AABB vs OBB.
-    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull3D other, ref Collision c)
+    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull3D other, ref Collision collision)
     {
         // same as above twice
         // first, test AABB vs max extents of OBB
@@ -89,20 +134,32 @@ public class AxisAlignedBoundingBoxHull3D : CollisionHull3D
         WorldBoundingBoxAxis(ref xAxisBoundAABB, ref yAxisBoundAABB, ref zAxisBoundAABB);
 
         // Check if the extents for the AABB are colliding with the extents for the OBB in world space.
-        if (xAxisBoundAABB.x <= xAxisBoundOBB.y && xAxisBoundAABB.y >= xAxisBoundOBB.x && yAxisBoundAABB.y >= yAxisBoundOBB.x && yAxisBoundAABB.x <= yAxisBoundOBB.y && zAxisBoundAABB.x <= zAxisBoundOBB.y && zAxisBoundAABB.y >= zAxisBoundOBB.x)
+        if (    xAxisBoundAABB.x <= xAxisBoundOBB.y
+             && xAxisBoundAABB.y >= xAxisBoundOBB.x
+             && yAxisBoundAABB.y >= yAxisBoundOBB.x
+             && yAxisBoundAABB.x <= yAxisBoundOBB.y
+             && zAxisBoundAABB.x <= zAxisBoundOBB.y
+             && zAxisBoundAABB.y >= zAxisBoundOBB.x)
         {
             // Transform AABB entents to OBB local space.
             other.CalculateBoundingBoxLocal(ref xAxisBoundAABB, ref yAxisBoundAABB, ref zAxisBoundAABB);
 
             // Check if the extents for the AABB in OBB local space are colliding with the extents for the OBB in OBB world space.
-            if (xAxisBoundAABB.x <= other.X_AxisBound.y && xAxisBoundAABB.y >= other.X_AxisBound.x && yAxisBoundAABB.y >= other.Y_AxisBound.x && yAxisBoundAABB.x <= other.Y_AxisBound.y && zAxisBoundAABB.x <= other.Z_AxisBound.y && zAxisBoundAABB.y >= other.Z_AxisBound.x)
+            collision.Status = xAxisBoundAABB.x <= other.X_AxisBound.y
+                            && xAxisBoundAABB.y >= other.X_AxisBound.x
+                            && yAxisBoundAABB.y >= other.Y_AxisBound.x
+                            && yAxisBoundAABB.x <= other.Y_AxisBound.y
+                            && zAxisBoundAABB.x <= other.Z_AxisBound.y
+                            && zAxisBoundAABB.y >= other.Z_AxisBound.x;
+
+            // Collision.
+            if (collision.Status)
             {
-                // Collision.
-                return true;
+
             }
         }
 
-        return false;
+        return collision.Status;
     }
 
     // Transform given axis into world space from local space.
@@ -229,6 +286,46 @@ public class AxisAlignedBoundingBoxHull3D : CollisionHull3D
         Debug.DrawLine(vertex[3], vertex[7], color);
 
         return;
+    }
+
+    // Test a point to see if it is within the bounding box of this AABB.
+    public bool TestPointInBounds(Vector3 point)
+    {
+        // Get the bounding box axis.
+        Vector2 xAxis = X_AxisBound;
+        Vector2 yAxis = Y_AxisBound;
+        Vector2 zAxis = Z_AxisBound;
+
+        // Move the bounding box axis into world space.
+        WorldBoundingBoxAxis(ref xAxis, ref yAxis, ref zAxis);
+
+        // Test the point coordinates with the max extents of the bounding box.
+        return xAxis.x <= point.x
+            && xAxis.y >= point.x
+            && yAxis.x <= point.y
+            && yAxis.y >= point.y
+            && zAxis.x <= point.z
+            && zAxis.y >= point.z;
+    }
+
+    // Clamp a point within the bounding box of this AABB.
+    public Vector3 ClampPointToBoundingBox(Vector3 point)
+    {
+        // Get the bounding box axis.
+        Vector2 xAxis = X_AxisBound;
+        Vector2 yAxis = Y_AxisBound;
+        Vector2 zAxis = Z_AxisBound;
+
+        // Move the bounding box axis into world space.
+        WorldBoundingBoxAxis(ref xAxis, ref yAxis, ref zAxis);
+
+        // Clamp the point coordinates on the bounding box.
+        float clampedX = Mathf.Clamp(point.x, xAxis.x, xAxis.y);
+        float clampedY = Mathf.Clamp(point.y, yAxis.x, yAxis.y);
+        float clampedZ = Mathf.Clamp(point.z, zAxis.x, zAxis.y);
+
+        // Return the clamped point.
+        return new Vector3(clampedX, clampedY, clampedZ);
     }
 
     // Calculate the bounding box axis.

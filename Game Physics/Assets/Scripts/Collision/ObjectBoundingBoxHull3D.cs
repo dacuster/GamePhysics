@@ -26,21 +26,21 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
     }
 
     // Check for collision OBB vs circle.
-    public override bool TestCollisionVsCircle(CircleCollisionHull3D other, ref Collision c)
+    public override bool TestCollisionVsCircle(CircleCollisionHull3D other, ref Collision collision)
     {
         // Perform check with circle. (Algorithm implemented there already).
-        return other.TestCollisionVsOBB(this, ref c);
+        return other.TestCollisionVsOBB(this, ref collision);
     }
 
     // Check for collision OBB vs AABB.
-    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull3D other, ref Collision c)
+    public override bool TestCollisionVsAABB(AxisAlignedBoundingBoxHull3D other, ref Collision collision)
     {
         // Perform check with AABB. (Algorithm implemented there already).
-        return other.TestCollisionVsOBB(this, ref c);
+        return other.TestCollisionVsOBB(this, ref collision);
     }
 
     // Check for collision OBB vs OBB.
-    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull3D other, ref Collision c)
+    public override bool TestCollisionVsOBB(ObjectBoundingBoxHull3D other, ref Collision collision)
     {
         // AABB-OBB part 2 twice
         // 1. .....
@@ -67,14 +67,22 @@ public class ObjectBoundingBoxHull3D : CollisionHull3D
             // Calculate the max extents of this OBB in the other OBB's local space.
             other.WorldToLocal(LocalToWorld(), ref xAxisBoundThis, ref yAxisBoundThis, ref zAxisBoundThis);
 
-            if (other.X_AxisBound.x <= xAxisBoundThis.y && other.X_AxisBound.y >= xAxisBoundThis.x && other.Y_AxisBound.y >= yAxisBoundThis.x && other.Y_AxisBound.x <= yAxisBoundThis.y && other.Z_AxisBound.x <= zAxisBoundThis.y && other.Z_AxisBound.y >= zAxisBoundThis.x)
+            collision.Status = other.X_AxisBound.x <= xAxisBoundThis.y
+                            && other.X_AxisBound.y >= xAxisBoundThis.x
+                            && other.Y_AxisBound.y >= yAxisBoundThis.x
+                            && other.Y_AxisBound.x <= yAxisBoundThis.y
+                            && other.Z_AxisBound.x <= zAxisBoundThis.y
+                            && other.Z_AxisBound.y >= zAxisBoundThis.x;
+
+            // Collision
+            if (collision.Status)
             {
-                // Collision.
-                return true;
+                collision.A = this;
+                collision.B = other;
             }
         }
 
-        return false;
+        return collision.Status;
     }
 
     // Calculate the bounding box axis.

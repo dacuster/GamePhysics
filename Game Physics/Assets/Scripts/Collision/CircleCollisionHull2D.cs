@@ -73,10 +73,13 @@ public class CircleCollisionHull2D : CollisionHull2D
         float deltaX = xPosition - nearestX;
         float deltaY = yPosition - nearestY;
 
-        // Draw a debug line from the circle center to the nearest point on the other object.
-        Vector2 start = new Vector2(nearestX, nearestY);
-        Vector2 end = new Vector2(xPosition, yPosition);
-        Debug.DrawLine(start, end, Color.red);
+        if (debugMode)
+        {
+            // Draw a debug line from the circle center to the nearest point on the other object.
+            Vector2 start = new Vector2(nearestX, nearestY);
+            Vector2 end = new Vector2(xPosition, yPosition);
+            Debug.DrawLine(start, end, Color.red);
+        }
 
         // Check if the sum squared of the difference from the nearest point is less than or equal to the radius squared.
         return (deltaX * deltaX + deltaY * deltaY) <= (Radius * Radius);
@@ -108,10 +111,13 @@ public class CircleCollisionHull2D : CollisionHull2D
         // Transform the nearest point from the OBB's local space into world space.
         other.LocalToWorld(ref nearestPosition);
 
-        // Debug drawing.
-        Vector2 start = new Vector2(nearestPosition.x, nearestPosition.y);
-        Vector2 end = new Vector2(Particle.Position.x, Particle.Position.y);
-        Debug.DrawLine(start, end, Color.red);
+        if (debugMode)
+        {
+            // Debug drawing.
+            Vector2 start = new Vector2(nearestPosition.x, nearestPosition.y);
+            Vector2 end = new Vector2(Particle.Position.x, Particle.Position.y);
+            Debug.DrawLine(start, end, Color.red);
+        }
 
         // Check if the distance from centers is less than or equal to sum of the radii.
         c.Status = (deltaX * deltaX + deltaY * deltaY) <= (Radius * Radius);
