@@ -502,11 +502,11 @@ public class Particle3D : MonoBehaviour
     [Header("Friction")]
 
     [SerializeField]
-    // Kinematic friction coefficient.
-    private float kinematicFrictionCoefficient = 0.0f;
+    // Kinatic friction coefficient.
+    private float kineticFrictionCoefficient = 0.0f;
     [SerializeField]
-    // Normal force of kinematic friction.
-    private Vector3 kinematicNormalForce = Vector3.zero;
+    // Normal force of kinetic friction.
+    private Vector3 kineticNormalForce = Vector3.zero;
     [SerializeField]
     // Static friction coefficient.
     private float staticFrictionCoefficient = 0.0f;
@@ -550,8 +550,8 @@ public class Particle3D : MonoBehaviour
     // Static friction force option.
     private bool staticFrictionActive = false;
     [SerializeField]
-    // Kinematic friction force option.
-    private bool kinematicFrictionActive = false;
+    // Kinetic friction force option.
+    private bool kineticFrictionActive = false;
     [SerializeField]
     // Drag force option.
     private bool dragActive = false;
@@ -604,6 +604,28 @@ public class Particle3D : MonoBehaviour
         //transform.eulerAngles = AngularVelocity;
         
         transform.rotation = Rotation.GetUnityQuaternion();
+
+        return;
+    }
+
+    private void ApplyFriction()
+    {
+        Vector3 opposingForce = -Velocity;
+        // Check if particle is moving or not.
+        if (Velocity.sqrMagnitude == 0)
+        {
+            // Turn on static friction.
+            staticFrictionActive = true;
+            // Turn off kinetic friction.
+            kineticFrictionActive = false;
+        }
+        else
+        {
+            // Turn off static friction.
+            staticFrictionActive = false;
+            // Turn on kinetic friction.
+            kineticFrictionActive = true;
+        }
 
         return;
     }
@@ -671,12 +693,12 @@ public class Particle3D : MonoBehaviour
             AddForce(GenerateForce.StaticFriction(staticFrictionNormal, staticFrictionOpposingForce, staticFrictionCoefficient));
         }
 
-        // Apply kinematic friction force if it is active.
-        if (kinematicFrictionActive)
+        // Apply kinetic friction force if it is active.
+        if (kineticFrictionActive)
         {
-            // Kinematic friction force.
-            //AddForce(ForceGenerator.GenerateForce_Friction_Kinetic(kinematicNormalForce, Velocity, kinematicFrictionCoefficient));
-            AddForce(GenerateForce.KineticFriction(kinematicNormalForce, Velocity, kinematicFrictionCoefficient));
+            // Kinetic friction force.
+            //AddForce(ForceGenerator.GenerateForce_Friction_Kinetic(kineticNormalForce, Velocity, kineticFrictionCoefficient));
+            AddForce(GenerateForce.KineticFriction(kineticNormalForce, Velocity, kineticFrictionCoefficient));
         }
 
         // Apply sliding force if it is active.

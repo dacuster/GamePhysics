@@ -47,7 +47,7 @@ public class CircleCollisionHull3D : CollisionHull3D
             c.B = other;
             Vector3 normal = differenceCenters.normalized;
             float penetration = radiiSum - Mathf.Sqrt(distanceSquared);
-            c.AddContact(Particle.Position + differenceCenters * 0.5f, normal, 0.9f, penetration * 0.5f, 0);
+            c.AddContact(Particle.Position + differenceCenters * 0.5f, normal, restitutionCoefficient, penetration * 0.5f, 0);
         }
 
         // Return the collision status.
@@ -162,7 +162,7 @@ public class CircleCollisionHull3D : CollisionHull3D
 
             Debug.DrawLine(nearestPosition - normal,nearestPosition + normal, Color.yellow);
             float penetration = Radius - distance.magnitude;
-            c.AddContact(nearestPosition, normal, 0.9f, penetration * 0.5f, 0);
+            c.AddContact(nearestPosition, normal, restitutionCoefficient, penetration * 0.5f, 0);
         }
 
         // Return the collision status.

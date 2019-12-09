@@ -15,6 +15,10 @@ public abstract class CollisionHull3D : MonoBehaviour
 
     private bool collided = false;
 
+    [SerializeField]
+    [Range(0.0f, 1.0f)]
+    protected float restitutionCoefficient = 0.0f;
+
     // Video tutorial circle collision handler. https://www.youtube.com/watch?v=LPzyNOHY3A4
     // TODO: Comment for lab 5.
     // Collision data.
@@ -135,14 +139,25 @@ public abstract class CollisionHull3D : MonoBehaviour
                         // Apply displacement in opposite direction again since the other object isn't moving.
                         A.Particle.Position += displacementA;
 
-                        // Calculate reflection velocity along normal.
-                        impulsePerInverseMass = A.Particle.Velocity - 2.0f * Vector3.Dot(A.Particle.Velocity, contact.normal) * contact.normal;
+                        if (B.Collider == ColliderType.ground)
+                        {
+                            A.Particle.NormalActive = true;
+                        }
+                        else if (B.Collider == ColliderType.wall)
+                        {
 
-                        // Scale reflection velocity normalized by impulse.
-                        impulsePerInverseMass = impulsePerInverseMass.normalized * impulse;
+                        }
+                        else
+                        {
+                            // Calculate reflection velocity along normal.
+                            impulsePerInverseMass = A.Particle.Velocity - 2.0f * Vector3.Dot(A.Particle.Velocity, contact.normal) * contact.normal;
 
-                        // Directly change the velocity to be the reflection since we are "bouncing" off the collision.
-                        A.Particle.Velocity = impulsePerInverseMass * A.Particle.MassInverse;
+                            // Scale reflection velocity normalized by impulse.
+                            impulsePerInverseMass = impulsePerInverseMass.normalized * impulse;
+
+                            // Directly change the velocity to be the reflection since we are "bouncing" off the collision.
+                            A.Particle.Velocity = impulsePerInverseMass * A.Particle.MassInverse;
+                        }
                     }
                     else
                     {
@@ -215,39 +230,6 @@ public abstract class CollisionHull3D : MonoBehaviour
             return;
         }
 
-        public void CollisionResolver()
-        {
-            for (int currentContact = 0; currentContact < ContactCount; currentContact++)
-            {
-                Contact contact = Contacts[currentContact];
-
-                // Rotation
-                Vector3 contactRelativeA = contact.position - A.Particle.Position;
-                Vector3 contactRelativeB = contact.position - B.Particle.Position;
-
-                Vector3 torquePerUnitImpulseA = Vector3.Cross(contactRelativeA, contact.normal);
-                Vector3 torquePerUnitImpulseB = Vector3.Cross(contactRelativeB, contact.normal);
-
-                Vector3 rotationPerUnitImpulseA = A.Particle.InertiaInv.MultiplyPoint3x4(torquePerUnitImpulseA);
-                Vector3 rotationPerUnitImpulseB = B.Particle.InertiaInv.MultiplyPoint3x4(torquePerUnitImpulseB);
-
-                Vector3 velocityPerUnitImpulseA = Vector3.Cross(rotationPerUnitImpulseA, contactRelativeA);
-                Vector3 velocityPerUnitImpulseB = Vector3.Cross(rotationPerUnitImpulseB, contactRelativeB);
-
-                float deltaAngularVelocity = Vector3.Dot(velocityPerUnitImpulseA, contact.normal);
-
-                deltaAngularVelocity += Vector3.Dot(velocityPerUnitImpulseB, contact.normal);
-
-                //Matrix4x4 contactBasisTranspose = CalculateContactBasis(contact.normal).transpose;
-
-                //velocityPerUnitImpulseA = contactBasisTranspose.MultiplyPoint3x4(velocityPerUnitImpulseA);
-                //velocityPerUnitImpulseB = contactBasisTranspose.MultiplyPoint3x4(velocityPerUnitImpulseB);
-
-                Vector3 angularVelocityA = Vector3.Cross(A.Particle.AngularVelocity, contactRelativeA) + A.Particle.AngularVelocity;
-                Vector3 angularVelocityB = Vector3.Cross(B.Particle.AngularVelocity, contactRelativeB) + B.Particle.AngularVelocity;
-            }
-        }
-
         // Collision hull a accessor.
         public CollisionHull3D A { get => a; set => a = value; }
 
@@ -270,7 +252,8 @@ public abstract class CollisionHull3D : MonoBehaviour
     {
         hull_circle,
         hull_aabb,
-        hull_obb
+        hull_obb,
+        hull_cylinder
     }
 
     // Different layers for collision.
@@ -285,6 +268,13 @@ public abstract class CollisionHull3D : MonoBehaviour
     {
         dynamicCollision,
         staticCollision
+    }
+
+    public enum ColliderType
+    {
+        other,
+        ground,
+        wall
     }
 
     // Constructor.
@@ -331,27 +321,27 @@ public abstract class CollisionHull3D : MonoBehaviour
                 {
                     // Resolve the collision.
 
-					if (hull.Layer == CollisionLayer.projectile && this.Layer == CollisionLayer.player)
-					{
-						Debug.Log("lane");
-						this.GetComponent<Particle3D>().NormalActive = true;
-						Vector3 velocity = GetComponent<Particle3D>().Velocity;
-						velocity.y = 0.0f;
-						GetComponent<Particle3D>().Velocity = velocity;
-					}
-					else if (hull.Layer == CollisionLayer.player && this.Layer == CollisionLayer.projectile)
-					{
-						Debug.Log("ball");
-						hull.GetComponent<Particle3D>().NormalActive = true;
-						Vector3 velocity = hull.GetComponent<Particle3D>().Velocity;
-						velocity.y = 0.0f;
-						hull.GetComponent<Particle3D>().Velocity = velocity;
-					}
-					else
-					{
-						Debug.Log("other");
-						collision.ResolveCollision();
-					}
+					//if (hull.Layer == CollisionLayer.projectile && this.Layer == CollisionLayer.player)
+					//{
+					//	Debug.Log("lane");
+					//	this.GetComponent<Particle3D>().NormalActive = true;
+					//	Vector3 velocity = GetComponent<Particle3D>().Velocity;
+					//	velocity.y = 0.0f;
+					//	GetComponent<Particle3D>().Velocity = velocity;
+					//}
+					//else if (hull.Layer == CollisionLayer.player && this.Layer == CollisionLayer.projectile)
+					//{
+					//	Debug.Log("ball");
+					//	hull.GetComponent<Particle3D>().NormalActive = true;
+					//	Vector3 velocity = hull.GetComponent<Particle3D>().Velocity;
+					//	velocity.y = 0.0f;
+					//	hull.GetComponent<Particle3D>().Velocity = velocity;
+					//}
+					//else
+					//{
+					//	Debug.Log("other");
+					//	collision.ResolveCollision();
+					//}
 
                     collided = true;
 
@@ -458,6 +448,11 @@ public abstract class CollisionHull3D : MonoBehaviour
     private CollisionLayer layer;
 
     public CollisionLayer Layer { get { return layer; } set { layer = value; } }
+
+    // Collider types.
+    [SerializeField]
+    private ColliderType colliderType;
+    public ColliderType Collider {  get { return colliderType; } set { colliderType = value; } }
 }
 
 
