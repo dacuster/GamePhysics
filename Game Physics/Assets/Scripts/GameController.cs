@@ -19,7 +19,7 @@ public class GameController : MonoBehaviour
     }
 
     public void Start()
-    {
+    { 
         Lose.SetActive(false);
         Win.SetActive(false);
         Title();

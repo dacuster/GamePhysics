@@ -44,7 +44,6 @@ public class PlayerController : MonoBehaviour
 
 			Vector2 direction = mousePosition - new Vector2(width, height);
 
-
 			float distance = direction.magnitude;
 			float radius = GetComponent<CircleCollisionHull3D>().Radius;
 
@@ -53,7 +52,7 @@ public class PlayerController : MonoBehaviour
 			Vector3 force = new Vector3(direction.x, 0, direction.y) * particle.Mass;
 
 			particle.AddForce(force);
-            particle.ApplyTorque(new Vector3(particle.Position.x, particle.Position.y + radius, particle.Position.z), force);
+            particle.ApplyTorque(new Vector3(particle.Position.x, particle.Position.y + radius, particle.Position.z), force /100.0f);
             hasShot = true;
             GetComponent<LineRenderer>().enabled = false;
         }

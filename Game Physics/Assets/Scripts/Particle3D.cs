@@ -803,18 +803,19 @@ public class Particle3D : MonoBehaviour
     // Add a new force to the current force.
     public void AddForce(Vector3 newForce)
     {
-        if (staticFrictionActive)
-        {
-            StaticFrictionActive = false;
-            AddForce(ForceGeneratorDLL.GenerateForce.StaticFriction(StaticFrictionNormal, newForce, staticFrictionCoefficient));
-        }
-        else if (kineticFrictionActive)
-        {
-            Force += ForceGeneratorDLL.GenerateForce.KineticFriction(KineticNormalForce, Velocity, kineticFrictionCoefficient);
-        }
+		//if (staticFrictionActive)
+		//{
+		//	StaticFrictionActive = false;
+		//	AddForce(ForceGeneratorDLL.GenerateForce.StaticFriction(StaticFrictionNormal, newForce, staticFrictionCoefficient));
+		//}
 
-        // D'Alembert's law.
-        Force += newForce;
+		if (kineticFrictionActive)
+		{
+			Force += ForceGeneratorDLL.GenerateForce.KineticFriction(KineticNormalForce, Velocity, kineticFrictionCoefficient);
+		}
+
+		// D'Alembert's law.
+		Force += newForce;
 
         return;
     }
