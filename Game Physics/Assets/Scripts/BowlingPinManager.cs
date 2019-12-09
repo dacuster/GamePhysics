@@ -7,9 +7,7 @@ public class BowlingPinManager : MonoBehaviour
     public static BowlingPinManager instance = null;
     
     public List <GameObject> openPinsList = new List<GameObject>();
-
     int moved = 0;
-    Vector3 newPosition;
     public int pinLength = 10;
 
 
@@ -17,51 +15,22 @@ public class BowlingPinManager : MonoBehaviour
     {
         instance = this;
     }
-
-    public void Start()
-    {
-    }
     // Update is called once per frame
     void FixedUpdate()
     {
         foreach (GameObject pin in openPinsList)
         {
-            Quaternion pinRotation = pin.GetComponent<Particle3D>().Rotation.GetUnityQuaternion();
-            Quaternion knockedOverRotation = new Quaternion(0,0,0,1);
-            float pinAngle = Quaternion.Angle(pinRotation, knockedOverRotation);
-
-            Vector3 force = new Vector3(0, 1, 0);
-            Vector3 momentArm = new Vector3(0, 1, 1);
-            //pin.GetComponent<Particle3D>().ApplyTorque(momentArm, force);
-
-            //Vector3 pinPosistion = pin.GetComponent<Particle3D>().Position;
-            
-
-            //if (pinPosistion.x != newPosition.x || pinPosistion.y != newPosition.y || pinPosistion.z != newPosition.z)
-            //{
-            //    Debug.Log("MOVED");
-            //}
-
-            if (pinAngle >= 90 || pinAngle <= -90)
+            Vector3 notMoving = Vector3.zero;
+            if(pin.GetComponent<Particle3D>().Velocity != notMoving)
             {
-                Debug.Log("Knocked Over");
+                Debug.Log("Moved");
                 openPinsList.Remove(pin);
             }
         }
 
-        if(Input.GetKey(KeyCode.W))
-        {
-            GameController.instance.WinState();
-        }
-
-        if (Input.GetKey(KeyCode.L))
-        {
-            GameController.instance.LoseState();
-        }
-
         if (openPinsList.Count == 0)
         {
-            Debug.Log("Win");
+            GameController.instance.WinState();
         }
 
         if(PlayerController.instance.hasShot == true)
@@ -76,8 +45,7 @@ public class BowlingPinManager : MonoBehaviour
         yield return new WaitForSeconds(10);
         if (openPinsList.Count < 10 && openPinsList.Count != 0)
         {
-            Debug.Log(openPinsList.Count);
-            Debug.Log("LOSE");
+            GameController.instance.LoseState();
         }
     }
 }
